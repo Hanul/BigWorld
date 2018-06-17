@@ -1,6 +1,13 @@
 # BigWorld
 BigWorld는 타일 기반 맵을 구성하는 프레임워크입니다.
 
+## 설정
+- `tileType` 타일의 타입을 지정합니다. `rectangle`이나 `isometric` 중 하나를 지정합니다.
+- `tileWidth` 타일의 너비를 지정합니다.
+- `tileHeight` 타일의 높이를 지정합니다.
+- `sectionWidth` 섹션의 너비를 지정합니다.
+- `sectionHeight` 섹션의 높이를 지정합니다.
+
 ## Explorer
 모든 오브젝트와 맵을 폴더 구조로 다루는 탐색기입니다.
 

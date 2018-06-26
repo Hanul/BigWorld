@@ -13,11 +13,6 @@ BigWorld.MAIN = METHOD({
 		});
 		
 		BigWorld.MATCH_VIEW({
-			uri : 'objecttest/{objectId}',
-			target : BigWorld.ObjectTestConsole
-		});
-		
-		BigWorld.MATCH_VIEW({
 			uri : 'map/{mapId}',
 			target : BigWorld.MapEditor
 		});

@@ -7,7 +7,17 @@ BOOT({
 		title : 'Rectangle World Sample',
 		
 		isDevMode : true,
-		webServerPort : 8621
+		webServerPort : 8621,
+		
+		BigWorld : {
+			tileType : 'rectangle',
+			tileSectionLevel : 3,
+			sectionWidth : 16,
+			sectionHeight : 16,
+			categories : [
+				'human'
+			]
+		}
 	},
 	
 	NODE_CONFIG : {

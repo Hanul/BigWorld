@@ -85,8 +85,8 @@ BigWorld.Explorer = CLASS({
 													border : '1px solid #999',
 													borderRadius : 4
 												},
-												name : 'name',
-												placeholder : '요소 명'
+												name : 'name.ko',
+												placeholder : '요소 명 (한국어)'
 											})]
 										})
 									}, () => {
@@ -230,7 +230,7 @@ BigWorld.Explorer = CLASS({
 				style : {
 					flt : 'left'
 				},
-				c : objectData.name,
+				c : MSG(objectData.name),
 				href : BigWorld.HREF('object/' + objectData.id),
 				target : '_blank'
 			}));

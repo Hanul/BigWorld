@@ -12,10 +12,36 @@ BigWorld.ObjectModel = OBJECT({
 				id : true
 			},
 			
-			name : {
-				notEmpty : true,
+			category : {
 				size : {
 					max : 255
+				}
+			},
+			
+			name : {
+				notEmpty : true,
+				data : true,
+				detail : {
+					en : {
+						size : {
+							max : 255
+						}
+					},
+					ko : {
+						size : {
+							max : 255
+						}
+					},
+					ja : {
+						size : {
+							max : 255
+						}
+					},
+					'zh-TW' : {
+						size : {
+							max : 255
+						}
+					}
 				}
 			},
 			
@@ -27,8 +53,28 @@ BigWorld.ObjectModel = OBJECT({
 					detail : {
 						name : {
 							notEmpty : true,
-							size : {
-								max : 255
+							data : true,
+							detail : {
+								en : {
+									size : {
+										max : 255
+									}
+								},
+								ko : {
+									size : {
+										max : 255
+									}
+								},
+								ja : {
+									size : {
+										max : 255
+									}
+								},
+								'zh-TW' : {
+									size : {
+										max : 255
+									}
+								}
 							}
 						}
 					}
@@ -42,8 +88,28 @@ BigWorld.ObjectModel = OBJECT({
 					data : true,
 					detail : {
 						name : {
-							size : {
-								max : 255
+							data : true,
+							detail : {
+								en : {
+									size : {
+										max : 255
+									}
+								},
+								ko : {
+									size : {
+										max : 255
+									}
+								},
+								ja : {
+									size : {
+										max : 255
+									}
+								},
+								'zh-TW' : {
+									size : {
+										max : 255
+									}
+								}
 							}
 						},
 						frameCount : {

@@ -16,6 +16,79 @@ BigWorld.ObjectEditor = CLASS({
 				let kindList;
 				let stateList;
 				
+				let showBasicSetting = () => {
+					
+					content.empty();
+					
+					content.append(DIV({
+						style : {
+							padding : 10
+						},
+						c : [
+						UUI.VALID_FORM({
+							errorMsgs : {
+								category : {
+									size : (validParams) => {
+										return '카테고리 ID는 ' + validParams.max + '글자 이하로 입력해주시기 바랍니다.';
+									}
+								},
+								'name.ko' : {
+									size : (validParams) => {
+										return '이름은 ' + validParams.max + '글자 이하로 입력해주시기 바랍니다.';
+									}
+								}
+							},
+							errorMsgStyle : {
+								marginTop : 5,
+								color : 'red'
+							},
+							style : {
+								flt : 'left',
+								backgroundColor : '#ccc',
+								padding : 10,
+								width : 300
+							},
+							c : [UUI.FULL_INPUT({
+								name : 'category',
+								placeholder : '카테고리 ID'
+							}), UUI.FULL_INPUT({
+								style : {
+									marginTop : 10
+								},
+								name : 'name.ko',
+								placeholder : '이름 (한국어)'
+							}), UUI.BUTTON({
+								style : {
+									marginTop : 10
+								},
+								title : '타겟 지정'
+							}), UUI.FULL_SUBMIT({
+								style : {
+									marginTop : 10
+								},
+								value : '저장하기'
+							})],
+							on : {
+								submit : (e, form) => {
+									
+									let data = form.getData();
+									
+									data.id = objectData.id;
+									
+									BigWorld.ObjectModel.update(data, {
+										notValid : form.showErrors,
+										success : (savedData) => {
+											console.log(savedData);
+										}
+									});
+								}
+							}
+						}),
+						
+						CLEAR_BOTH()]
+					}));
+				};
+				
 				let content;
 				wrapper = TABLE({
 					style : {
@@ -33,7 +106,12 @@ BigWorld.ObjectEditor = CLASS({
 									icon : IMG({
 										src : BigWorld.R('objecteditor/menu/edit.png')
 									}),
-									title : '기본 설정 화면'
+									title : '기본 설정 화면',
+									on : {
+										tap : () => {
+											showBasicSetting();
+										}
+									}
 								}), SkyDesktop.ToolbarButton({
 									icon : IMG({
 										src : BigWorld.R('objecteditor/menu/kind.png')
@@ -42,35 +120,32 @@ BigWorld.ObjectEditor = CLASS({
 									on : {
 										tap : () => {
 											
-											let nameInput;
+											let form;
 											
 											SkyDesktop.Confirm({
 												okButtonTitle : '추가',
-												msg : DIV({
-													c : [nameInput = INPUT({
+												msg : form = FORM({
+													c : [INPUT({
 														style : {
 															width : 222,
 															padding : 8,
 															border : '1px solid #999',
 															borderRadius : 4
 														},
-														name : 'name',
-														placeholder : '종류 이름'
+														name : 'name.ko',
+														placeholder : '종류 이름 (한국어)'
 													})]
 												})
 											}, () => {
-												
-												let name = nameInput.getValue();
 												
 												let kinds = objectData.kinds;
 												if (kinds === undefined) {
 													kinds = [];
 												}
 												
-												let kindData = {};
-												if (VALID.notEmpty(name) === true) {
-													kindData.name = name;
-												}
+												let kindData = {
+													name : form.getData()
+												};
 												
 												kinds.push(kindData);
 												
@@ -96,13 +171,12 @@ BigWorld.ObjectEditor = CLASS({
 									on : {
 										tap : () => {
 											
-											let idInput;
-											let nameInput;
+											let form;
 											
 											SkyDesktop.Confirm({
 												okButtonTitle : '추가',
-												msg : DIV({
-													c : [idInput = INPUT({
+												msg : form = FORM({
+													c : [INPUT({
 														style : {
 															width : 222,
 															padding : 8,
@@ -111,7 +185,7 @@ BigWorld.ObjectEditor = CLASS({
 														},
 														name : 'id',
 														placeholder : '상태 ID'
-													}), nameInput = INPUT({
+													}), INPUT({
 														style : {
 															marginTop : 10,
 															width : 222,
@@ -119,16 +193,15 @@ BigWorld.ObjectEditor = CLASS({
 															border : '1px solid #999',
 															borderRadius : 4
 														},
-														name : 'name',
-														placeholder : '상태 이름'
+														name : 'name.ko',
+														placeholder : '상태 이름 (한국어)'
 													})]
 												})
 											}, () => {
 												
-												let id = idInput.getValue();
-												if (VALID.notEmpty(id) === true) {
-													
-													let name = nameInput.getValue();
+												let data = form.getData();
+												
+												if (VALID.notEmpty(data.id) === true) {
 													
 													let states = objectData.states;
 													if (states === undefined) {
@@ -136,11 +209,11 @@ BigWorld.ObjectEditor = CLASS({
 													}
 													
 													// 상태가 없어야만 생성, 아니면 오류
-													if (states[id] === undefined) {
-														states[id] = {};
+													if (states[data.id] === undefined) {
+														states[data.id] = {};
 														
-														if (VALID.notEmpty(name) === true) {
-															states[id].name = name;
+														if (VALID.notEmpty(data.name) === true) {
+															states[data.id].name = data.name;
 														}
 														
 														BigWorld.ObjectModel.update({
@@ -194,6 +267,8 @@ BigWorld.ObjectEditor = CLASS({
 				};
 				
 				EACH(objectData.states, addState);
+				
+				showBasicSetting();
 			});
 		});
 		

@@ -20,11 +20,33 @@ BigWorld.ObjectEditor = CLASS({
 					
 					content.empty();
 					
+					let screen;
 					content.append(DIV({
 						style : {
+							flt : 'left',
 							padding : 10
 						},
 						c : [
+						
+						// 섹션 설정 폼
+						DIV({
+							style : {
+								marginRight : 10,
+								flt : 'left'
+							},
+							c : screen = SkyEngine.SubScreen({
+								style : {
+									backgroundColor : '#333',
+									color : '#fff'
+								},
+								width : 400,
+								height : 400,
+								y : 100,
+								isDebugMode : true
+							})
+						}),
+							
+						// 기본 설정 폼
 						UUI.VALID_FORM({
 							errorMsgs : {
 								category : {
@@ -86,6 +108,12 @@ BigWorld.ObjectEditor = CLASS({
 						}),
 						
 						CLEAR_BOTH()]
+					}));
+					
+					screen.append(SkyEngine.Rect({
+						width : CONFIG.BigWorld.sectionWidth,
+						height : CONFIG.BigWorld.sectionHeight,
+						color : 'rgba(0, 255, 0, 128)'
 					}));
 				};
 				

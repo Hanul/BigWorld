@@ -21,6 +21,39 @@ BigWorld.ObjectEditor = CLASS({
 					content.empty();
 					
 					let screen;
+					let sectionWrapper;
+					
+					// 아래쪽을 바라보는게 기본입니다.
+					
+					// 섹션들을 출력합니다.
+					let showSections = () => {
+						
+						sectionWrapper.empty();
+						
+						EACH(objectData.sectionMap, (sections, i) => {
+							EACH(sections, (sectionInfo, j) => {
+								
+								sectionWrapper.append(SkyEngine.Rect({
+									x : CONFIG.BigWorld.sectionWidth * (j - objectData.sectionLeftLevel),
+									y : CONFIG.BigWorld.sectionHeight * (i - objectData.sectionUpLevel),
+									width : CONFIG.BigWorld.sectionWidth,
+									height : CONFIG.BigWorld.sectionHeight,
+									color : 'rgba(0, 255, 0, 128)',
+									touchArea : SkyEngine.Rect({
+										width : CONFIG.BigWorld.sectionWidth,
+										height : CONFIG.BigWorld.sectionHeight
+									}),
+									on : {
+										tap : () => {
+											
+										}
+									}
+								}));
+							});
+						});
+					};
+					
+					let form;
 					content.append(DIV({
 						style : {
 							flt : 'left',
@@ -28,13 +61,13 @@ BigWorld.ObjectEditor = CLASS({
 						},
 						c : [
 						
-						// 섹션 설정 폼
+						// 섹션 툴
 						DIV({
 							style : {
 								marginRight : 10,
 								flt : 'left'
 							},
-							c : screen = SkyEngine.SubScreen({
+							c : [screen = SkyEngine.SubScreen({
 								style : {
 									backgroundColor : '#333',
 									color : '#fff'
@@ -42,12 +75,302 @@ BigWorld.ObjectEditor = CLASS({
 								width : 400,
 								height : 400,
 								y : 100,
-								isDebugMode : true
-							})
-						}),
+								isDebugMode : true,
+								c : sectionWrapper = SkyEngine.Node()
+							}),
 							
+							// 섹션 크기 조절 툴
+							DIV({
+								c : [
+								
+								// 왼쪽으로 +
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/lb.png')
+									}),
+									on : {
+										tap : () => {
+											
+											objectData.sectionLeftLevel += 1;
+											
+											EACH(objectData.sectionMap, (sections) => {
+												sections.unshift({
+													z : 0
+												});
+											});
+											
+											BigWorld.ObjectModel.update({
+												id : objectData.id,
+												sectionLeftLevel : objectData.sectionLeftLevel,
+												sectionMap : objectData.sectionMap
+											});
+											
+											showSections();
+										}
+									}
+								}),
+								
+								// 위쪽으로 +
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/ub.png')
+									}),
+									on : {
+										tap : () => {
+											
+											objectData.sectionUpLevel += 1;
+											
+											let sections = [];
+											REPEAT(objectData.sectionLeftLevel + objectData.sectionRightLevel + 1, () => {
+												sections.push({
+													z : 0
+												});
+											});
+											objectData.sectionMap.unshift(sections);
+											
+											BigWorld.ObjectModel.update({
+												id : objectData.id,
+												sectionUpLevel : objectData.sectionUpLevel,
+												sectionMap : objectData.sectionMap
+											});
+											
+											showSections();
+										}
+									}
+								}),
+								
+								// 오른쪽으로 +
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/rb.png')
+									}),
+									on : {
+										tap : () => {
+											
+											objectData.sectionRightLevel += 1;
+											
+											EACH(objectData.sectionMap, (sections) => {
+												sections.push({
+													z : 0
+												});
+											});
+											
+											BigWorld.ObjectModel.update({
+												id : objectData.id,
+												sectionRightLevel : objectData.sectionRightLevel,
+												sectionMap : objectData.sectionMap
+											});
+											
+											showSections();
+										}
+									}
+								}),
+								
+								// 아래쪽으로 +
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/db.png')
+									}),
+									on : {
+										tap : () => {
+											
+											objectData.sectionDownLevel += 1;
+											
+											let sections = [];
+											REPEAT(objectData.sectionLeftLevel + objectData.sectionRightLevel + 1, () => {
+												sections.push({
+													z : 0
+												});
+											});
+											objectData.sectionMap.push(sections);
+											
+											BigWorld.ObjectModel.update({
+												id : objectData.id,
+												sectionDownLevel : objectData.sectionDownLevel,
+												sectionMap : objectData.sectionMap
+											});
+											
+											showSections();
+										}
+									}
+								}),
+								
+								// 왼쪽으로 -
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/rr.png')
+									}),
+									on : {
+										tap : () => {
+											
+											if (objectData.sectionLeftLevel >= 1) {
+												objectData.sectionLeftLevel -= 1;
+												
+												EACH(objectData.sectionMap, (sections) => {
+													sections.shift();
+												});
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionLeftLevel : objectData.sectionLeftLevel,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											}
+										}
+									}
+								}),
+								
+								// 위쪽으로 -
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/dr.png')
+									}),
+									on : {
+										tap : () => {
+											
+											if (objectData.sectionUpLevel >= 1) {
+												objectData.sectionUpLevel -= 1;
+												
+												objectData.sectionMap.shift();
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionUpLevel : objectData.sectionUpLevel,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											}
+										}
+									}
+								}),
+								
+								// 오른쪽으로 -
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/lr.png')
+									}),
+									on : {
+										tap : () => {
+											
+											if (objectData.sectionRightLevel >= 1) {
+												objectData.sectionRightLevel -= 1;
+												
+												EACH(objectData.sectionMap, (sections) => {
+													sections.pop();
+												});
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionRightLevel : objectData.sectionRightLevel,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											}
+										}
+									}
+								}),
+								
+								// 아래쪽으로 -
+								A({
+									c : IMG({
+										src : BigWorld.R('objecteditor/arrow/ur.png')
+									}),
+									on : {
+										tap : () => {
+											
+											if (objectData.sectionDownLevel >= 1) {
+												objectData.sectionDownLevel -= 1;
+												
+												objectData.sectionMap.pop();
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionDownLevel : objectData.sectionDownLevel,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											}
+										}
+									}
+								})]
+							}),
+							
+							// 섹션 회전 툴
+							DIV({
+								c : [A({
+									c : '왼쪽으로 회전',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								}), A({
+									c : '위쪽으로 회전',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								}), A({
+									c : '오른쪽으로 회전',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								}), A({
+									c : '아래쪽으로 회전',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								})]
+							}),
+							
+							// 기타 툴
+							DIV({
+								c : [A({
+									c : '모든 섹션을 블록 섹션으로 변경',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								}), A({
+									c : '모든 섹션을 일반 섹션으로 변경',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								}), A({
+									c : '모든 섹션을 트리거 섹션으로 변경',
+									on : {
+										tap : () => {
+											
+										}
+									}
+								})]
+							}),
+							
+							// 섹션 툴 설명
+							UL({
+								c : [LI({
+									c : '섹션을 클릭하면 블록 섹션으로 변경됩니다.'
+								}), LI({
+									c : '컨트롤 키를 누른 상태로 섹션을 클릭하면 트리거 섹션으로 변경됩니다.'
+								})]
+							})]
+						}),
+						
 						// 기본 설정 폼
-						UUI.VALID_FORM({
+						form = UUI.VALID_FORM({
 							errorMsgs : {
 								category : {
 									size : (validParams) => {
@@ -100,7 +423,7 @@ BigWorld.ObjectEditor = CLASS({
 									BigWorld.ObjectModel.update(data, {
 										notValid : form.showErrors,
 										success : (savedData) => {
-											console.log(savedData);
+											objectData = savedData;
 										}
 									});
 								}
@@ -110,11 +433,8 @@ BigWorld.ObjectEditor = CLASS({
 						CLEAR_BOTH()]
 					}));
 					
-					screen.append(SkyEngine.Rect({
-						width : CONFIG.BigWorld.sectionWidth,
-						height : CONFIG.BigWorld.sectionHeight,
-						color : 'rgba(0, 255, 0, 128)'
-					}));
+					form.setData(objectData);
+					showSections();
 				};
 				
 				let content;

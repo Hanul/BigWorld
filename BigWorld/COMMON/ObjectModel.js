@@ -45,6 +45,51 @@ BigWorld.ObjectModel = OBJECT({
 				}
 			},
 			
+			sectionUpLevel : {
+				notEmpty : true,
+				integer : true,
+				min : 0
+			},
+			sectionRightLevel : {
+				notEmpty : true,
+				integer : true,
+				min : 0
+			},
+			sectionDownLevel : {
+				notEmpty : true,
+				integer : true,
+				min : 0
+			},
+			sectionLeftLevel : {
+				notEmpty : true,
+				integer : true,
+				min : 0
+			},
+			
+			// 섹션 맵
+			sectionMap : {
+				notEmpty : true,
+				array : true,
+				element : {
+					array : true,
+					element : {
+						data : true,
+						detail : {
+							z : {
+								notEmpty : true,
+								integer : true
+							},
+							isBlock : {
+								bool : true
+							},
+							isTrigger : {
+								bool : true
+							}
+						}
+					}
+				}
+			},
+			
 			// 종류
 			kinds : {
 				array : true,
@@ -165,6 +210,15 @@ BigWorld.ObjectModel = OBJECT({
 		
 		return {
 			name : 'Object',
+			initData : {
+				sectionUpLevel : 0,
+				sectionRightLevel : 0,
+				sectionDownLevel : 0,
+				sectionLeftLevel : 0,
+				sectionMap : [[{
+					z : 0
+				}]]
+			},
 			methodConfig : {
 				create : {
 					valid : VALID(validDataSet)

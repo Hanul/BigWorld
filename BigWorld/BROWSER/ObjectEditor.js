@@ -8,6 +8,20 @@ BigWorld.ObjectEditor = CLASS({
 		
 		TITLE('BigWorld Object Editor');
 		
+		let isControlMode;
+		
+		let keydownEvent = EVENT('keydown', (e) => {
+			if (e.getKey() === 'Control') {
+				isControlMode = true;
+			}
+		});
+		
+		let keyupEvent = EVENT('keyup', (e) => {
+			if (e.getKey() === 'Control') {
+				isControlMode = false;
+			}
+		});
+		
 		let wrapper;
 		inner.on('paramsChange', (params) => {
 			
@@ -32,7 +46,7 @@ BigWorld.ObjectEditor = CLASS({
 						sectionWrapper.empty();
 						
 						EACH(objectData.sectionMap, (sections, i) => {
-							EACH(sections, (sectionInfo, j) => {
+							EACH(sections, (section, j) => {
 								
 								let x, y;
 								
@@ -58,19 +72,54 @@ BigWorld.ObjectEditor = CLASS({
 									y : y,
 									width : CONFIG.BigWorld.sectionWidth,
 									height : CONFIG.BigWorld.sectionHeight,
-									color : 'rgba(0, 255, 0, 128)',
+									color : section.isTrigger === true ? 'rgba(0, 174, 221, 128)' : (section.isBlock === true ? 'rgba(255, 0, 0, 128)' : 'rgba(0, 255, 0, 128)'),
 									touchArea : SkyEngine.Rect({
 										width : CONFIG.BigWorld.sectionWidth,
 										height : CONFIG.BigWorld.sectionHeight
 									}),
 									on : {
+										touchstart : (e) => {
+											e.stop();
+										},
 										tap : () => {
 											
+											if (isControlMode === true) {
+												section.isTrigger = section.isTrigger !== true;
+												delete section.isBlock;
+											} else {
+												if (section.isTrigger !== true) {
+													section.isBlock = section.isBlock !== true;
+												}
+												delete section.isTrigger;
+											}
+											
+											BigWorld.ObjectModel.update({
+												id : objectData.id,
+												sectionMap : objectData.sectionMap
+											});
+											
+											showSections();
 										}
 									}
 								}));
 							});
 						});
+						
+						sectionWrapper.append(SkyEngine.Line({
+							startX : -CONFIG.BigWorld.sectionWidth,
+							startY : 0,
+							endX : CONFIG.BigWorld.sectionWidth,
+							endY : 0,
+							border : '1px solid #000'
+						}));
+						
+						sectionWrapper.append(SkyEngine.Line({
+							startX : 0,
+							startY : -CONFIG.BigWorld.sectionHeight,
+							endX : 0,
+							endY : CONFIG.BigWorld.sectionHeight,
+							border : '1px solid #000'
+						}));
 					};
 					
 					let form;
@@ -95,7 +144,6 @@ BigWorld.ObjectEditor = CLASS({
 								width : 400,
 								height : 400,
 								y : 100,
-								isDebugMode : true,
 								c : sectionWrapper = SkyEngine.Node()
 							}),
 							
@@ -390,25 +438,109 @@ BigWorld.ObjectEditor = CLASS({
 							
 							// 기타 툴
 							DIV({
-								c : [A({
-									c : '모든 섹션을 블록 섹션으로 변경',
+								c : [UUI.BUTTON_H({
+									style : {
+										marginTop : 10,
+										padding : 5,
+										border : '1px solid #ccc',
+										borderRadius : 3
+									},
+									icon : IMG({
+										src : BigWorld.R('objecteditor/section/block.png')
+									}),
+									spacing : 10,
+									title : '모든 섹션을 블록 섹션으로 변경',
 									on : {
 										tap : () => {
 											
+											SkyDesktop.Confirm({
+												msg : '정말 모든 섹션을 블록 섹션으로 변경하시겠습니까?'
+											}, () => {
+												
+												EACH(objectData.sectionMap, (sections, i) => {
+													EACH(sections, (section, j) => {
+														section.isBlock = true;
+														delete section.isTrigger;
+													});
+												});
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											});
 										}
 									}
-								}), A({
-									c : '모든 섹션을 일반 섹션으로 변경',
+								}), UUI.BUTTON_H({
+									style : {
+										marginTop : 10,
+										padding : 5,
+										border : '1px solid #ccc',
+										borderRadius : 3
+									},
+									icon : IMG({
+										src : BigWorld.R('objecteditor/section/section.png')
+									}),
+									spacing : 10,
+									title : '모든 섹션을 일반 섹션으로 변경',
 									on : {
 										tap : () => {
 											
+											SkyDesktop.Confirm({
+												msg : '정말 모든 섹션을 일반 섹션으로 변경하시겠습니까?'
+											}, () => {
+												
+												EACH(objectData.sectionMap, (sections, i) => {
+													EACH(sections, (section, j) => {
+														delete section.isBlock;
+														delete section.isTrigger;
+													});
+												});
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											});
 										}
 									}
-								}), A({
-									c : '모든 섹션을 트리거 섹션으로 변경',
+								}), UUI.BUTTON_H({
+									style : {
+										marginTop : 10,
+										padding : 5,
+										border : '1px solid #ccc',
+										borderRadius : 3
+									},
+									icon : IMG({
+										src : BigWorld.R('objecteditor/section/trigger.png')
+									}),
+									spacing : 10,
+									title : '모든 섹션을 트리거 섹션으로 변경',
 									on : {
 										tap : () => {
 											
+											SkyDesktop.Confirm({
+												msg : '정말 모든 섹션을 트리거 섹션으로 변경하시겠습니까?'
+											}, () => {
+												
+												EACH(objectData.sectionMap, (sections, i) => {
+													EACH(sections, (section, j) => {
+														delete section.isBlock;
+														section.isTrigger = true;
+													});
+												});
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													sectionMap : objectData.sectionMap
+												});
+												
+												showSections();
+											});
 										}
 									}
 								})]
@@ -416,6 +548,11 @@ BigWorld.ObjectEditor = CLASS({
 							
 							// 섹션 툴 설명
 							UL({
+								style : {
+									marginTop : 10,
+									marginLeft : 20,
+									listStyle : 'disc'
+								},
 								c : [LI({
 									c : '섹션을 클릭하면 블록 섹션으로 변경됩니다.'
 								}), LI({
@@ -683,6 +820,9 @@ BigWorld.ObjectEditor = CLASS({
 
 		inner.on('close', () => {
 			wrapper.remove();
+			
+			keydownEvent.remove();
+			keyupEvent.remove();
 		});
 	}
 });

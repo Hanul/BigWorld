@@ -24,6 +24,7 @@ BigWorld.ObjectEditor = CLASS({
 					let sectionWrapper;
 					
 					// 아래쪽을 바라보는게 기본입니다.
+					let direction = 'down';
 					
 					// 섹션들을 출력합니다.
 					let showSections = () => {
@@ -33,9 +34,28 @@ BigWorld.ObjectEditor = CLASS({
 						EACH(objectData.sectionMap, (sections, i) => {
 							EACH(sections, (sectionInfo, j) => {
 								
+								let x, y;
+								
+								if (direction === 'down') {
+									x = CONFIG.BigWorld.sectionWidth * (j - objectData.sectionLeftLevel);
+									y = CONFIG.BigWorld.sectionHeight * (i - objectData.sectionUpLevel);
+								}
+								if (direction === 'left') {
+									x = -CONFIG.BigWorld.sectionHeight * (i - objectData.sectionUpLevel);
+									y = CONFIG.BigWorld.sectionWidth * (j - objectData.sectionLeftLevel);
+								}
+								if (direction === 'up') {
+									x = -CONFIG.BigWorld.sectionWidth * (j - objectData.sectionLeftLevel);
+									y = -CONFIG.BigWorld.sectionHeight * (i - objectData.sectionUpLevel);
+								}
+								if (direction === 'right') {
+									x = CONFIG.BigWorld.sectionHeight * (i - objectData.sectionUpLevel);
+									y = -CONFIG.BigWorld.sectionWidth * (j - objectData.sectionLeftLevel);
+								}
+								
 								sectionWrapper.append(SkyEngine.Rect({
-									x : CONFIG.BigWorld.sectionWidth * (j - objectData.sectionLeftLevel),
-									y : CONFIG.BigWorld.sectionHeight * (i - objectData.sectionUpLevel),
+									x : x,
+									y : y,
 									width : CONFIG.BigWorld.sectionWidth,
 									height : CONFIG.BigWorld.sectionHeight,
 									color : 'rgba(0, 255, 0, 128)',
@@ -302,35 +322,70 @@ BigWorld.ObjectEditor = CLASS({
 							
 							// 섹션 회전 툴
 							DIV({
-								c : [A({
-									c : '왼쪽으로 회전',
+								c : [
+								// 아래쪽으로 회전
+								A({
+									style : {
+										flt : 'left'
+									},
+									c : [IMG({
+										src : BigWorld.R('objecteditor/section/down.png')
+									}), '회전'],
 									on : {
 										tap : () => {
-											
+											direction = 'down';
+											showSections();
 										}
 									}
-								}), A({
-									c : '위쪽으로 회전',
+								}),
+								// 왼쪽으로 회전
+								A({
+									style : {
+										marginLeft : 10,
+										flt : 'left'
+									},
+									c : [IMG({
+										src : BigWorld.R('objecteditor/section/left.png')
+									}), '회전'],
 									on : {
 										tap : () => {
-											
+											direction = 'left';
+											showSections();
 										}
 									}
-								}), A({
-									c : '오른쪽으로 회전',
+								}),
+								// 위쪽으로 회전
+								A({
+									style : {
+										marginLeft : 10,
+										flt : 'left'
+									},
+									c : [IMG({
+										src : BigWorld.R('objecteditor/section/up.png')
+									}), '회전'],
 									on : {
 										tap : () => {
-											
+											direction = 'up';
+											showSections();
 										}
 									}
-								}), A({
-									c : '아래쪽으로 회전',
+								}),
+								// 오른쪽으로 회전
+								A({
+									style : {
+										marginLeft : 10,
+										flt : 'left'
+									},
+									c : [IMG({
+										src : BigWorld.R('objecteditor/section/right.png')
+									}), '회전'],
 									on : {
 										tap : () => {
-											
+											direction = 'right';
+											showSections();
 										}
 									}
-								})]
+								}), CLEAR_BOTH()]
 							}),
 							
 							// 기타 툴

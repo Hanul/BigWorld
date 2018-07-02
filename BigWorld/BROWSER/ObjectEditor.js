@@ -27,18 +27,18 @@ BigWorld.ObjectEditor = CLASS({
 			
 			BigWorld.ObjectModel.get(params.objectId, (objectData) => {
 				
+				// 아래쪽을 바라보는게 기본입니다.
+				let direction = 'down';
+				
 				let kindList;
 				let stateList;
 				
-				let showBasicSetting = () => {
+				let createSectionTool = () => {
 					
-					content.empty();
+					screenWrapper.empty();
 					
 					let screen;
 					let sectionWrapper;
-					
-					// 아래쪽을 바라보는게 기본입니다.
-					let direction = 'down';
 					
 					// 섹션들을 출력합니다.
 					let showSections = () => {
@@ -122,30 +122,29 @@ BigWorld.ObjectEditor = CLASS({
 						}));
 					};
 					
-					let form;
-					content.append(DIV({
-						style : {
-							flt : 'left',
-							padding : 10
-						},
+					screenWrapper.append(DIV({
 						c : [
+							
+						// 섹션 스크린
+						screen = SkyEngine.SubScreen({
+							style : {
+								marginRight : 10,
+								flt : 'left',
+								backgroundColor : '#333',
+								color : '#fff'
+							},
+							width : 400,
+							height : 400,
+							y : 100,
+							c : sectionWrapper = SkyEngine.Node()
+						}),
 						
 						// 섹션 툴
 						DIV({
 							style : {
-								marginRight : 10,
 								flt : 'left'
 							},
-							c : [screen = SkyEngine.SubScreen({
-								style : {
-									backgroundColor : '#333',
-									color : '#fff'
-								},
-								width : 400,
-								height : 400,
-								y : 100,
-								c : sectionWrapper = SkyEngine.Node()
-							}),
+							c : [
 							
 							// 섹션 크기 조절 툴
 							DIV({
@@ -561,74 +560,92 @@ BigWorld.ObjectEditor = CLASS({
 							})]
 						}),
 						
-						// 기본 설정 폼
-						form = UUI.VALID_FORM({
-							errorMsgs : {
-								category : {
-									size : (validParams) => {
-										return '카테고리 ID는 ' + validParams.max + '글자 이하로 입력해주시기 바랍니다.';
-									}
-								},
-								'name.ko' : {
-									size : (validParams) => {
-										return '이름은 ' + validParams.max + '글자 이하로 입력해주시기 바랍니다.';
-									}
-								}
-							},
-							errorMsgStyle : {
-								marginTop : 5,
-								color : 'red'
-							},
-							style : {
-								flt : 'left',
-								backgroundColor : '#ccc',
-								padding : 10,
-								width : 300
-							},
-							c : [UUI.FULL_INPUT({
-								name : 'category',
-								placeholder : '카테고리 ID'
-							}), UUI.FULL_INPUT({
-								style : {
-									marginTop : 10
-								},
-								name : 'name.ko',
-								placeholder : '이름 (한국어)'
-							}), UUI.BUTTON({
-								style : {
-									marginTop : 10
-								},
-								title : '타겟 지정'
-							}), UUI.FULL_SUBMIT({
-								style : {
-									marginTop : 10
-								},
-								value : '저장하기'
-							})],
-							on : {
-								submit : (e, form) => {
-									
-									let data = form.getData();
-									
-									data.id = objectData.id;
-									
-									BigWorld.ObjectModel.update(data, {
-										notValid : form.showErrors,
-										success : (savedData) => {
-											objectData = savedData;
-										}
-									});
-								}
-							}
-						}),
-						
 						CLEAR_BOTH()]
 					}));
 					
-					form.setData(objectData);
 					showSections();
 				};
 				
+				let showBasicSetting = () => {
+					createSectionTool();
+					
+					content.empty();
+					
+					// 기본 설정 폼
+					let form;
+					content.append(form = UUI.VALID_FORM({
+						errorMsgs : {
+							category : {
+								size : (validParams) => {
+									return '카테고리 ID는 ' + validParams.max + '글자 이하로 입력해주시기 바랍니다.';
+								}
+							},
+							'name.ko' : {
+								size : (validParams) => {
+									return '이름은 ' + validParams.max + '글자 이하로 입력해주시기 바랍니다.';
+								}
+							}
+						},
+						errorMsgStyle : {
+							marginTop : 5,
+							color : 'red'
+						},
+						style : {
+							backgroundColor : '#ccc',
+							padding : 10,
+							width : 300
+						},
+						c : [UUI.FULL_INPUT({
+							name : 'category',
+							placeholder : '카테고리 ID'
+						}), UUI.FULL_INPUT({
+							style : {
+								marginTop : 10
+							},
+							name : 'name.ko',
+							placeholder : '이름 (한국어)'
+						}), UUI.BUTTON({
+							style : {
+								marginTop : 10
+							},
+							title : '타겟 지정'
+						}), UUI.FULL_SUBMIT({
+							style : {
+								marginTop : 10
+							},
+							value : '저장하기'
+						})],
+						on : {
+							submit : (e, form) => {
+								
+								let data = form.getData();
+								
+								data.id = objectData.id;
+								
+								BigWorld.ObjectModel.update(data, {
+									notValid : form.showErrors,
+									success : (savedData) => {
+										objectData = savedData;
+									}
+								});
+							}
+						}
+					}));
+					
+					form.setData(objectData);
+				};
+				
+				let showPartSetting = () => {
+					createSectionTool();
+					
+					content.empty();
+					
+					// 파트 추가 버튼
+					
+					// 파트 목록
+				};
+				
+				let screenWrapper;
 				let content;
 				wrapper = TABLE({
 					style : {
@@ -683,23 +700,32 @@ BigWorld.ObjectEditor = CLASS({
 													kinds = [];
 												}
 												
-												let kindData = {
-													name : form.getData()
-												};
-												
+												let kindData = form.getData();
 												kinds.push(kindData);
 												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												let isValid = true;
 												BigWorld.ObjectModel.update({
 													id : objectData.id,
 													kinds : kinds
 												}, {
-													notValid : () => {
-														//TODO
+													notValid : (validErrors) => {
+														loadingBar.done();
+														
+														SkyDesktop.Alert({
+															msg : '검증에 실패하였습니다. 값에 오류가 없는지 확인해주시기 바랍니다.'
+														});
+														isValid = false;
 													},
 													success : () => {
-														//TODO
+														loadingBar.done();
+														
+														addKind(kindData);
 													}
 												});
+												
+												return isValid;
 											});
 										}
 									}
@@ -739,39 +765,55 @@ BigWorld.ObjectEditor = CLASS({
 												})
 											}, () => {
 												
-												let data = form.getData();
+												let stateData = form.getData();
 												
-												if (VALID.notEmpty(data.id) === true) {
+												if (VALID.notEmpty(stateData.id) === true) {
 													
 													let states = objectData.states;
 													if (states === undefined) {
 														states = {};
 													}
 													
+													let isValid = true;
+													
 													// 상태가 없어야만 생성, 아니면 오류
-													if (states[data.id] === undefined) {
-														states[data.id] = {};
+													if (states[stateData.id] === undefined) {
+														states[stateData.id] = {};
 														
-														if (VALID.notEmpty(data.name) === true) {
-															states[data.id].name = data.name;
+														if (VALID.notEmpty(stateData.name) === true) {
+															states[stateData.id].name = stateData.name;
 														}
+														
+														let loadingBar = SkyDesktop.LoadingBar('lime');
 														
 														BigWorld.ObjectModel.update({
 															id : objectData.id,
 															states : states
 														}, {
 															notValid : () => {
-																//TODO
+																loadingBar.done();
+																
+																SkyDesktop.Alert({
+																	msg : '검증에 실패하였습니다. 값에 오류가 없는지 확인해주시기 바랍니다.'
+																});
+																isValid = false;
 															},
 															success : () => {
-																//TODO
+																loadingBar.done();
+																
+																addState(stateData, stateData.id);
 															}
 														});
 													}
 													
 													else {
-														//TODO:
+														SkyDesktop.Alert({
+															msg : '이미 입력하신 상태 ID에 해당하는 상태가 존재합니다. 다른 ID를 입력하거나, 상태를 지우고 다시 생성해주시기 바랍니다.'
+														});
+														isValid = false;
 													}
+													
+													return isValid;
 												}
 											});
 										}
@@ -788,22 +830,88 @@ BigWorld.ObjectEditor = CLASS({
 								}), SkyDesktop.Tab({
 									size : 15,
 									c : stateList = SkyDesktop.FileTree()
-								}), content = SkyDesktop.Tab({
-									size : 70
+								}), SkyDesktop.Tab({
+									size : 70,
+									c : [screenWrapper = DIV({
+										style : {
+											padding : 10
+										}
+									}), content = DIV({
+										style : {
+											padding : 10,
+											paddingTop : 0
+										}
+									})]
 								})]
 							})
 						})
 					})]
 				}).appendTo(BODY);
 				
-				let addKind = (kindData) => {
-					console.log(kindData);
+				let selectedKindIndex;
+				let selectedState;
+				
+				let selectedKindItem;
+				let selectedStateItem;
+				
+				let addKind = (kindData, i) => {
+					
+					kindList.append(SkyDesktop.File({
+						title : MSG(kindData.name) === undefined ? (i + 1) + '번째 종류' : MSG(kindData.name),
+						on : {
+							tap : (e, item) => {
+								
+								if (selectedKindItem !== undefined) {
+									selectedKindItem.deselect();
+								}
+								
+								if (item === selectedKindItem) {
+									selectedKindIndex = undefined;
+									selectedKindItem = undefined;
+									showBasicSetting();
+								} else {
+									selectedKindIndex = i;
+									selectedKindItem = item;
+									item.select();
+									
+									if (selectedState !== undefined) {
+										showPartSetting();
+									}
+								}
+							}
+						}
+					}));
 				};
 				
 				EACH(objectData.kinds, addKind);
 				
 				let addState = (stateData, state) => {
-					console.log(stateData, state);
+					
+					stateList.append(SkyDesktop.File({
+						title : state + (MSG(stateData.name) === undefined ? '' : ' (' + MSG(stateData.name) + ')'),
+						on : {
+							tap : (e, item) => {
+								
+								if (selectedStateItem !== undefined) {
+									selectedStateItem.deselect();
+								}
+								
+								if (item === selectedStateItem) {
+									selectedState = undefined;
+									selectedStateItem = undefined;
+									showBasicSetting();
+								} else {
+									selectedState = state;
+									selectedStateItem = item;
+									item.select();
+									
+									if (selectedKindIndex !== undefined) {
+										showPartSetting();
+									}
+								}
+							}
+						}
+					}));
 				};
 				
 				EACH(objectData.states, addState);

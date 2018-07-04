@@ -45,6 +45,11 @@ BigWorld.ObjectModel = OBJECT({
 				}
 			},
 			
+			sectionLeftLevel : {
+				notEmpty : true,
+				integer : true,
+				min : 0
+			},
 			sectionUpLevel : {
 				notEmpty : true,
 				integer : true,
@@ -56,11 +61,6 @@ BigWorld.ObjectModel = OBJECT({
 				min : 0
 			},
 			sectionDownLevel : {
-				notEmpty : true,
-				integer : true,
-				min : 0
-			},
-			sectionLeftLevel : {
 				notEmpty : true,
 				integer : true,
 				min : 0
@@ -157,45 +157,72 @@ BigWorld.ObjectModel = OBJECT({
 								}
 							}
 						},
-						frameCount : {
-							integer : true
-						},
-						fps : {
-							integer : true
-						},
+						
+						// 상태 별 파트
 						parts : {
 							array : true,
 							element : {
 								data : true,
 								detail : {
+									
+									// 파트의 이름
 									name : {
-										notEmpty : true,
-										size : {
-											max : 255
+										data : true,
+										detail : {
+											en : {
+												size : {
+													max : 255
+												}
+											},
+											ko : {
+												size : {
+													max : 255
+												}
+											},
+											ja : {
+												size : {
+													max : 255
+												}
+											},
+											'zh-TW' : {
+												size : {
+													max : 255
+												}
+											}
 										}
 									},
-									states : {
+									
+									// 파트의 Z Index
+									zIndex : {
+										integer : true
+									},
+									
+									frameCount : {
+										integer : true
+									},
+									
+									fps : {
+										integer : true
+									},
+									
+									// 종류별 프레임 이미지들
+									frames : {
 										array : true,
 										element : {
 											data : true,
 											detail : {
-												name : {
-													notEmpty : true,
-													size : {
-														max : 255
-													}
-												},
-												zIndex : {
-													integer : true
-												},
-												frameImageId : {
+												// 방향 별 이미지들
+												left : {
 													id : true
 												},
-												frameImageIds : {
-													array : true,
-													element : {
-														id : true
-													}
+												up : {
+													id : true
+												},
+												right : {
+													id : true
+												},
+												down : {
+													id : true
 												}
 											}
 										}

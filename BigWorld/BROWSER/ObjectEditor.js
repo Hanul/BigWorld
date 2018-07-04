@@ -8,6 +8,8 @@ BigWorld.ObjectEditor = CLASS({
 		
 		TITLE('BigWorld Object Editor');
 		
+		let objectEditorStore = BigWorld.STORE('objectEditorStore');
+		
 		let isControlMode;
 		
 		let keydownEvent = EVENT('keydown', (e) => {
@@ -27,8 +29,22 @@ BigWorld.ObjectEditor = CLASS({
 			
 			BigWorld.ObjectModel.get(params.objectId, (objectData) => {
 				
-				// 아래쪽을 바라보는게 기본입니다.
-				let direction = 'down';
+				let direction;
+				let selectedKindIndex;
+				let selectedState;
+				
+				// 저장되어 있는 정보가 있다면
+				let savedObjectInfo = objectEditorStore.get(objectData.id);
+				if (savedObjectInfo !== undefined) {
+					direction = savedObjectInfo.direction;
+					selectedKindIndex = savedObjectInfo.selectedKindIndex;
+					selectedState = savedObjectInfo.selectedState;
+				}
+				
+				if (direction === undefined) {
+					// 아래쪽을 바라보는게 기본입니다.
+					direction = 'down';
+				}
 				
 				let kindList;
 				let stateList;
@@ -39,6 +55,7 @@ BigWorld.ObjectEditor = CLASS({
 					
 					let screen;
 					let sectionWrapper;
+					let previewWrapper;
 					
 					// 섹션들을 출력합니다.
 					let showSections = () => {
@@ -136,7 +153,7 @@ BigWorld.ObjectEditor = CLASS({
 							width : 400,
 							height : 400,
 							y : 100,
-							c : sectionWrapper = SkyEngine.Node()
+							c : [sectionWrapper = SkyEngine.Node(), previewWrapper = SkyEngine.Node()]
 						}),
 						
 						// 섹션 툴
@@ -380,8 +397,18 @@ BigWorld.ObjectEditor = CLASS({
 									}), '회전'],
 									on : {
 										tap : () => {
+											
 											direction = 'down';
-											showSections();
+											
+											objectEditorStore.save({
+												name : objectData.id,
+												value : {
+													direction : direction,
+													selectedKindIndex : selectedKindIndex,
+													selectedState : selectedState
+												}
+											});
+											showSetting();
 										}
 									}
 								}),
@@ -396,8 +423,18 @@ BigWorld.ObjectEditor = CLASS({
 									}), '회전'],
 									on : {
 										tap : () => {
+											
 											direction = 'left';
-											showSections();
+											
+											objectEditorStore.save({
+												name : objectData.id,
+												value : {
+													direction : direction,
+													selectedKindIndex : selectedKindIndex,
+													selectedState : selectedState
+												}
+											});
+											showSetting();
 										}
 									}
 								}),
@@ -412,8 +449,18 @@ BigWorld.ObjectEditor = CLASS({
 									}), '회전'],
 									on : {
 										tap : () => {
+											
 											direction = 'up';
-											showSections();
+											
+											objectEditorStore.save({
+												name : objectData.id,
+												value : {
+													direction : direction,
+													selectedKindIndex : selectedKindIndex,
+													selectedState : selectedState
+												}
+											});
+											showSetting();
 										}
 									}
 								}),
@@ -428,8 +475,18 @@ BigWorld.ObjectEditor = CLASS({
 									}), '회전'],
 									on : {
 										tap : () => {
+											
 											direction = 'right';
-											showSections();
+											
+											objectEditorStore.save({
+												name : objectData.id,
+												value : {
+													direction : direction,
+													selectedKindIndex : selectedKindIndex,
+													selectedState : selectedState
+												}
+											});
+											showSetting();
 										}
 									}
 								}), CLEAR_BOTH()]
@@ -566,6 +623,13 @@ BigWorld.ObjectEditor = CLASS({
 					showSections();
 				};
 				
+				// 미리보기를 출력합니다.
+				let showPreview = () => {
+					previewWrapper.empty();
+					
+					//TODO:
+				};
+				
 				let showBasicSetting = () => {
 					createSectionTool();
 					
@@ -638,11 +702,181 @@ BigWorld.ObjectEditor = CLASS({
 				let showPartSetting = () => {
 					createSectionTool();
 					
+					let stateData = objectData.states[selectedState];
+					
 					content.empty();
 					
 					// 파트 추가 버튼
+					content.append(UUI.BUTTON_H({
+						style : {
+							padding : 5,
+							border : '1px solid #ccc',
+							borderRadius : 3
+						},
+						icon : IMG({
+							src : BigWorld.R('objecteditor/part.png')
+						}),
+						spacing : 10,
+						title : '파트 추가',
+						on : {
+							tap : () => {
+								
+								if (stateData.parts === undefined) {
+									stateData.parts = [];
+								}
+								
+								let partIndex = stateData.parts.length;
+								
+								stateData.parts.push({});
+								
+								addPart({}, partIndex);
+								
+								BigWorld.ObjectModel.update({
+									id : objectData.id,
+									states : objectData.states
+								});
+							}
+						}
+					}));
 					
 					// 파트 목록
+					let partList;
+					content.append(partList = DIV());
+					
+					// 파트 추가
+					let addPart = (partData, i) => {
+						
+						let frameImageId;
+						
+						if (partData.frames !== undefined && partData.frames[selectedKindIndex] !== undefined) {
+							frameImageId = partData.frames[selectedKindIndex][direction];
+						}
+						
+						let form;
+						let previewWrapper;
+						partList.append(TABLE({
+							style : {
+								marginTop : 10
+							},
+							c : TR({
+								c : [TD({
+									c : form = FORM({
+										style : {
+											backgroundColor : '#ccc',
+											padding : 10,
+											width : 120
+										},
+										c : [UUI.FULL_INPUT({
+											name : 'name.ko',
+											placeholder : '이름 (한국어)'
+										}), UUI.FULL_INPUT({
+											style : {
+												marginTop : 10
+											},
+											name : 'zIndex',
+											placeholder : 'z-index'
+										}), UUI.FULL_INPUT({
+											style : {
+												marginTop : 10
+											},
+											name : 'frameCount',
+											placeholder : '프레임 수'
+										}), UUI.FULL_INPUT({
+											style : {
+												marginTop : 10
+											},
+											name : 'fps',
+											placeholder : 'FPS'
+										}), UUI.FULL_UPLOAD_FORM({
+											style : {
+												marginTop : 10
+											},
+											box : BigWorld
+										}, {
+											overSizeFile : () => {
+												alert('업로드 용량을 초과하였습니다. ' + CONFIG.maxUploadFileMB + 'MB 이하의 파일을 올려주세요.');
+											},
+											success : (fileData) => {
+												
+												if (fileData.type === 'image/png') {
+													
+													frameImageId = fileData.id;
+													form.submit();
+													
+												} else {
+													alert('PNG 파일만 등록 가능합니다.');
+												}
+											}
+										}), UUI.FULL_SUBMIT({
+											style : {
+												marginTop : 10
+											},
+											value : '저장하기'
+										})],
+										on : {
+											submit : (e, form) => {
+												
+												let data = form.getData();
+												
+												let partData = stateData.parts[i];
+												partData.name = data.name;
+												partData.zIndex = data.zIndex;
+												
+												if (partData.frames === undefined) {
+													partData.frames = [];
+												}
+												
+												if (partData.frames[selectedKindIndex] === undefined) {
+													partData.frames[selectedKindIndex] = {};
+												}
+												
+												partData.frames[selectedKindIndex][direction] = frameImageId;
+												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												stateData.parts.sort((a, b) => {
+													return a.zIndex - b.zIndex;
+												});
+												
+												BigWorld.ObjectModel.update({
+													id : objectData.id,
+													states : objectData.states
+												}, () => {
+													loadingBar.done();
+													
+													SkyDesktop.Noti('파트 저장 완료');
+													
+													showPartSetting();
+												});
+											}
+										}
+									})
+								}), previewWrapper = TD({
+									style : {
+										paddingLeft : 10
+									},
+									c : frameImageId === undefined ? undefined : IMG({
+										style : {
+											border : '1px solid #ccc'
+										},
+										src : BigWorld.RF(frameImageId)
+									})
+								})]
+							})
+						}));
+						
+						form.setData(partData);
+					};
+					
+					EACH(stateData.parts, addPart);
+				};
+				
+				let showSetting = () => {
+					if (selectedKindIndex !== undefined && selectedState !== undefined) {
+						showPartSetting();
+					} else {
+						showBasicSetting();
+					}
 				};
 				
 				let screenWrapper;
@@ -701,6 +935,7 @@ BigWorld.ObjectEditor = CLASS({
 												}
 												
 												let kindData = form.getData();
+												let kindIndex = kinds.length;
 												kinds.push(kindData);
 												
 												let loadingBar = SkyDesktop.LoadingBar('lime');
@@ -721,7 +956,7 @@ BigWorld.ObjectEditor = CLASS({
 													success : () => {
 														loadingBar.done();
 														
-														addKind(kindData);
+														addKind(kindData, kindIndex);
 													}
 												});
 												
@@ -848,15 +1083,14 @@ BigWorld.ObjectEditor = CLASS({
 					})]
 				}).appendTo(BODY);
 				
-				let selectedKindIndex;
-				let selectedState;
-				
 				let selectedKindItem;
 				let selectedStateItem;
 				
+				// 종류 추가
 				let addKind = (kindData, i) => {
 					
-					kindList.append(SkyDesktop.File({
+					let kindItem;
+					kindList.append(kindItem = SkyDesktop.File({
 						title : MSG(kindData.name) === undefined ? (i + 1) + '번째 종류' : MSG(kindData.name),
 						on : {
 							tap : (e, item) => {
@@ -868,26 +1102,42 @@ BigWorld.ObjectEditor = CLASS({
 								if (item === selectedKindItem) {
 									selectedKindIndex = undefined;
 									selectedKindItem = undefined;
-									showBasicSetting();
-								} else {
+									
+									objectEditorStore.remove(objectData.id);
+									showSetting();
+								}
+								
+								else {
 									selectedKindIndex = i;
 									selectedKindItem = item;
 									item.select();
 									
-									if (selectedState !== undefined) {
-										showPartSetting();
-									}
+									objectEditorStore.save({
+										name : objectData.id,
+										value : {
+											direction : direction,
+											selectedKindIndex : selectedKindIndex,
+											selectedState : selectedState
+										}
+									});
+									showSetting();
 								}
 							}
 						}
 					}));
+					
+					if (i === selectedKindIndex) {
+						kindItem.tap();
+					}
 				};
 				
 				EACH(objectData.kinds, addKind);
 				
+				// 상태 추가
 				let addState = (stateData, state) => {
 					
-					stateList.append(SkyDesktop.File({
+					let stateItem;
+					stateList.append(stateItem = SkyDesktop.File({
 						title : state + (MSG(stateData.name) === undefined ? '' : ' (' + MSG(stateData.name) + ')'),
 						on : {
 							tap : (e, item) => {
@@ -899,24 +1149,38 @@ BigWorld.ObjectEditor = CLASS({
 								if (item === selectedStateItem) {
 									selectedState = undefined;
 									selectedStateItem = undefined;
-									showBasicSetting();
-								} else {
+									
+									objectEditorStore.remove(objectData.id);
+									showSetting();
+								}
+								
+								else {
 									selectedState = state;
 									selectedStateItem = item;
 									item.select();
 									
-									if (selectedKindIndex !== undefined) {
-										showPartSetting();
-									}
+									objectEditorStore.save({
+										name : objectData.id,
+										value : {
+											direction : direction,
+											selectedKindIndex : selectedKindIndex,
+											selectedState : selectedState
+										}
+									});
+									showSetting();
 								}
 							}
 						}
 					}));
+					
+					if (state === selectedState) {
+						stateItem.tap();
+					}
 				};
 				
 				EACH(objectData.states, addState);
 				
-				showBasicSetting();
+				showSetting();
 			});
 		});
 		

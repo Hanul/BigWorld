@@ -1,4 +1,4 @@
-BigWorld.MapModel = OBJECT({
+BigWorld.StageModel = OBJECT({
 	
 	preset : () => {
 		return BigWorld.MODEL;
@@ -21,7 +21,7 @@ BigWorld.MapModel = OBJECT({
 		};
 		
 		return {
-			name : 'Folder',
+			name : 'Stage',
 			methodConfig : {
 				create : {
 					valid : VALID(validDataSet)

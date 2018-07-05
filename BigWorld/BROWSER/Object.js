@@ -7,18 +7,43 @@ BigWorld.Object = CLASS({
 	init : (inner, self, params) => {
 		//REQUIRED: params
 		//REQUIRED: params.objectData
-		//OPTIONAL: params.kind
+		//REQUIRED: params.kind
 		//REQUIRED: params.state
+		//REQUIRED: params.direction
 		
 		let objectData = params.objectData;
 		let kind = params.kind;
 		let state = params.state;
+		let direction = params.direction;
 		
-		// 종류가 선택되지 않으면 맨 첫 종류
-		if (kind === undefined) {
-			kind = 0;
+		let stateData = objectData.states[state];
+		
+		if (stateData !== undefined) {
+			
+			EACH(stateData.parts, (part) => {
+				
+				if (part.frames !== undefined) {
+					
+					let kindFrames = part.frames[kind];
+					
+					if (kindFrames !== undefined && kindFrames !== TO_DELETE) {
+						
+						let fileId = kindFrames[direction];
+						
+						if (fileId !== undefined) {
+							
+							SkyEngine.Sprite({
+								src : BigWorld.RF(fileId),
+								fps : part.fps,
+								frameCount : part.frameCount,
+								zIndex : part.zIndex,
+								x : part.x,
+								y : part.y
+							}).appendTo(self);
+						}
+					}
+				}
+			});
 		}
-		
-		
 	}
 });

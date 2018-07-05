@@ -205,6 +205,14 @@ BigWorld.ObjectModel = OBJECT({
 										integer : true
 									},
 									
+									x : {
+										real : true
+									},
+									
+									y : {
+										real : true
+									},
+									
 									// 종류별 프레임 이미지들
 									frames : {
 										array : true,

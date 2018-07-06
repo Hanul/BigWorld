@@ -13,8 +13,8 @@ BigWorld.MAIN = METHOD({
 		});
 		
 		BigWorld.MATCH_VIEW({
-			uri : 'map/{mapId}',
-			target : BigWorld.MapEditor
+			uri : 'stage/{stageId}',
+			target : BigWorld.StageEditor
 		});
 	}
 });

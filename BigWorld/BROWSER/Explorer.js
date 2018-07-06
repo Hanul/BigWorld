@@ -56,9 +56,9 @@ BigWorld.Explorer = CLASS({
 							title : '새 폴더'
 						}), SkyDesktop.ToolbarButton({
 							icon : IMG({
-								src : BigWorld.R('explorer/menu/factor.png')
+								src : BigWorld.R('explorer/menu/object.png')
 							}),
-							title : '새 요소',
+							title : '새 오브젝트',
 							on : {
 								tap : () => {
 									
@@ -69,7 +69,7 @@ BigWorld.Explorer = CLASS({
 										msg : form = UUI.VALID_FORM({
 											errorMsgs : {
 												name : {
-													notEmpty : '저장할 요소명을 입력해주세요.',
+													notEmpty : '저장할 오브젝트명을 입력해주세요.',
 													size : (validParams) => {
 														return '최대 ' + validParams.max + '글자입니다.';
 													}
@@ -86,7 +86,7 @@ BigWorld.Explorer = CLASS({
 													borderRadius : 4
 												},
 												name : 'name.ko',
-												placeholder : '요소 명 (한국어)'
+												placeholder : '오브젝트명 (한국어)'
 											})]
 										})
 									}, () => {
@@ -97,6 +97,66 @@ BigWorld.Explorer = CLASS({
 										let isNotValid = false;
 										
 										BigWorld.ObjectModel.create(data, {
+											notValid : (validErrors) => {
+												form.showErrors(validErrors);
+												isNotValid = true;
+											},
+											success : (r) => {
+												console.log(r);
+											}
+										});
+										
+										if (isNotValid === true) {
+											return false;
+										}
+									});
+									
+									firstInput.focus();
+								}
+							}
+						}), SkyDesktop.ToolbarButton({
+							icon : IMG({
+								src : BigWorld.R('explorer/menu/stage.png')
+							}),
+							title : '새 스테이지',
+							on : {
+								tap : () => {
+									
+									let form;
+									let firstInput;
+									SkyDesktop.Confirm({
+										okButtonTitle : '생성',
+										msg : form = UUI.VALID_FORM({
+											errorMsgs : {
+												name : {
+													notEmpty : '저장할 스테이지명을 입력해주세요.',
+													size : (validParams) => {
+														return '최대 ' + validParams.max + '글자입니다.';
+													}
+												}
+											},
+											errorMsgStyle : {
+												color : 'red'
+											},
+											c : [firstInput = INPUT({
+												style : {
+													width : 222,
+													padding : 8,
+													border : '1px solid #999',
+													borderRadius : 4
+												},
+												name : 'name.ko',
+												placeholder : '스테이지명 (한국어)'
+											})]
+										})
+									}, () => {
+										
+										let data = form.getData();
+										data.folderId = nowFolderId;
+										
+										let isNotValid = false;
+										
+										BigWorld.StageModel.create(data, {
 											notValid : (validErrors) => {
 												form.showErrors(validErrors);
 												isNotValid = true;
@@ -140,83 +200,6 @@ BigWorld.Explorer = CLASS({
 			})]
 		}).appendTo(BODY);
 		
-		// 기본 드래그 앤 드롭 막기
-		let uploadForm;
-		EVENT('dragover', (e) => {
-			
-			if (uploadForm === undefined) {
-				
-				uploadForm = UUI.FULL_UPLOAD_FORM({
-					box : BigWorld,
-					isMultiple : true,
-					style : {
-						position : 'fixed',
-						left : fileList.getLeft(),
-						top : fileList.getTop(),
-						width : fileList.getWidth() - 15,
-						height : fileList.getHeight() - 15
-					},
-					formStyle : {
-						height : '100%',
-						border : '2px dashed #e65700'
-					},
-					uploadingStyle : {
-						backgroundColor : 'rgba(0, 0, 0, 0.5)'
-					}
-				}, {
-					overSizeFile : () => {
-						alert('업로드 용량을 초과하였습니다. ' + CONFIG.maxUploadFileMB + 'MB 이하의 파일을 올려주세요.');
-						
-						uploadForm.remove();
-						uploadForm = undefined;
-					},
-					success : (fileDataSet) => {
-						
-						EACH(fileDataSet, (fileData) => {
-
-							if (fileData.type === 'image/png') {
-
-								BigWorld.ImageModel.create({
-									folderId : nowFolderId,
-									name : fileData.name,
-									fileId : fileData.id,
-									fileSize : fileData.size,
-									fileType : fileData.type
-								});
-
-							} else {
-								alert('PNG 파일만 등록 가능합니다.');
-							}
-						});
-						
-						uploadForm.remove();
-						uploadForm = undefined;
-					}
-				}).appendTo(fileList);
-			}
-			
-			e.stop();
-		});
-		
-		BigWorld.ImageModel.onNewAndFindWatching({
-			filter : {
-				folderId : nowFolderId === undefined ? TO_DELETE : nowFolderId
-			},
-			sort : {
-				createTime : 1
-			}
-		}, (imageData) => {
-			
-			fileList.append(A({
-				style : {
-					flt : 'left'
-				},
-				c : '이미지',
-				href : BigWorld.RF(imageData.fileId),
-				target : '_blank'
-			}));
-		});
-		
 		BigWorld.ObjectModel.onNewAndFindWatching({
 			filter : {
 				folderId : nowFolderId === undefined ? TO_DELETE : nowFolderId
@@ -226,12 +209,39 @@ BigWorld.Explorer = CLASS({
 			}
 		}, (objectData) => {
 			
-			fileList.append(A({
+			fileList.append(UUI.BUTTON({
 				style : {
-					flt : 'left'
+					flt : 'left',
+					padding : 10
 				},
-				c : MSG(objectData.name),
+				icon : IMG({
+					src : BigWorld.R('explorer/object.png')
+				}),
+				title : MSG(objectData.name),
 				href : BigWorld.HREF('object/' + objectData.id),
+				target : '_blank'
+			}));
+		});
+		
+		BigWorld.StageModel.onNewAndFindWatching({
+			filter : {
+				folderId : nowFolderId === undefined ? TO_DELETE : nowFolderId
+			},
+			sort : {
+				createTime : 1
+			}
+		}, (stageData) => {
+			
+			fileList.append(UUI.BUTTON({
+				style : {
+					flt : 'left',
+					padding : 10
+				},
+				icon : IMG({
+					src : BigWorld.R('explorer/stage.png')
+				}),
+				title : MSG(stageData.name),
+				href : BigWorld.HREF('stage/' + stageData.id),
 				target : '_blank'
 			}));
 		});

@@ -1611,7 +1611,10 @@ BigWorld.ObjectEditor = CLASS({
 		});
 
 		inner.on('close', () => {
-			wrapper.remove();
+			
+			if (wrapper !== undefined) {
+				wrapper.remove();
+			}
 			
 			keydownEvent.remove();
 			keyupEvent.remove();

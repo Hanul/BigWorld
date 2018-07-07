@@ -23,9 +23,24 @@ BigWorld.StageEditor = CLASS({
 					style : {
 						position : 'fixed',
 						left : 0,
-						top : 0
+						top : 0,
+						padding : 10
 					},
-					c : MSG(stageData.name)
+					c : ['맵 이름: ' + MSG(stageData.name), UUI.BUTTON_H({
+						style : {
+							marginTop : 10
+						},
+						icon : IMG({
+							src : BigWorld.R('stageeditor/object.png')
+						}),
+						spacing : 10,
+						title : '객체 선택',
+						on : {
+							tap : () => {
+								BigWorld.CreateSelectObjectPopup();
+							}
+						}
+					})]
 				}).appendTo(BODY);
 				
 				stage.append(SkyEngine.Line({
@@ -43,6 +58,21 @@ BigWorld.StageEditor = CLASS({
 					endY : CONFIG.BigWorld.sectionHeight,
 					border : '1px solid #fff'
 				}));
+				
+				let tileWidth = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
+				let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
+				
+				REPEAT(21, (i) => {
+					REPEAT(41, (j) => {
+						stage.append(SkyEngine.Rect({
+							x : (j - 41 / 2 + 0.5) * tileWidth,
+							y : (i - 21 / 2 + 0.5) * tileHeight,
+							width : tileWidth,
+							height : tileHeight,
+							border : '1px solid #666'
+						}));
+					});
+				});
 				
 				touchstartEvent = EVENT('touchstart', (e) => {
 					

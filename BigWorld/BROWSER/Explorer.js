@@ -178,6 +178,9 @@ BigWorld.Explorer = CLASS({
 					})
 				})
 			}), TR({
+				style : {
+					height : '100%'
+				},
 				c : TD({
 					c : SkyDesktop.HorizontalTabList({
 						tabs : [folderList = SkyDesktop.Tab({

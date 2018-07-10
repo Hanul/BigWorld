@@ -11,6 +11,7 @@ BigWorld.ObjectEditor = CLASS({
 		let objectEditorStore = BigWorld.STORE('objectEditorStore');
 		
 		let isControlMode;
+		let isRemoved;
 		
 		let keydownEvent = EVENT('keydown', (e) => {
 			if (e.getKey() === 'Control') {
@@ -696,9 +697,19 @@ BigWorld.ObjectEditor = CLASS({
 								
 								data.id = objectData.id;
 								
+								let loadingBar = SkyDesktop.LoadingBar('lime');
+								
 								BigWorld.ObjectModel.update(data, {
-									notValid : form.showErrors,
+									notValid : (validErrors) => {
+										loadingBar.done();
+										
+										form.showErrors(validErrors);
+									},
 									success : (savedData) => {
+										loadingBar.done();
+										
+										SkyDesktop.Noti('저장하였습니다.');
+										
 										objectData = savedData;
 									}
 								});
@@ -1175,6 +1186,28 @@ BigWorld.ObjectEditor = CLASS({
 											});
 										}
 									}
+								}), SkyDesktop.ToolbarButton({
+									icon : IMG({
+										src : BigWorld.R('objecteditor/menu/delete.png')
+									}),
+									title : '객체 제거',
+									on : {
+										tap : () => {
+											
+											SkyDesktop.Confirm({
+												okButtonTitle : '제거',
+												msg : '정말 제거하시겠습니까?'
+											}, () => {
+												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												BigWorld.ObjectModel.remove(objectData.id, () => {
+													isRemoved = true;
+													close();
+												});
+											});
+										}
+									}
 								})]
 							})
 						})
@@ -1609,8 +1642,10 @@ BigWorld.ObjectEditor = CLASS({
 		
 		// 새로고침 중단
 		window.addEventListener('beforeunload', (e) => {
-			e.returnValue = null;
-			return null;
+			if (isRemoved !== true) {
+				e.returnValue = null;
+				return null;
+			}
 		});
 
 		inner.on('close', () => {

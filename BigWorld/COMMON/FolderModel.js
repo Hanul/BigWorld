@@ -17,11 +17,19 @@ BigWorld.FolderModel = OBJECT({
 				size : {
 					max : 255
 				}
+			},
+			
+			factorCount : {
+				notEmpty : true,
+				integer : 0
 			}
 		};
 		
 		return {
 			name : 'Folder',
+			initData : {
+				factorCount : 0
+			},
 			methodConfig : {
 				create : {
 					valid : VALID(validDataSet)

@@ -52,5 +52,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 		}, () => {
 			
 		});
+		
+		
 	}
 });

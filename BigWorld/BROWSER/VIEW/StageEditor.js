@@ -8,6 +8,18 @@ BigWorld.StageEditor = CLASS({
 		
 		TITLE('BigWorld Stage Editor');
 		
+		// 배경 색 지정
+		let background = SkyEngine.Rect({
+			width : WIN_WIDTH(),
+			height : WIN_HEIGHT(),
+			color : '#333'
+		}).appendTo(SkyEngine.Screen);
+		
+		let resizeEvent = EVENT('resize', () => {
+			background.setWidth(WIN_WIDTH());
+			background.setHeight(WIN_HEIGHT());
+		});
+		
 		let stage;
 		let wrapper;
 		let touchstartEvent;
@@ -16,7 +28,8 @@ BigWorld.StageEditor = CLASS({
 			BigWorld.StageModel.get(params.stageId, (stageData) => {
 				
 				stage = BigWorld.Stage({
-					stageData : stageData
+					stageData : stageData,
+					isToShowGrid : true
 				}).appendTo(SkyEngine.Screen);
 				
 				wrapper = DIV({
@@ -43,48 +56,19 @@ BigWorld.StageEditor = CLASS({
 					})]
 				}).appendTo(BODY);
 				
-				stage.append(SkyEngine.Line({
-					startX : -CONFIG.BigWorld.sectionWidth,
-					startY : 0,
-					endX : CONFIG.BigWorld.sectionWidth,
-					endY : 0,
-					border : '1px solid #fff'
-				}));
-				
-				stage.append(SkyEngine.Line({
-					startX : 0,
-					startY : -CONFIG.BigWorld.sectionHeight,
-					endX : 0,
-					endY : CONFIG.BigWorld.sectionHeight,
-					border : '1px solid #fff'
-				}));
-				
-				let tileWidth = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
-				let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
-				
-				REPEAT(21, (i) => {
-					REPEAT(41, (j) => {
-						stage.append(SkyEngine.Rect({
-							x : (j - 41 / 2 + 0.5) * tileWidth,
-							y : (i - 21 / 2 + 0.5) * tileHeight,
-							width : tileWidth,
-							height : tileHeight,
-							border : '1px solid #666'
-						}));
-					});
-				});
-				
 				touchstartEvent = EVENT('touchstart', (e) => {
 					
 					let startLeft = e.getLeft();
 					let startTop = e.getTop();
 					
-					let originX = SkyEngine.Screen.getX();
-					let originY = SkyEngine.Screen.getY();
+					let originX = stage.getX();
+					let originY = stage.getY();
 					
 					let touchmoveEvent = EVENT('touchmove', (e) => {
-						SkyEngine.Screen.setX(originX + e.getLeft() - startLeft);
-						SkyEngine.Screen.setY(originY + e.getTop() - startTop);
+						stage.setPosition({
+							x : originX + e.getLeft() - startLeft,
+							y : originY + e.getTop() - startTop
+						});
 					});
 					
 					EVENT_ONCE('touchend', () => {
@@ -95,6 +79,9 @@ BigWorld.StageEditor = CLASS({
 		});
 		
 		inner.on('close', () => {
+			background.remove();
+			resizeEvent.remove();
+			
 			if (stage !== undefined) {
 				stage.remove();
 			}

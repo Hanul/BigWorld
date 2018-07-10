@@ -16,34 +16,37 @@ BigWorld.Object = CLASS({
 		let state = params.state;
 		let direction = params.direction;
 		
-		let stateData = objectData.states[state];
-		
-		if (stateData !== undefined) {
+		if (objectData.states !== undefined) {
 			
-			EACH(stateData.parts, (part) => {
+			let stateData = objectData.states[state];
+			
+			if (stateData !== undefined) {
 				
-				if (part.frames !== undefined) {
+				EACH(stateData.parts, (part) => {
 					
-					let kindFrames = part.frames[kind];
-					
-					if (kindFrames !== undefined && kindFrames !== TO_DELETE) {
+					if (part.frames !== undefined) {
 						
-						let fileId = kindFrames[direction];
+						let kindFrames = part.frames[kind];
 						
-						if (fileId !== undefined) {
+						if (kindFrames !== undefined && kindFrames !== TO_DELETE) {
 							
-							SkyEngine.Sprite({
-								src : BigWorld.RF(fileId),
-								fps : part.fps,
-								frameCount : part.frameCount,
-								zIndex : part.zIndex,
-								x : part.x,
-								y : part.y
-							}).appendTo(self);
+							let fileId = kindFrames[direction];
+							
+							if (fileId !== undefined) {
+								
+								SkyEngine.Sprite({
+									src : BigWorld.RF(fileId),
+									fps : part.fps,
+									frameCount : part.frameCount,
+									zIndex : part.zIndex,
+									x : part.x,
+									y : part.y
+								}).appendTo(self);
+							}
 						}
 					}
-				}
-			});
+				});
+			}
 		}
 	}
 });

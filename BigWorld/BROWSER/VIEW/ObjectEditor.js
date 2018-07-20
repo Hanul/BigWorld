@@ -394,7 +394,7 @@ BigWorld.ObjectEditor = CLASS({
 										flt : 'left'
 									},
 									c : [IMG({
-										src : BigWorld.R('objecteditor/section/down.png')
+										src : BigWorld.R('objecteditor/down.png')
 									}), '회전'],
 									on : {
 										tap : () => {
@@ -421,7 +421,7 @@ BigWorld.ObjectEditor = CLASS({
 										flt : 'left'
 									},
 									c : [IMG({
-										src : BigWorld.R('objecteditor/section/left.png')
+										src : BigWorld.R('objecteditor/left.png')
 									}), '회전'],
 									on : {
 										tap : () => {
@@ -448,7 +448,7 @@ BigWorld.ObjectEditor = CLASS({
 										flt : 'left'
 									},
 									c : [IMG({
-										src : BigWorld.R('objecteditor/section/up.png')
+										src : BigWorld.R('objecteditor/up.png')
 									}), '회전'],
 									on : {
 										tap : () => {
@@ -475,7 +475,7 @@ BigWorld.ObjectEditor = CLASS({
 										flt : 'left'
 									},
 									c : [IMG({
-										src : BigWorld.R('objecteditor/section/right.png')
+										src : BigWorld.R('objecteditor/right.png')
 									}), '회전'],
 									on : {
 										tap : () => {
@@ -731,6 +731,7 @@ BigWorld.ObjectEditor = CLASS({
 					// 파트 추가 버튼
 					content.append(UUI.BUTTON_H({
 						style : {
+							flt : 'left',
 							padding : 5,
 							border : '1px solid #ccc',
 							borderRadius : 3
@@ -761,6 +762,164 @@ BigWorld.ObjectEditor = CLASS({
 							}
 						}
 					}));
+					
+					// 모든 파트 위치 1px 내리기
+					content.append(UUI.BUTTON_H({
+						style : {
+							marginLeft : 10,
+							flt : 'left',
+							padding : 5,
+							border : '1px solid #ccc',
+							borderRadius : 3
+						},
+						icon : IMG({
+							src : BigWorld.R('objecteditor/down.png')
+						}),
+						spacing : 10,
+						title : '모든 파트 DOWN',
+						on : {
+							tap : () => {
+								
+								EACH(stateData.parts, (partData) => {
+									if (partData.y !== undefined) {
+										partData.y += 1;
+									}
+								});
+								
+								let loadingBar = SkyDesktop.LoadingBar('lime');
+								
+								BigWorld.ObjectModel.update({
+									id : objectData.id,
+									states : objectData.states
+								}, () => {
+									loadingBar.done();
+									
+									SkyDesktop.Noti('파트 이동 완료');
+									
+									showPartSetting();
+								});
+							}
+						}
+					}));
+					
+					// 모든 파트 위치 1px 왼쪽으로
+					content.append(UUI.BUTTON_H({
+						style : {
+							marginLeft : 10,
+							flt : 'left',
+							padding : 5,
+							border : '1px solid #ccc',
+							borderRadius : 3
+						},
+						icon : IMG({
+							src : BigWorld.R('objecteditor/left.png')
+						}),
+						spacing : 10,
+						title : '모든 파트 LEFT',
+						on : {
+							tap : () => {
+								
+								EACH(stateData.parts, (partData) => {
+									if (partData.x !== undefined) {
+										partData.x -= 1;
+									}
+								});
+								
+								let loadingBar = SkyDesktop.LoadingBar('lime');
+								
+								BigWorld.ObjectModel.update({
+									id : objectData.id,
+									states : objectData.states
+								}, () => {
+									loadingBar.done();
+									
+									SkyDesktop.Noti('파트 이동 완료');
+									
+									showPartSetting();
+								});
+							}
+						}
+					}));
+					
+					// 모든 파트 위치 1px 올리기
+					content.append(UUI.BUTTON_H({
+						style : {
+							marginLeft : 10,
+							flt : 'left',
+							padding : 5,
+							border : '1px solid #ccc',
+							borderRadius : 3
+						},
+						icon : IMG({
+							src : BigWorld.R('objecteditor/up.png')
+						}),
+						spacing : 10,
+						title : '모든 파트 UP',
+						on : {
+							tap : () => {
+								
+								EACH(stateData.parts, (partData) => {
+									if (partData.y !== undefined) {
+										partData.y -= 1;
+									}
+								});
+								
+								let loadingBar = SkyDesktop.LoadingBar('lime');
+								
+								BigWorld.ObjectModel.update({
+									id : objectData.id,
+									states : objectData.states
+								}, () => {
+									loadingBar.done();
+									
+									SkyDesktop.Noti('파트 이동 완료');
+									
+									showPartSetting();
+								});
+							}
+						}
+					}));
+					
+					// 모든 파트 위치 1px 오른쪽으로
+					content.append(UUI.BUTTON_H({
+						style : {
+							marginLeft : 10,
+							flt : 'left',
+							padding : 5,
+							border : '1px solid #ccc',
+							borderRadius : 3
+						},
+						icon : IMG({
+							src : BigWorld.R('objecteditor/right.png')
+						}),
+						spacing : 10,
+						title : '모든 파트 RIGHT',
+						on : {
+							tap : () => {
+								
+								EACH(stateData.parts, (partData) => {
+									if (partData.x !== undefined) {
+										partData.x += 1;
+									}
+								});
+								
+								let loadingBar = SkyDesktop.LoadingBar('lime');
+								
+								BigWorld.ObjectModel.update({
+									id : objectData.id,
+									states : objectData.states
+								}, () => {
+									loadingBar.done();
+									
+									SkyDesktop.Noti('파트 이동 완료');
+									
+									showPartSetting();
+								});
+							}
+						}
+					}));
+					
+					content.append(CLEAR_BOTH());
 					
 					// 파트 목록
 					let partList;
@@ -912,7 +1071,131 @@ BigWorld.ObjectEditor = CLASS({
 													}
 												}
 											}
-										}), CLEAR_BOTH(), UUI.FULL_UPLOAD_FORM({
+										}), CLEAR_BOTH(),
+										
+										DIV({
+											style : {
+												marginTop : 10
+											},
+											c : [
+											// 파트 위치 1px 내리기
+											UUI.ICON_BUTTON({
+												icon : IMG({
+													src : BigWorld.R('objecteditor/down.png')
+												}),
+												on : {
+													tap : () => {
+														
+														let partData = stateData.parts[i];
+														if (partData.y !== undefined) {
+															partData.y += 1;
+														}
+														
+														let loadingBar = SkyDesktop.LoadingBar('lime');
+														
+														BigWorld.ObjectModel.update({
+															id : objectData.id,
+															states : objectData.states
+														}, (savedData, originData) => {
+															loadingBar.done();
+															
+															SkyDesktop.Noti('파트 저장 완료');
+															
+															showPartSetting();
+														});
+													}
+												}
+											}),
+											
+											// 파트 위치 1px 왼쪽으로
+											UUI.ICON_BUTTON({
+												icon : IMG({
+													src : BigWorld.R('objecteditor/left.png')
+												}),
+												on : {
+													tap : () => {
+														
+														let partData = stateData.parts[i];
+														if (partData.x !== undefined) {
+															partData.x -= 1;
+														}
+														
+														let loadingBar = SkyDesktop.LoadingBar('lime');
+														
+														BigWorld.ObjectModel.update({
+															id : objectData.id,
+															states : objectData.states
+														}, (savedData, originData) => {
+															loadingBar.done();
+															
+															SkyDesktop.Noti('파트 저장 완료');
+															
+															showPartSetting();
+														});
+													}
+												}
+											}),
+											
+											// 파트 위치 1px 올리기
+											UUI.ICON_BUTTON({
+												icon : IMG({
+													src : BigWorld.R('objecteditor/up.png')
+												}),
+												on : {
+													tap : () => {
+														
+														let partData = stateData.parts[i];
+														if (partData.y !== undefined) {
+															partData.y -= 1;
+														}
+														
+														let loadingBar = SkyDesktop.LoadingBar('lime');
+														
+														BigWorld.ObjectModel.update({
+															id : objectData.id,
+															states : objectData.states
+														}, (savedData, originData) => {
+															loadingBar.done();
+															
+															SkyDesktop.Noti('파트 저장 완료');
+															
+															showPartSetting();
+														});
+													}
+												}
+											}),
+											
+											// 파트 위치 1px 오른쪽으로
+											UUI.ICON_BUTTON({
+												icon : IMG({
+													src : BigWorld.R('objecteditor/right.png')
+												}),
+												on : {
+													tap : () => {
+														
+														let partData = stateData.parts[i];
+														if (partData.x !== undefined) {
+															partData.x += 1;
+														}
+														
+														let loadingBar = SkyDesktop.LoadingBar('lime');
+														
+														BigWorld.ObjectModel.update({
+															id : objectData.id,
+															states : objectData.states
+														}, (savedData, originData) => {
+															loadingBar.done();
+															
+															SkyDesktop.Noti('파트 저장 완료');
+															
+															showPartSetting();
+														});
+													}
+												}
+											})]
+										}),
+										
+										UUI.FULL_UPLOAD_FORM({
 											style : {
 												marginTop : 10
 											},

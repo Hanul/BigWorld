@@ -7,11 +7,13 @@ BigWorld.Object = CLASS({
 	init : (inner, self, params) => {
 		//REQUIRED: params
 		//REQUIRED: params.objectData
+		//REQUIRED: params.itemDataSet
 		//REQUIRED: params.kind
 		//REQUIRED: params.state
 		//REQUIRED: params.direction
 		
 		let objectData = params.objectData;
+		let itemDataSet = params.itemDataSet;
 		let kind = params.kind;
 		let state = params.state;
 		let direction = params.direction;
@@ -47,6 +49,15 @@ BigWorld.Object = CLASS({
 					}
 				});
 			}
+		}
+		
+		// 아이템을 추가합니다.
+		let addItem = self.addItem = (itemData) => {
+			
+		};
+		
+		if (itemDataSet !== undefined) {
+			EACH(itemDataSet, addItem);
 		}
 	}
 });

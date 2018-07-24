@@ -6,7 +6,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 		let folderOpenedStore = BigWorld.STORE('folderOpenedStore');
 		
 		let selectedItem;
-		let selectedObjectId;
+		let selectedObjectData;
 		
 		let rootList;
 		let filenameInput;
@@ -79,19 +79,16 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 							item.select();
 							selectedItem = item;
 							
-							selectedObjectId = undefined;
+							selectedObjectData = undefined;
 						}
 					}
 				})
 			})]
 		}, () => {
-			
-			if (selectedObjectId === undefined) {
+			if (selectedObjectData === undefined) {
 				return false;
-			}
-			
-			else {
-				//TODO:
+			} else {
+				callback(selectedObjectData);
 			}
 		});
 		
@@ -145,7 +142,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 								item.select();
 								selectedItem = item;
 								
-								selectedObjectId = undefined;
+								selectedObjectData = undefined;
 							}
 						}
 					})
@@ -195,7 +192,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 									item.select();
 									selectedItem = item;
 									
-									selectedObjectId = objectData.id;
+									selectedObjectData = objectData;
 								}
 							}
 						})

@@ -8,13 +8,18 @@ BigWorld.MAIN = METHOD({
 		});
 		
 		BigWorld.MATCH_VIEW({
+			uri : 'stage/{stageId}',
+			target : BigWorld.StageEditor
+		});
+		
+		BigWorld.MATCH_VIEW({
 			uri : 'object/{objectId}',
 			target : BigWorld.ObjectEditor
 		});
 		
 		BigWorld.MATCH_VIEW({
-			uri : 'stage/{stageId}',
-			target : BigWorld.StageEditor
+			uri : 'item/{itemId}',
+			target : BigWorld.ItemEditor
 		});
 	}
 });

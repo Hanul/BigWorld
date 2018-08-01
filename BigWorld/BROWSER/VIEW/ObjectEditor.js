@@ -943,6 +943,9 @@ BigWorld.ObjectEditor = CLASS({
 							},
 							c : TR({
 								c : [TD({
+									style : {
+										width : 250
+									},
 									c : form = FORM({
 										style : {
 											position : 'relative',
@@ -1237,6 +1240,10 @@ BigWorld.ObjectEditor = CLASS({
 													partData.frames[selectedKindIndex] = {};
 												}
 												
+												let isToUpdatePartSetting = false;
+												if (partData.frames[selectedKindIndex][direction] !== frameImageId) {
+													isToUpdatePartSetting = true;
+												}
 												partData.frames[selectedKindIndex][direction] = frameImageId;
 												
 												let loadingBar = SkyDesktop.LoadingBar('lime');
@@ -1253,7 +1260,7 @@ BigWorld.ObjectEditor = CLASS({
 													
 													SkyDesktop.Noti('파트 저장 완료');
 													
-													if (savedData.zIndex !== originData.zIndex) {
+													if (savedData.zIndex !== originData.zIndex || isToUpdatePartSetting === true) {
 														showPartSetting();
 													} else {
 														showPreview();

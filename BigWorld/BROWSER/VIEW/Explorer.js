@@ -817,7 +817,8 @@ BigWorld.Explorer = CLASS({
 						fileList.append(item = UUI.BUTTON({
 							style : {
 								flt : 'left',
-								padding : 10
+								padding : 10,
+								height : 120
 							},
 							icon : IMG({
 								src : BigWorld.R('explorer/factor/folder.png'),
@@ -1056,7 +1057,8 @@ BigWorld.Explorer = CLASS({
 							fileList.append(item = UUI.BUTTON({
 								style : {
 									flt : 'left',
-									padding : 10
+									padding : 10,
+									height : 120
 								},
 								icon : IMG({
 									src : BigWorld.R('explorer/factor/stage.png'),
@@ -1200,7 +1202,8 @@ BigWorld.Explorer = CLASS({
 							fileList.append(item = UUI.BUTTON({
 								style : {
 									flt : 'left',
-									padding : 10
+									padding : 10,
+									height : 120
 								},
 								icon : IMG({
 									src : BigWorld.R('explorer/factor/object.png'),
@@ -1343,7 +1346,8 @@ BigWorld.Explorer = CLASS({
 						fileList.append(item = UUI.BUTTON({
 							style : {
 								flt : 'left',
-								padding : 10
+								padding : 10,
+								height : 120
 							},
 							icon : IMG({
 								src : BigWorld.R('explorer/factor/item.png'),

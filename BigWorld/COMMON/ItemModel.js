@@ -13,6 +13,10 @@ BigWorld.ItemModel = OBJECT({
 				id : true
 			},
 			
+			folderId : {
+				id : true
+			},
+			
 			name : {
 				notEmpty : true,
 				data : true,

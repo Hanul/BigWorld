@@ -13,10 +13,7 @@ BOOT({
 			tileType : 'rectangle',
 			tileSectionLevel : 3,
 			sectionWidth : 16,
-			sectionHeight : 16,
-			categories : [
-				'human'
-			]
+			sectionHeight : 16
 		}
 	},
 	

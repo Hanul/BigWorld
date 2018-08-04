@@ -8,6 +8,10 @@ BigWorld.StageEditor = CLASS({
 		
 		TITLE('BigWorld Stage Editor');
 		
+		// 타일의 크기
+		let tileWidth = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
+		let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
+		
 		// 배경 색 지정
 		let background = SkyEngine.Rect({
 			width : WIN_WIDTH(),
@@ -21,8 +25,13 @@ BigWorld.StageEditor = CLASS({
 		});
 		
 		let stage;
+		let selectedObject;
+		
 		let wrapper;
 		let touchstartEvent;
+		let touchmoveEvent;
+		let tapEvent;
+		let keydownEvent;
 		inner.on('paramsChange', (params) => {
 			
 			BigWorld.StageModel.get(params.stageId, (stageData) => {
@@ -32,6 +41,31 @@ BigWorld.StageEditor = CLASS({
 					isToShowGrid : true
 				}).appendTo(SkyEngine.Screen);
 				
+				let deselectObject = () => {
+					
+					if (touchmoveEvent !== undefined) {
+						touchmoveEvent.remove();
+						touchmoveEvent = undefined;
+					}
+					
+					if (tapEvent !== undefined) {
+						tapEvent.remove();
+						tapEvent = undefined;
+					}
+					
+					if (selectedObject !== undefined) {
+						selectedObject.remove();
+						selectedObject = undefined;
+					}
+					
+					kindList.empty();
+					stateList.empty();
+					itemList.empty();
+				};
+				
+				let kindList;
+				let stateList;
+				let itemList;
 				wrapper = DIV({
 					style : {
 						position : 'fixed',
@@ -50,10 +84,172 @@ BigWorld.StageEditor = CLASS({
 						title : '객체 선택',
 						on : {
 							tap : () => {
-								BigWorld.CreateSelectObjectPopup();
+								
+								deselectObject();
+								
+								BigWorld.CreateSelectObjectPopup((objectData, left, top) => {
+									
+									let state;
+									EACH(objectData.states, (stateData, _state) => {
+										state = _state;
+									});
+									
+									selectedObject = BigWorld.Object({
+										x : (left - WIN_WIDTH() / 2) / SkyEngine.Screen.getRatio() - stage.getX(),
+										y : (top - WIN_HEIGHT() / 2) / SkyEngine.Screen.getRatio() - stage.getY(),
+										objectData : objectData,
+										kind : 0,
+										state : state,
+										direction : 'down'
+									}).appendTo(stage);
+									
+									touchmoveEvent = EVENT('touchmove', (e) => {
+										selectedObject.setX((e.getLeft() - WIN_WIDTH() / 2) / SkyEngine.Screen.getRatio() - stage.getX());
+										selectedObject.setY((e.getTop() - WIN_HEIGHT() / 2) / SkyEngine.Screen.getRatio() - stage.getY());
+									});
+									
+									tapEvent = EVENT('tap', (e) => {
+										
+										let tileRow = INTEGER(selectedObject.getY() < 0 ? selectedObject.getY() / tileHeight - 0.5 : selectedObject.getY() / tileHeight + 0.5);
+										let tileCol = INTEGER(selectedObject.getX() < 0 ? selectedObject.getX() / tileWidth - 0.5 : selectedObject.getX() / tileWidth + 0.5);
+										
+										let sectionRow = INTEGER(selectedObject.getY() < 0 ? selectedObject.getY() / CONFIG.BigWorld.sectionHeight - 0.5 : selectedObject.getY() / CONFIG.BigWorld.sectionHeight + 0.5);
+										let sectionCol = INTEGER(selectedObject.getX() < 0 ? selectedObject.getX() / CONFIG.BigWorld.sectionWidth - 0.5 : selectedObject.getX() / CONFIG.BigWorld.sectionWidth + 0.5);
+										
+										sectionRow -= tileRow * CONFIG.BigWorld.tileSectionLevel;
+										sectionCol -= tileCol * CONFIG.BigWorld.tileSectionLevel;
+										
+										BigWorld.StageObjectModel.create({
+											stageId : stageData.id,
+											objectId : objectData.id,
+											kind : selectedObject.getKind(),
+											state : selectedObject.getState(),
+											itemInfos : selectedObject.getItemInfos(),
+											direction : selectedObject.getDirection(),
+											tileRow : tileRow,
+											tileCol : tileCol,
+											sectionRow : sectionRow,
+											sectionCol : sectionCol
+										});
+									});
+									
+									kindList.empty();
+									stateList.empty();
+									itemList.empty();
+									
+									// 종류들을 불러옵니다.
+									EACH(objectData.kinds, (kindData, kind) => {
+										
+										itemList.append(UUI.BUTTON_H({
+											style : {
+												marginTop : 10
+											},
+											icon : IMG({
+												src : BigWorld.R('stageeditor/kind.png')
+											}),
+											spacing : 10,
+											title : MSG(kindData.name),
+											on : {
+												tap : (e) => {
+													selectedObject.changeKind(kind);
+													e.stop();
+												}
+											}
+										}));
+									});
+									
+									// 상태들을 불러옵니다.
+									EACH(objectData.states, (stateData, state) => {
+										
+										itemList.append(UUI.BUTTON_H({
+											style : {
+												marginTop : 10
+											},
+											icon : IMG({
+												src : BigWorld.R('stageeditor/state.png')
+											}),
+											spacing : 10,
+											title : MSG(stateData.name),
+											on : {
+												tap : (e) => {
+													selectedObject.changeState(state);
+													e.stop();
+												}
+											}
+										}));
+									});
+									
+									// 아이템을 불러옵니다.
+									BigWorld.ItemModel.find({
+										filter : {
+											objectId : objectData.id
+										}
+									}, EACH((itemData) => {
+										
+										itemList.append(SkyDesktop.Folder({
+											style : {
+												marginTop : 10
+											},
+											spacing : 10,
+											title : MSG(itemData.name),
+											on : {
+												tap : (e) => {
+													e.stop();
+												},
+												open : (e, itemFolder) => {
+													
+													// 아이템 종류들을 불러옵니다.
+													EACH(itemData.kinds, (kindData, kind) => {
+														
+														itemFolder.addItem({
+															key : kind,
+															item : UUI.BUTTON_H({
+																style : {
+																	marginTop : 10
+																},
+																icon : IMG({
+																	src : BigWorld.R('stageeditor/kind.png')
+																}),
+																spacing : 10,
+																title : MSG(kindData.name),
+																on : {
+																	tap : (e) => {
+																		
+																		if (selectedObject.checkItemExists({
+																			itemId : itemData.id,
+																			kind : kind
+																		}) === true) {
+																			selectedObject.removeItem(itemData.id);
+																		}
+																		
+																		else {
+																			selectedObject.addItem({
+																				itemData : itemData,
+																				kind : kind
+																			});
+																		}
+																		
+																		e.stop();
+																	}
+																}
+															})
+														});
+													});
+												},
+												close : (e, itemFolder) => {
+													itemFolder.removeAllItems();
+												}
+											}
+										}));
+									}));
+								});
 							}
 						}
-					})]
+					}),
+					
+					kindList = DIV(),
+					stateList = DIV(),
+					itemList = DIV()]
 				}).appendTo(BODY);
 				
 				touchstartEvent = EVENT('touchstart', (e) => {
@@ -75,6 +271,14 @@ BigWorld.StageEditor = CLASS({
 						touchmoveEvent.remove();
 					});
 				});
+				
+				keydownEvent = EVENT('keydown', (e) => {
+					
+					// 선택 취소
+					if (e.getKey() === 'Escape') {
+						deselectObject();
+					}
+				});
 			});
 		});
 		
@@ -90,6 +294,12 @@ BigWorld.StageEditor = CLASS({
 			}
 			if (touchstartEvent !== undefined) {
 				touchstartEvent.remove();
+			}
+			if (touchmoveEvent !== undefined) {
+				touchmoveEvent.remove();
+			}
+			if (keydownEvent !== undefined) {
+				keydownEvent.remove();
 			}
 		});
 	}

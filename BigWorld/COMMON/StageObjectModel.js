@@ -23,7 +23,7 @@ BigWorld.StageObjectModel = OBJECT({
 				integer : true
 			},
 			
-			stage : {
+			state : {
 				notEmpty : true,
 				size : {
 					max : 255

@@ -84,11 +84,11 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 					}
 				})
 			})]
-		}, () => {
+		}, (left, top) => {
 			if (selectedObjectData === undefined) {
 				return false;
 			} else {
-				callback(selectedObjectData);
+				callback(selectedObjectData, left, top);
 			}
 		});
 		

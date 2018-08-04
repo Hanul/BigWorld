@@ -12,25 +12,7 @@ BigWorld.Stage = CLASS({
 		let stageData = params.stageData;
 		let isToShowGrid = params.isToShowGrid;
 		
-		// 중점 표시
-		if (isToShowGrid === true) {
-			
-			self.append(SkyEngine.Line({
-				startX : -CONFIG.BigWorld.sectionWidth,
-				startY : 0,
-				endX : CONFIG.BigWorld.sectionWidth,
-				endY : 0,
-				border : '1px solid #fff'
-			}));
-			
-			self.append(SkyEngine.Line({
-				startX : 0,
-				startY : -CONFIG.BigWorld.sectionHeight,
-				endX : 0,
-				endY : CONFIG.BigWorld.sectionHeight,
-				border : '1px solid #fff'
-			}));
-		}
+		let stateObjects = {};
 		
 		// 타일의 크기
 		let tileWidth = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
@@ -47,6 +29,28 @@ BigWorld.Stage = CLASS({
 		self.on('remove', () => {
 			resizeEvent.remove();
 		});
+		
+		// 중점 표시
+		if (isToShowGrid === true) {
+			
+			self.append(SkyEngine.Line({
+				zIndex : -999999,
+				startX : -CONFIG.BigWorld.sectionWidth,
+				startY : 0,
+				endX : CONFIG.BigWorld.sectionWidth,
+				endY : 0,
+				border : '1px solid #fff'
+			}));
+			
+			self.append(SkyEngine.Line({
+				zIndex : -999999,
+				startX : 0,
+				startY : -CONFIG.BigWorld.sectionHeight,
+				endX : 0,
+				endY : CONFIG.BigWorld.sectionHeight,
+				border : '1px solid #fff'
+			}));
+		}
 		
 		let tileMap = {};
 		
@@ -88,6 +92,7 @@ BigWorld.Stage = CLASS({
 			EACH(tileRangeMap, (range, key) => {
 				
 				let tile = tileMap[key] = SkyEngine.Node({
+					zIndex : -999999,
 					x : range.col * tileWidth,
 					y : range.row * tileHeight
 				}).appendTo(self);
@@ -114,5 +119,65 @@ BigWorld.Stage = CLASS({
 			
 			loadObjects();
 		};
+		
+		let removeObject = (stageObjectId) => {
+			if (stateObjects[stageObjectId] !== undefined) {
+				stateObjects[stageObjectId].remove();
+				delete stateObjects[stageObjectId];
+			}
+		}
+		
+		let createObject = (stageObjectData) => {
+			
+			BigWorld.ObjectModel.get(stageObjectData.objectId, (objectData) => {
+				
+				let itemDataSet = [];
+				let itemKinds = [];
+				
+				PARALLEL(stageObjectData.itemInfos, [
+				(itemInfo, done) => {
+					
+					itemKinds.push(itemInfo.kind);
+					
+					BigWorld.ItemModel.get(itemInfo.id, (itemData) => {
+						itemDataSet.push(itemData);
+						done();
+					});
+				},
+				
+				() => {
+					
+					let object = BigWorld.Object({
+						x : stageObjectData.tileCol * tileWidth + stageObjectData.sectionCol * CONFIG.BigWorld.sectionWidth,
+						y : stageObjectData.tileRow * tileHeight + stageObjectData.sectionRow * CONFIG.BigWorld.sectionHeight,
+						objectData : objectData,
+						kind : stageObjectData.kind,
+						state : stageObjectData.state,
+						direction : stageObjectData.direction,
+						itemDataSet : itemDataSet,
+						itemKinds : itemKinds
+					}).appendTo(self);
+					
+					removeObject(stageObjectData.id);
+					stateObjects[stageObjectData.id] = object;
+				}]);
+			});
+		};
+		
+		BigWorld.StageObjectModel.onNewAndFindWatching({
+			properties : {
+				stageId : stageData.id
+			}
+		}, (stageObjectData, addUpdateHandler, addRemoveHandler) => {
+			createObject(stageObjectData);
+			
+			addUpdateHandler((newStageObjectData) => {
+				createObject(newStageObjectData);
+			});
+			
+			addRemoveHandler(() => {
+				removeObject(stageObjectData.id);
+			});
+		});
 	}
 });

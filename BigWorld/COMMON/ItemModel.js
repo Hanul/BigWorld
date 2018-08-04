@@ -17,6 +17,12 @@ BigWorld.ItemModel = OBJECT({
 				id : true
 			},
 			
+			category : {
+				size : {
+					max : 255
+				}
+			},
+			
 			name : {
 				notEmpty : true,
 				data : true,

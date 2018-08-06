@@ -12,25 +12,35 @@ BigWorld.Object = CLASS({
 	
 	init : (inner, self, params) => {
 		//REQUIRED: params
+		//OPTIONAL: params.id
 		//REQUIRED: params.objectData
 		//REQUIRED: params.kind
 		//REQUIRED: params.state
 		//REQUIRED: params.direction
 		//OPTIONAL: params.itemDataSet
 		//OPTIONAL: params.itemKinds
+		//OPTIONAL: params.isReverse
 		
+		let id = params.id;
 		let objectData = params.objectData;
 		let kind = params.kind;
 		let state = params.state;
 		let direction = params.direction;
 		let itemDataSet = params.itemDataSet;
 		let itemKinds = params.itemKinds;
+		let isReverse = params.isReverse;
 		
 		if (itemDataSet === undefined) {
 			itemDataSet = [];
 		}
 		if (itemKinds === undefined) {
 			itemKinds = [];
+		}
+		if (isReverse === undefined) {
+			isReverse = false;
+		}
+		if (isReverse === true) {
+			self.flipX();
 		}
 		
 		let refresh = RAR(() => {
@@ -61,7 +71,18 @@ BigWorld.Object = CLASS({
 										frameCount : part.frameCount,
 										zIndex : part.zIndex,
 										x : part.x,
-										y : part.y
+										y : part.y,
+										on : {
+											load : (e, sprite) => {
+									
+												self.addTouchArea(SkyEngine.Silhouette({
+													src : BigWorld.RF(fileId),
+													width : sprite.getSpriteWidth(),
+													x : part.x,
+													y : part.y
+												}));
+											}
+										}
 									}).appendTo(self);
 								}
 							}
@@ -106,6 +127,10 @@ BigWorld.Object = CLASS({
 				}
 			});
 		});
+		
+		let getId = self.getId = () => {
+			return id;
+		};
 		
 		let changeKind = self.changeKind = (_kind) => {
 			//REQUIRED: _kind
@@ -203,6 +228,15 @@ BigWorld.Object = CLASS({
 			});
 			
 			return itemInfos;
+		};
+		
+		let reverse = self.reverse = () => {
+			isReverse = isReverse !== true;
+			self.flipX();
+		};
+		
+		let checkIsReverse = self.checkIsReverse = () => {
+			return isReverse;
 		};
 	}
 });

@@ -25,6 +25,7 @@ BigWorld.StageEditor = CLASS({
 		});
 		
 		let stage;
+		let objectMenu;
 		let selectedObject;
 		
 		let wrapper;
@@ -39,6 +40,52 @@ BigWorld.StageEditor = CLASS({
 				stage = BigWorld.Stage({
 					stageData : stageData,
 					isToShowGrid : true
+				},
+				// 오브젝트를 터치한 경우
+				(object) => {
+					
+					if (objectMenu !== undefined) {
+						objectMenu.remove();
+					}
+					
+					objectMenu = SkyEngine.Node({
+						x : object.getX(),
+						y : object.getY(),
+						dom : DIV({
+							style : {
+								backgroundColor : '#fff',
+								color : '#000',
+								borderRadius : 5
+							},
+							on : {
+								touchstart : (e) => {
+									e.stop();
+								}
+							},
+							c : [UUI.BUTTON_H({
+								style : {
+									padding : 5
+								},
+								icon : IMG({
+									src : BigWorld.R('stageeditor/delete.png')
+								}),
+								spacing : 10,
+								title : '삭제하기',
+								on : {
+									tap : (e) => {
+										
+										BigWorld.StageObjectModel.remove(object.getId());
+										
+										objectMenu.remove();
+										objectMenu = undefined;
+										
+										e.stop();
+									}
+								}
+							})]
+						})
+					}).appendTo(stage);
+					
 				}).appendTo(SkyEngine.Screen);
 				
 				let deselectObject = () => {
@@ -129,13 +176,35 @@ BigWorld.StageEditor = CLASS({
 											tileRow : tileRow,
 											tileCol : tileCol,
 											sectionRow : sectionRow,
-											sectionCol : sectionCol
+											sectionCol : sectionCol,
+											isReverse : selectedObject.checkIsReverse() === true ? true : undefined
 										});
 									});
 									
 									kindList.empty();
 									stateList.empty();
 									itemList.empty();
+									
+									// 좌우 반전 버튼
+									EACH(objectData.kinds, (kindData, kind) => {
+										
+										itemList.append(UUI.BUTTON_H({
+											style : {
+												marginTop : 10
+											},
+											icon : IMG({
+												src : BigWorld.R('stageeditor/reverse.png')
+											}),
+											spacing : 10,
+											title : '좌우 반전',
+											on : {
+												tap : (e) => {
+													selectedObject.reverse();
+													e.stop();
+												}
+											}
+										}));
+									});
 									
 									// 종류들을 불러옵니다.
 									EACH(objectData.kinds, (kindData, kind) => {
@@ -270,12 +339,23 @@ BigWorld.StageEditor = CLASS({
 					EVENT_ONCE('touchend', () => {
 						touchmoveEvent.remove();
 					});
+					
+					if (objectMenu !== undefined) {
+						objectMenu.remove();
+						objectMenu = undefined;
+					}
 				});
 				
 				keydownEvent = EVENT('keydown', (e) => {
 					
 					// 선택 취소
 					if (e.getKey() === 'Escape') {
+						
+						if (objectMenu !== undefined) {
+							objectMenu.remove();
+							objectMenu = undefined;
+						}
+						
 						deselectObject();
 					}
 				});
@@ -288,6 +368,9 @@ BigWorld.StageEditor = CLASS({
 			
 			if (stage !== undefined) {
 				stage.remove();
+			}
+			if (objectMenu !== undefined) {
+				objectMenu.remove();
 			}
 			if (wrapper !== undefined) {
 				wrapper.remove();

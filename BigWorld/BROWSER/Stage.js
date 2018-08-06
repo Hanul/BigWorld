@@ -4,10 +4,11 @@ BigWorld.Stage = CLASS({
 		return SkyEngine.Node;
 	},
 	
-	init : (inner, self, params) => {
+	init : (inner, self, params, touchObjectHandler) => {
 		//REQUIRED: params
 		//REQUIRED: params.stageData
 		//REQUIRED: params.isToShowGrid
+		//OPTIONAL: touchObjectHandler
 		
 		let stageData = params.stageData;
 		let isToShowGrid = params.isToShowGrid;
@@ -148,6 +149,7 @@ BigWorld.Stage = CLASS({
 				() => {
 					
 					let object = BigWorld.Object({
+						id : stageObjectData.id,
 						x : stageObjectData.tileCol * tileWidth + stageObjectData.sectionCol * CONFIG.BigWorld.sectionWidth,
 						y : stageObjectData.tileRow * tileHeight + stageObjectData.sectionRow * CONFIG.BigWorld.sectionHeight,
 						objectData : objectData,
@@ -155,7 +157,15 @@ BigWorld.Stage = CLASS({
 						state : stageObjectData.state,
 						direction : stageObjectData.direction,
 						itemDataSet : itemDataSet,
-						itemKinds : itemKinds
+						itemKinds : itemKinds,
+						isReverse : stageObjectData.isReverse,
+						on : {
+							tap : () => {
+								if (touchObjectHandler !== undefined) {
+									touchObjectHandler(object);
+								}
+							}
+						}
 					}).appendTo(self);
 					
 					removeObject(stageObjectData.id);

@@ -70,6 +70,10 @@ BigWorld.StageObjectModel = OBJECT({
 			sectionCol : {
 				notEmpty : true,
 				integer : true
+			},
+			
+			isReverse : {
+				bool : true
 			}
 		};
 		

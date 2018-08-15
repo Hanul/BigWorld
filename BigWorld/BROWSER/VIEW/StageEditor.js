@@ -120,7 +120,51 @@ BigWorld.StageEditor = CLASS({
 						top : 0,
 						padding : 10
 					},
-					c : ['맵 이름: ' + MSG(stageData.name), UUI.BUTTON_H({
+					c : [DIV({
+						c : '맵 이름: ' + MSG(stageData.name)
+					}), DIV({
+						c : ['확대:', A({
+							style : {
+								marginLeft : 5
+							},
+							c : 'x1',
+							on : {
+								tap : () => {
+									stage.setScale(1);
+								}
+							}
+						}), A({
+							style : {
+								marginLeft : 5
+							},
+							c : 'x2',
+							on : {
+								tap : () => {
+									stage.setScale(2);
+								}
+							}
+						}), A({
+							style : {
+								marginLeft : 5
+							},
+							c : 'x4',
+							on : {
+								tap : () => {
+									stage.setScale(4);
+								}
+							}
+						}), A({
+							style : {
+								marginLeft : 5
+							},
+							c : 'x8',
+							on : {
+								tap : () => {
+									stage.setScale(8);
+								}
+							}
+						})]
+					}), UUI.BUTTON_H({
 						style : {
 							marginTop : 10
 						},

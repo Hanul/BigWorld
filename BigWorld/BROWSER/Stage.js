@@ -23,8 +23,8 @@ BigWorld.Stage = CLASS({
 		let boundaryHeight;
 		
 		let resizeEvent = EVENT('resize', RAR(() => {
-			boundaryWidth = WIN_WIDTH() / 2;
-			boundaryHeight = WIN_HEIGHT() / 2;
+			boundaryWidth = WIN_WIDTH() / 2 / self.getScaleX();
+			boundaryHeight = WIN_HEIGHT() / 2 / self.getScaleY();
 		}));
 		
 		self.on('remove', () => {
@@ -57,11 +57,11 @@ BigWorld.Stage = CLASS({
 		
 		let loadObjects = RAR(() => {
 
-			let startTileRow = INTEGER((-self.getY() - boundaryHeight) / tileHeight) - 1;
-			let endTileRow = INTEGER((-self.getY() + boundaryHeight) / tileHeight) + 1;
+			let startTileRow = INTEGER((-self.getY() / self.getScaleY() - boundaryHeight) / tileHeight) - 1;
+			let endTileRow = INTEGER((-self.getY() / self.getScaleY() + boundaryHeight) / tileHeight) + 1;
 			
-			let startTileCol = INTEGER((-self.getX() - boundaryWidth) / tileWidth) - 1;
-			let endTileCol = INTEGER((-self.getX() + boundaryWidth) / tileWidth) + 1;
+			let startTileCol = INTEGER((-self.getX() / self.getScaleX() - boundaryWidth) / tileWidth) - 1;
+			let endTileCol = INTEGER((-self.getX() / self.getScaleX() + boundaryWidth) / tileWidth) + 1;
 			
 			let tileRangeMap = {};
 			

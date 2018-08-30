@@ -14,8 +14,28 @@ BigWorld.StageModel = OBJECT({
 			
 			name : {
 				notEmpty : true,
-				size : {
-					max : 255
+				data : true,
+				detail : {
+					en : {
+						size : {
+							max : 255
+						}
+					},
+					ko : {
+						size : {
+							max : 255
+						}
+					},
+					ja : {
+						size : {
+							max : 255
+						}
+					},
+					'zh-TW' : {
+						size : {
+							max : 255
+						}
+					}
 				}
 			}
 		};

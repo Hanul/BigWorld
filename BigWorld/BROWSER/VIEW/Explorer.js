@@ -14,6 +14,7 @@ BigWorld.Explorer = CLASS({
 		
 		let subFoldersWatchingRoom;
 		let stagesWatchingRoom;
+		let tilesWatchingRoom;
 		let objectsWatchingRoom;
 		let itemsWatchingRoom;
 		
@@ -144,6 +145,68 @@ BigWorld.Explorer = CLASS({
 										let isNotValid = false;
 										
 										BigWorld.StageModel.create(data, {
+											notValid : (validErrors) => {
+												form.showErrors(validErrors);
+												isNotValid = true;
+											},
+											success : (r) => {
+												console.log(r);
+											}
+										});
+										
+										if (isNotValid === true) {
+											return false;
+										}
+									});
+									
+									firstInput.focus();
+								}
+							}
+						}), SkyDesktop.ToolbarButton({
+							icon : IMG({
+								src : BigWorld.R('explorer/menu/tile.png')
+							}),
+							title : '새 타일',
+							on : {
+								tap : () => {
+									
+									let form;
+									let firstInput;
+									SkyDesktop.Confirm({
+										okButtonTitle : '생성',
+										msg : form = UUI.VALID_FORM({
+											errorMsgs : {
+												name : {
+													notEmpty : '저장할 타일명을 입력해주세요.'
+												},
+												'name.ko' : {
+													size : (validParams) => {
+														return '최대 ' + validParams.max + '글자입니다.';
+													}
+												}
+											},
+											errorMsgStyle : {
+												color : 'red'
+											},
+											c : [firstInput = INPUT({
+												style : {
+													width : 222,
+													padding : 8,
+													border : '1px solid #999',
+													borderRadius : 4
+												},
+												name : 'name.ko',
+												placeholder : '타일명 (한국어)'
+											})]
+										})
+									}, () => {
+										
+										let data = form.getData();
+										data.folderId = nowFolderId;
+										
+										let isNotValid = false;
+										
+										BigWorld.TileModel.create(data, {
 											notValid : (validErrors) => {
 												form.showErrors(validErrors);
 												isNotValid = true;
@@ -787,6 +850,11 @@ BigWorld.Explorer = CLASS({
 				stagesWatchingRoom = undefined;
 			}
 			
+			if (tilesWatchingRoom !== undefined) {
+				tilesWatchingRoom.exit();
+				tilesWatchingRoom = undefined;
+			}
+			
 			if (objectsWatchingRoom !== undefined) {
 				objectsWatchingRoom.exit();
 				objectsWatchingRoom = undefined;
@@ -1187,6 +1255,151 @@ BigWorld.Explorer = CLASS({
 			(next) => {
 				return () => {
 					
+					// 타일들을 불러옵니다.
+					tilesWatchingRoom = BigWorld.TileModel.onNewAndFindWatching({
+						properties : {
+							folderId : nowFolderId === undefined ? TO_DELETE : nowFolderId
+						},
+						sort : {
+							createTime : 1
+						}
+					}, {
+						handler : (tileData, addUpdateHandler, addRemoveHandler) => {
+							
+							let item;
+							fileList.append(item = UUI.BUTTON({
+								style : {
+									flt : 'left',
+									padding : 10,
+									height : 120
+								},
+								icon : IMG({
+									src : BigWorld.R('explorer/factor/tile.png'),
+									on : {
+										touchstart : (e) => {
+											e.stopDefault();
+										}
+									}
+								}),
+								title : MSG(tileData.name) === undefined ? 'Unknown' : MSG(tileData.name),
+								href : BigWorld.HREF('tile/' + tileData.id),
+								target : '_blank',
+								on : {
+									touchstart : (e) => {
+										
+										draggingInfo = {
+											type : 'tile',
+											id : tileData.id,
+											title : MSG(tileData.name) === undefined ? 'Unknown' : MSG(tileData.name)
+										};
+										
+										startDraggingLeft = e.getLeft();
+										startDraggingTop = e.getTop();
+									},
+									contextmenu : (e) => {
+										
+										let contextMenu = SkyDesktop.ContextMenu({
+											e : e,
+											c : [SkyDesktop.ContextMenuItem({
+												title : '이름 변경',
+												icon : IMG({
+													src : BigWorld.R('objecteditor/menu/edit.png')
+												}),
+												on : {
+													tap : () => {
+														
+														let form;
+														
+														SkyDesktop.Confirm({
+															okButtonTitle : '저장',
+															msg : form = FORM({
+																c : [INPUT({
+																	style : {
+																		width : 222,
+																		padding : 8,
+																		border : '1px solid #999',
+																		borderRadius : 4
+																	},
+																	name : 'name.ko',
+																	placeholder : '타일명 (한국어)'
+																})]
+															})
+														}, () => {
+															
+															let loadingBar = SkyDesktop.LoadingBar('lime');
+															
+															let isValid = true;
+															BigWorld.TileModel.update({
+																id : tileData.id,
+																name : form.getData().name
+															}, {
+																notValid : (validErrors) => {
+																	loadingBar.done();
+																	
+																	SkyDesktop.Alert({
+																		msg : '검증에 실패하였습니다. 값에 오류가 없는지 확인해주시기 바랍니다.'
+																	});
+																	isValid = false;
+																},
+																success : () => {
+																	loadingBar.done();
+																}
+															});
+															
+															return isValid;
+														});
+														
+														form.setData(tileData);
+														
+														contextMenu.remove();
+													}
+												}
+											}), SkyDesktop.ContextMenuItem({
+												title : '삭제',
+												icon : IMG({
+													src : BigWorld.R('objecteditor/menu/delete.png')
+												}),
+												on : {
+													tap : () => {
+														
+														SkyDesktop.Confirm({
+															msg : '정말 삭제하시겠습니까?'
+														}, () => {
+															
+															let loadingBar = SkyDesktop.LoadingBar('lime');
+															
+															BigWorld.TileModel.remove(tileData.id, () => {
+																loadingBar.done();
+															});
+														});
+														
+														contextMenu.remove();
+													}
+												}
+											})]
+										});
+										
+										e.stop();
+									}
+								}
+							}));
+							
+							addUpdateHandler((newTileData) => {
+								item.setTitle(MSG(newTileData.name) === undefined ? 'Unknown' : MSG(newTileData.name));
+							});
+							
+							addRemoveHandler(() => {
+								item.remove();
+							});
+						},
+						success : next
+					});
+				};
+			},
+			
+			(next) => {
+				return () => {
+					
 					// 객체들을 불러옵니다.
 					objectsWatchingRoom = BigWorld.ObjectModel.onNewAndFindWatching({
 						properties : {
@@ -1522,6 +1735,11 @@ BigWorld.Explorer = CLASS({
 			if (stagesWatchingRoom !== undefined) {
 				stagesWatchingRoom.exit();
 				stagesWatchingRoom = undefined;
+			}
+			
+			if (tilesWatchingRoom !== undefined) {
+				tilesWatchingRoom.exit();
+				tilesWatchingRoom = undefined;
 			}
 			
 			if (objectsWatchingRoom !== undefined) {

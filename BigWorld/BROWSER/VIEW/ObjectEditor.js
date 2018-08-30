@@ -1351,6 +1351,7 @@ BigWorld.ObjectEditor = CLASS({
 												let kinds = objectData.kinds;
 												if (kinds === undefined) {
 													kinds = [];
+													objectData.kinds = kinds;
 												}
 												
 												let kindData = form.getData();

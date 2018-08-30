@@ -13,6 +13,11 @@ BigWorld.MAIN = METHOD({
 		});
 		
 		BigWorld.MATCH_VIEW({
+			uri : 'tile/{tileId}',
+			target : BigWorld.TileEditor
+		});
+		
+		BigWorld.MATCH_VIEW({
 			uri : 'object/{objectId}',
 			target : BigWorld.ObjectEditor
 		});

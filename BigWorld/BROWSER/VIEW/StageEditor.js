@@ -27,6 +27,7 @@ BigWorld.StageEditor = CLASS({
 		let stage;
 		let objectMenu;
 		let selectedObject;
+		let selectedTile;
 		
 		let wrapper;
 		let touchstartEvent;
@@ -88,7 +89,7 @@ BigWorld.StageEditor = CLASS({
 					
 				}).appendTo(SkyEngine.Screen);
 				
-				let deselectObject = () => {
+				let deselect = () => {
 					
 					if (touchmoveEvent !== undefined) {
 						touchmoveEvent.remove();
@@ -103,6 +104,11 @@ BigWorld.StageEditor = CLASS({
 					if (selectedObject !== undefined) {
 						selectedObject.remove();
 						selectedObject = undefined;
+					}
+					
+					if (selectedTile !== undefined) {
+						selectedTile.remove();
+						selectedTile = undefined;
 					}
 					
 					kindList.empty();
@@ -176,7 +182,7 @@ BigWorld.StageEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								deselectObject();
+								deselect();
 								
 								BigWorld.CreateSelectObjectPopup((objectData, left, top) => {
 									
@@ -360,6 +366,89 @@ BigWorld.StageEditor = CLASS({
 						}
 					}),
 					
+					UUI.BUTTON_H({
+						style : {
+							marginTop : 10
+						},
+						icon : IMG({
+							src : BigWorld.R('stageeditor/tile.png')
+						}),
+						spacing : 10,
+						title : '타일 선택',
+						on : {
+							tap : () => {
+								
+								deselect();
+								
+								BigWorld.CreateSelectTilePopup((tileData, left, top) => {
+									
+									let state;
+									EACH(tileData.states, (stateData, _state) => {
+										state = _state;
+									});
+									
+									selectedTile = BigWorld.Tile({
+										x : (left - WIN_WIDTH() / 2) / SkyEngine.Screen.getRatio() - stage.getX(),
+										y : (top - WIN_HEIGHT() / 2) / SkyEngine.Screen.getRatio() - stage.getY(),
+										tileData : tileData,
+										kind : 0,
+										state : state
+									}).appendTo(stage);
+									
+									touchmoveEvent = EVENT('touchmove', (e) => {
+										selectedTile.setX((e.getLeft() - WIN_WIDTH() / 2) / SkyEngine.Screen.getRatio() - stage.getX());
+										selectedTile.setY((e.getTop() - WIN_HEIGHT() / 2) / SkyEngine.Screen.getRatio() - stage.getY());
+									});
+									
+									tapEvent = EVENT('tap', (e) => {
+										
+										let tileRow = INTEGER(selectedTile.getY() < 0 ? selectedTile.getY() / tileHeight - 0.5 : selectedTile.getY() / tileHeight + 0.5);
+										let tileCol = INTEGER(selectedTile.getX() < 0 ? selectedTile.getX() / tileWidth - 0.5 : selectedTile.getX() / tileWidth + 0.5);
+										
+										let sectionRow = INTEGER(selectedTile.getY() < 0 ? selectedTile.getY() / CONFIG.BigWorld.sectionHeight - 0.5 : selectedTile.getY() / CONFIG.BigWorld.sectionHeight + 0.5);
+										let sectionCol = INTEGER(selectedTile.getX() < 0 ? selectedTile.getX() / CONFIG.BigWorld.sectionWidth - 0.5 : selectedTile.getX() / CONFIG.BigWorld.sectionWidth + 0.5);
+										
+										sectionRow -= tileRow * CONFIG.BigWorld.tileSectionLevel;
+										sectionCol -= tileCol * CONFIG.BigWorld.tileSectionLevel;
+										
+										BigWorld.StageTileModel.create({
+											stageId : stageData.id,
+											tileId : tileData.id,
+											kind : selectedTile.getKind(),
+											tileRow : tileRow,
+											tileCol : tileCol
+										});
+									});
+									
+									kindList.empty();
+									stateList.empty();
+									itemList.empty();
+									
+									// 종류들을 불러옵니다.
+									EACH(tileData.kinds, (kindData, kind) => {
+										
+										itemList.append(UUI.BUTTON_H({
+											style : {
+												marginTop : 10
+											},
+											icon : IMG({
+												src : BigWorld.R('stageeditor/kind.png')
+											}),
+											spacing : 10,
+											title : MSG(kindData.name),
+											on : {
+												tap : (e) => {
+													selectedTile.changeKind(kind);
+													e.stop();
+												}
+											}
+										}));
+									});
+								});
+							}
+						}
+					}),
+					
 					kindList = DIV(),
 					stateList = DIV(),
 					itemList = DIV()]
@@ -400,7 +489,7 @@ BigWorld.StageEditor = CLASS({
 							objectMenu = undefined;
 						}
 						
-						deselectObject();
+						deselect();
 					}
 				});
 			});

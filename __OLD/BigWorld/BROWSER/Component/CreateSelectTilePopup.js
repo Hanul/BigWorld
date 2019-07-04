@@ -1,4 +1,4 @@
-BigWorld.CreateSelectObjectPopup = METHOD({
+BigWorld.CreateSelectTilePopup = METHOD({
 	
 	run : (callback) => {
 		//REQUIRED: callback
@@ -6,7 +6,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 		let folderOpenedStore = BigWorld.STORE('folderOpenedStore');
 		
 		let selectedItem;
-		let selectedObjectData;
+		let selectedTileData;
 		
 		let rootList;
 		let filenameInput;
@@ -30,7 +30,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 				style : {
 					fontWeight : 'bold'
 				},
-				c : '스테이지에 놓을 객체를 선택해주세요.'
+				c : '스테이지에 놓을 타일을 선택해주세요.'
 			}), SkyDesktop.FileTree({
 				style : {
 					border : '1px solid #999',
@@ -79,16 +79,16 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 							item.select();
 							selectedItem = item;
 							
-							selectedObjectData = undefined;
+							selectedTileData = undefined;
 						}
 					}
 				})
 			})]
 		}, (left, top) => {
-			if (selectedObjectData === undefined) {
+			if (selectedTileData === undefined) {
 				return false;
 			} else {
-				callback(selectedObjectData, left, top);
+				callback(selectedTileData, left, top);
 			}
 		});
 		
@@ -97,7 +97,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 			let list = folderId === undefined ? rootList : parentList;
 			
 			// 폴더들을 불러옵니다.
-			let foldersWatchingRoom = BigWorld.FolderModel.onNewAndFindWatching({
+			let exitFoldersWatchingRoom = BigWorld.FolderModel.onNewAndFindWatching({
 				properties : {
 					folderId : folderId === undefined ? TO_DELETE : folderId
 				},
@@ -142,7 +142,7 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 								item.select();
 								selectedItem = item;
 								
-								selectedObjectData = undefined;
+								selectedTileData = undefined;
 							}
 						}
 					})
@@ -161,61 +161,59 @@ BigWorld.CreateSelectObjectPopup = METHOD({
 				addRemoveHandler(() => {
 					list.removeItem(folderData.id);
 				});
+			});
+			
+			list.on('remove', () => {
+				exitFoldersWatchingRoom();
+			});
+			
+			// 타일들을 불러옵니다.
+			let exitTilesWatchingRoom = BigWorld.TileModel.onNewAndFindWatching({
+				properties : {
+					folderId : folderId === undefined ? TO_DELETE : folderId
+				},
+				sort : {
+					createTime : 1
+				}
+			}, (tileData, addUpdateHandler, addRemoveHandler) => {
 				
-				// 객체들을 불러옵니다.
-				let objectsWatchingRoom = BigWorld.ObjectModel.onNewAndFindWatching({
-					properties : {
-						folderId : folderId === undefined ? TO_DELETE : folderId
-					},
-					sort : {
-						createTime : 1
-					}
-				}, (objectData, addUpdateHandler, addRemoveHandler) => {
-					
-					let item;
-					list.addItem({
-						key : objectData.id,
-						item : item = SkyDesktop.File({
-							style : {
-								cursor : 'pointer'
-							},
-							icon : IMG({
-								src : BigWorld.R('explorer/object.png')
-							}),
-							title : MSG(objectData.name),
-							on : {
-								tap : () => {
-									
-									if (selectedItem !== undefined) {
-										selectedItem.deselect();
-									}
-									item.select();
-									selectedItem = item;
-									
-									selectedObjectData = objectData;
+				let item;
+				list.addItem({
+					key : tileData.id,
+					item : item = SkyDesktop.File({
+						style : {
+							cursor : 'pointer'
+						},
+						icon : IMG({
+							src : BigWorld.R('explorer/tile.png')
+						}),
+						title : MSG(tileData.name),
+						on : {
+							tap : () => {
+								
+								if (selectedItem !== undefined) {
+									selectedItem.deselect();
 								}
+								item.select();
+								selectedItem = item;
+								
+								selectedTileData = tileData;
 							}
-						})
-					});
-					
-					addUpdateHandler((newObjectData) => {
-						item.setTitle(MSG(newObjectData.name));
-					});
-					
-					addRemoveHandler(() => {
-						item.remove();
-					});
+						}
+					})
 				});
 				
-				list.on('remove', () => {
-					objectsWatchingRoom.exit();
-					objectsWatchingRoom = undefined;
+				addUpdateHandler((newTileData) => {
+					item.setTitle(MSG(newTileData.name));
+				});
+				
+				addRemoveHandler(() => {
+					item.remove();
 				});
 			});
 			
 			list.on('remove', () => {
-				foldersWatchingRoom.exit();
-				foldersWatchingRoom = undefined;
+				exitTilesWatchingRoom();
 			});
 		};
 		

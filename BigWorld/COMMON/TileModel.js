@@ -12,12 +12,6 @@ BigWorld.TileModel = OBJECT({
 				id : true
 			},
 			
-			category : {
-				size : {
-					max : 255
-				}
-			},
-			
 			name : {
 				notEmpty : true,
 				data : true,
@@ -45,22 +39,32 @@ BigWorld.TileModel = OBJECT({
 				}
 			},
 			
-			// 섹션 맵
 			sectionMap : {
 				notEmpty : true,
+				
+				// row
 				array : true,
 				element : {
+					
+					// col
 					array : true,
 					element : {
+						
 						data : true,
 						detail : {
+							
+							// 섹션의 높이
 							z : {
 								notEmpty : true,
 								integer : true
 							},
+							
+							// 섹션이 지나갈 수 없는 부분인지
 							isBlock : {
 								bool : true
 							},
+							
+							// 섹션 위에 올라서면 특정 액션을 실행하는 트리거인지
 							isTrigger : {
 								bool : true
 							}
@@ -69,12 +73,15 @@ BigWorld.TileModel = OBJECT({
 				}
 			},
 			
-			// 종류
 			kinds : {
+				
 				array : true,
 				element : {
+					
 					data : true,
 					detail : {
+						
+						// 종류 이름
 						name : {
 							notEmpty : true,
 							data : true,
@@ -105,21 +112,26 @@ BigWorld.TileModel = OBJECT({
 				}
 			},
 			
-			// 상태
 			states : {
+				
 				data : true,
 				property : {
+					
 					data : true,
 					detail : {
-						// 상태 별 파트
+						
+						// 상태별 파트
 						parts : {
+							
 							array : true,
 							element : {
+								
 								data : true,
 								detail : {
 									
-									// 파트의 이름
+									// 파트 이름
 									name : {
+										notEmpty : true,
 										data : true,
 										detail : {
 											en : {
@@ -145,12 +157,14 @@ BigWorld.TileModel = OBJECT({
 										}
 									},
 									
-									// 파트의 Z Index
+									// 파트의 표기 순서
 									zIndex : {
+										notEmpty : true,
 										integer : true
 									},
 									
 									frameCount : {
+										notEmpty : true,
 										integer : true
 									},
 									
@@ -159,11 +173,13 @@ BigWorld.TileModel = OBJECT({
 									},
 									
 									x : {
-										real : true
+										notEmpty : true,
+										integer : true
 									},
 									
 									y : {
-										real : true
+										notEmpty : true,
+										integer : true
 									},
 									
 									// 종류별 프레임 이미지들
@@ -172,17 +188,18 @@ BigWorld.TileModel = OBJECT({
 										element : {
 											data : true,
 											detail : {
-												// 방향 별 이미지들
-												left : {
+												
+												// 방향별 이미지들
+												downImageId : {
 													id : true
 												},
-												up : {
+												leftImageId : {
 													id : true
 												},
-												right : {
+												upImageId : {
 													id : true
 												},
-												down : {
+												rightImageId : {
 													id : true
 												}
 											}
@@ -211,20 +228,20 @@ BigWorld.TileModel = OBJECT({
 			name : 'Tile',
 			initData : {
 				states : {
-					full : {},
-					empty : {},
-					left : {},
-					top : {},
-					right : {},
-					bottom : {},
-					leftTop : {},
-					topRight : {},
-					rightBottom : {},
-					bottomLeft : {},
-					noLeft : {},
-					noTop : {},
-					noRight : {},
-					noBottom : {}
+					emptyEdge : {},
+					leftEdge : {},
+					topEdge : {},
+					rightEdge : {},
+					bottomEdge : {},
+					leftTopEdge : {},
+					topRightEdge : {},
+					rightBottomEdge : {},
+					bottomLeftEdge : {},
+					noRightEdge : {},
+					noBottomEdge : {},
+					noLeftEdge : {},
+					noTopEdge : {},
+					fullEdge : {}
 				},
 				sectionMap : initSectionMap
 			},

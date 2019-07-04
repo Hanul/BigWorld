@@ -8,6 +8,7 @@ BigWorld.FolderModel = OBJECT({
 
 		let validDataSet = {
 			
+			// 부모 폴더 ID
 			folderId : {
 				id : true
 			},
@@ -19,7 +20,7 @@ BigWorld.FolderModel = OBJECT({
 				}
 			},
 			
-			factorCount : {
+			elementCount : {
 				notEmpty : true,
 				integer : 0
 			}
@@ -28,7 +29,7 @@ BigWorld.FolderModel = OBJECT({
 		return {
 			name : 'Folder',
 			initData : {
-				factorCount : 0
+				elementCount : 0
 			},
 			methodConfig : {
 				create : {

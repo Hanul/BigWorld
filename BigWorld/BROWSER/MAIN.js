@@ -3,13 +3,13 @@ BigWorld.MAIN = METHOD({
 	run : (params) => {
 		
 		BigWorld.MATCH_VIEW({
-			uri : ['explorer', 'explorer/{folderId}'],
+			uri : ['', 'folder/{folderId}'],
 			target : BigWorld.Explorer
 		});
 		
 		BigWorld.MATCH_VIEW({
-			uri : 'stage/{stageId}',
-			target : BigWorld.StageEditor
+			uri : 'map/{mapId}',
+			target : BigWorld.MapEditor
 		});
 		
 		BigWorld.MATCH_VIEW({

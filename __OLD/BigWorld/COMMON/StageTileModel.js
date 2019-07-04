@@ -13,7 +13,7 @@ BigWorld.StageTileModel = OBJECT({
 				id : true
 			},
 			
-			objectId : {
+			tileId : {
 				notEmpty : true,
 				id : true
 			},

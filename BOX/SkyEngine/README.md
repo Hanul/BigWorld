@@ -120,14 +120,14 @@ SkyEngine의 모든 구성요소는 노드를 확장합니다.
 ### [`SkyEngine.Interval`](DOC/Interval.md)
 주어진 초 마다 함수를 반복해서 실행하는 클래스
 
-### [`SkyEngine.CreateGradient`](DOC/CreateGradient.md)
-그라디언트 색상을 만들어주는 메소드
-
 ### [`SkyEngine.TextBorderShadow`](DOC/TextBorderShadow.md)
 `textShadow` 스타일을 이용해 글자의 테두리를 만들어주는 메소드
 
 ### [`SkyEngine.BGM`](DOC/BGM.md)
 [UPPERCASE의 SOUND 기능](https://github.com/Hanul/UPPERCASE/blob/master/DOC/GUIDE/UPPERCASE-CORE-BROWSER.md#sound)을 게임의 배경음악 재생에 어울리도록 확장한 클래스
+
+### [`SkyEngine.LoadTexture`](DOC/LoadTexture.md)
+텍스쳐를 불러오는 메소드
 
 ## UPPERCASE의 기능 중 게임에서 사용할 만한 것들
 * [사운드 재생](https://github.com/Hanul/UPPERCASE/blob/master/DOC/GUIDE/UPPERCASE-CORE-BROWSER.md#sound)
@@ -139,6 +139,7 @@ SkyEngine의 모든 구성요소는 노드를 확장합니다.
 * [샘플 프로젝트](DOC/Samples.md)
 * [UI 개발](DOC/UI.md)
 * [API 문서](API/README.md)
+* [최적화를 위한 안내 사항](DOC/Optimization.md)
 
 ## 포럼
 [SkyEngine 포럼](https://forum.inos.io/skyengine)

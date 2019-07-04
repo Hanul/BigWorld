@@ -115,9 +115,17 @@ BigWorld.Explorer = CLASS({
 			parentFolder.on('close', closeParentFolderHandler = () => {
 				
 				exitFoldersWatchingRoom();
+				exitFoldersWatchingRoom = undefined;
 				
 				parentFolder.removeAllItems();
 				parentFolder.off('close', closeParentFolderHandler);
+			});
+			
+			parentFolder.on('remove', () => {
+				if (exitFoldersWatchingRoom !== undefined) {
+					exitFoldersWatchingRoom();
+					exitFoldersWatchingRoom = undefined;
+				}
 			});
 		};
 		
@@ -239,7 +247,11 @@ BigWorld.Explorer = CLASS({
 			
 			// moveElementHandler
 			() => {
-				//TODO:
+				BigWorld.SelectFolderPopup((folderData) => {
+					//TODO:
+					
+					console.log(folderData);
+				});
 			},
 			
 			// removeElementHandler

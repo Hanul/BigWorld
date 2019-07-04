@@ -25,7 +25,12 @@ BigWorld.ValidPrompt = METHOD({
 			okButtonTitle : okButtonTitle,
 			msg : [
 			
-			title,
+			H2({
+				style : {
+					fontWeight : 'bold'
+				},
+				c : title
+			}),
 			
 			isToSelectObject === true ? UUI.BUTTON_H({
 				style : {
@@ -40,8 +45,14 @@ BigWorld.ValidPrompt = METHOD({
 				spacing : 10,
 				title : '대상 오브젝트 선택',
 				on : {
-					tap : () => {
-						//TODO:
+					tap : (e, button) => {
+						
+						BigWorld.SelectObjectPopup((objectId, objectName) => {
+							
+							selectedObjectId = objectId;
+							
+							button.setTitle(objectName);
+						});
 					}
 				}
 			}) : undefined,

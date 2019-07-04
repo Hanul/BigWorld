@@ -8,8 +8,7 @@ BigWorld.ExplorerElement = CLASS({
 		return {
 			style : {
 				flt : 'left',
-				padding : 10,
-				paddingTop : 0
+				padding : 10
 			}
 		};
 	},

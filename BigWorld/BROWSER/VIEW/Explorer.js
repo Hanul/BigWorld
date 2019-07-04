@@ -19,6 +19,9 @@ BigWorld.Explorer = CLASS({
 		
 		let exitElementsWatchingRooms = [];
 		
+		let draggingElement;
+		let draggingElementInfo;
+		
 		// 특정 폴더의 하위 폴더들을 불러옵니다.
 		let loadSubFolders = (parentFolder, parentFolderId) => {
 			
@@ -71,6 +74,30 @@ BigWorld.Explorer = CLASS({
 									selectedFolder = subFolder;
 									
 									BigWorld.GO('folder/' + subFolderData.id);
+								},
+								
+								// 드래그를 시작합니다.
+								touchstart : (e) => {
+									
+									draggingElementInfo = {
+										type : 'folder',
+										id : subFolderData.id,
+										name : subFolderData.name,
+										startLeft : e.getLeft(),
+										startTop : e.getTop()
+									};
+								},
+								
+								// 드래그중인 요소를 이 폴더로 옮깁니다.
+								touchend : () => {
+									if (draggingElementInfo !== undefined && draggingElementInfo.id !== subFolderData.id) {
+										moveElement(draggingElementInfo.type, draggingElementInfo.id, subFolderData.id);
+									}
+								},
+								
+								// 컨텍스트 메뉴를 엽니다.
+								contextmenu : (e) => {
+									openFolderContexteMenu(e, subFolderData);
 								}
 							}
 						})
@@ -91,6 +118,133 @@ BigWorld.Explorer = CLASS({
 				
 				parentFolder.removeAllItems();
 				parentFolder.off('close', closeParentFolderHandler);
+			});
+		};
+		
+		// 특정 요소를 다른 폴더로 옮깁니다.
+		let moveElement = (type, elementId, folderId) => {
+			
+			let loadingBar = SkyDesktop.LoadingBar('lime');
+			
+			// 폴더 이동
+			if (type === 'folder') {
+				BigWorld.FolderModel.update({
+					id : elementId,
+					folderId : folderId
+				}, () => {
+					loadingBar.done();
+				});
+			}
+			
+			// 맵 이동
+			else if (type === 'map') {
+				BigWorld.MapModel.update({
+					id : elementId,
+					folderId : folderId
+				}, () => {
+					loadingBar.done();
+				});
+			}
+			
+			// 타일 이동
+			else if (type === 'tile') {
+				BigWorld.TileModel.update({
+					id : elementId,
+					folderId : folderId
+				}, () => {
+					loadingBar.done();
+				});
+			}
+			
+			// 객체 이동
+			else if (type === 'object') {
+				BigWorld.ObjectModel.update({
+					id : elementId,
+					folderId : folderId
+				}, () => {
+					loadingBar.done();
+				});
+			}
+			
+			// 아이템 이동
+			else if (type === 'item') {
+				BigWorld.ItemModel.update({
+					id : elementId,
+					folderId : folderId
+				}, () => {
+					loadingBar.done();
+				});
+			}
+		};
+		
+		// 특정 요소의 컨텍스트 메뉴를 엽니다.
+		let openElementContextMenu = (e, changeNameHandler, moveElementHandler, removeElementHandler) => {
+			
+			let contextMenu = SkyDesktop.ContextMenu({
+				e : e,
+				c : [
+				
+				SkyDesktop.ContextMenuItem({
+					title : '이름 변경',
+					icon : IMG({
+						src : BigWorld.R('explorer/contextmenu/changename.png')
+					}),
+					on : {
+						tap : () => {
+							changeNameHandler();
+							contextMenu.remove();
+						}
+					}
+				}),
+				
+				SkyDesktop.ContextMenuItem({
+					title : '폴더 이동',
+					icon : IMG({
+						src : BigWorld.R('explorer/contextmenu/folder.png')
+					}),
+					on : {
+						tap : () => {
+							moveElementHandler();
+							contextMenu.remove();
+						}
+					}
+				}),
+				
+				SkyDesktop.ContextMenuItem({
+					title : '삭제',
+					icon : IMG({
+						src : BigWorld.R('explorer/contextmenu/remove.png')
+					}),
+					on : {
+						tap : () => {
+							removeElementHandler();
+							contextMenu.remove();
+						}
+					}
+				})]
+			});
+			
+			e.stop();
+		};
+		
+		// 폴더의 컨텍스트 메뉴를 엽니다.
+		let openFolderContexteMenu = (e, folderData) => {
+			
+			openElementContextMenu(e,
+			
+			// changeNameHandler
+			() => {
+				//TODO:
+			},
+			
+			// moveElementHandler
+			() => {
+				//TODO:
+			},
+			
+			// removeElementHandler
+			() => {
+				//TODO:
 			});
 		};
 		
@@ -126,7 +280,6 @@ BigWorld.Explorer = CLASS({
 										placeholder : '폴더 이름',
 										errorMsgs : {
 											name : {
-												notEmpty : '저장할 폴더 이름을 입력해주세요.',
 												size : (validParams) => {
 													return '최대 ' + validParams.max + '글자입니다.';
 												}
@@ -135,14 +288,21 @@ BigWorld.Explorer = CLASS({
 										okButtonTitle : '생성'
 									}, (folderName, showErrors, removePrompt) => {
 										
-										// 폴더를 생성합니다.
-										BigWorld.FolderModel.create({
-											folderId : nowFolderId,
-											name : folderName
-										}, {
-											notValid : showErrors,
-											success : removePrompt
-										});
+										if (folderName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '생성할 폴더 이름을 입력해주세요.'
+											});
+										} else {
+											
+											// 폴더를 생성합니다.
+											BigWorld.FolderModel.create({
+												folderId : nowFolderId,
+												name : folderName
+											}, {
+												notValid : showErrors,
+												success : removePrompt
+											});
+										}
 									});
 								}
 							}
@@ -156,7 +316,39 @@ BigWorld.Explorer = CLASS({
 							title : '새 맵',
 							on : {
 								tap : () => {
-									//TODO:
+									
+									BigWorld.ValidPrompt({
+										title : '맵 생성',
+										inputName : 'name.ko',
+										placeholder : '맵 이름',
+										errorMsgs : {
+											'name.ko' : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											}
+										},
+										okButtonTitle : '생성'
+									}, (mapName, showErrors, removePrompt) => {
+										
+										if (mapName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '생성할 맵 이름을 입력해주세요.'
+											});
+										} else {
+											
+											// 맵을 생성합니다.
+											BigWorld.MapModel.create({
+												folderId : nowFolderId,
+												name : {
+													ko : mapName
+												}
+											}, {
+												notValid : showErrors,
+												success : removePrompt
+											});
+										}
+									});
 								}
 							}
 						}),
@@ -169,7 +361,39 @@ BigWorld.Explorer = CLASS({
 							title : '새 타일',
 							on : {
 								tap : () => {
-									//TODO:
+									
+									BigWorld.ValidPrompt({
+										title : '타일 생성',
+										inputName : 'name.ko',
+										placeholder : '타일 이름',
+										errorMsgs : {
+											'name.ko' : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											}
+										},
+										okButtonTitle : '생성'
+									}, (tileName, showErrors, removePrompt) => {
+										
+										if (tileName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '생성할 타일 이름을 입력해주세요.'
+											});
+										} else {
+											
+											// 타일을 생성합니다.
+											BigWorld.TileModel.create({
+												folderId : nowFolderId,
+												name : {
+													ko : tileName
+												}
+											}, {
+												notValid : showErrors,
+												success : removePrompt
+											});
+										}
+									});
 								}
 							}
 						}),
@@ -182,7 +406,39 @@ BigWorld.Explorer = CLASS({
 							title : '새 오브젝트',
 							on : {
 								tap : () => {
-									//TODO:
+									
+									BigWorld.ValidPrompt({
+										title : '오브젝트 생성',
+										inputName : 'name.ko',
+										placeholder : '오브젝트 이름',
+										errorMsgs : {
+											'name.ko' : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											}
+										},
+										okButtonTitle : '생성'
+									}, (objectName, showErrors, removePrompt) => {
+										
+										if (objectName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '생성할 오브젝트 이름을 입력해주세요.'
+											});
+										} else {
+											
+											// 오브젝트를 생성합니다.
+											BigWorld.ObjectModel.create({
+												folderId : nowFolderId,
+												name : {
+													ko : objectName
+												}
+											}, {
+												notValid : showErrors,
+												success : removePrompt
+											});
+										}
+									});
 								}
 							}
 						}),
@@ -195,7 +451,44 @@ BigWorld.Explorer = CLASS({
 							title : '새 아이템',
 							on : {
 								tap : () => {
-									//TODO:
+									
+									BigWorld.ValidPrompt({
+										title : '아이템 생성',
+										inputName : 'name.ko',
+										placeholder : '아이템 이름',
+										errorMsgs : {
+											'name.ko' : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											}
+										},
+										okButtonTitle : '생성',
+										isToSelectObject : true
+									}, (objectId, itemName, showErrors, removePrompt) => {
+										
+										if (objectId === undefined) {
+											SkyDesktop.Alert({
+												msg : '아이템의 대상이 되는 오브젝트를 선택해주세요.'
+											});
+										} else if (itemName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '생성할 아이템 이름을 입력해주세요.'
+											});
+										} else {
+											
+											// 아이템을 생성합니다.
+											BigWorld.ItemModel.create({
+												folderId : nowFolderId,
+												name : {
+													ko : itemName
+												}
+											}, {
+												notValid : showErrors,
+												success : removePrompt
+											});
+										}
+									});
 								}
 							}
 						})]
@@ -336,9 +629,20 @@ BigWorld.Explorer = CLASS({
 						// 상위 폴더로 이동
 						elementList.append(BigWorld.ExplorerElement({
 							type : 'parentfolder',
-							name : '상위 폴더'
-						}, () => {
-							BigWorld.GO(nowFolderData.folderId == undefined ? '' : 'folder/' + nowFolderData.folderId);
+							name : '상위 폴더',
+							on : {
+								
+								tap : () => {
+									BigWorld.GO(nowFolderData.folderId == undefined ? '' : 'folder/' + nowFolderData.folderId);
+								},
+								
+								// 드래그중인 요소를 이 폴더로 옮깁니다.
+								touchend : () => {
+									if (draggingElementInfo !== undefined) {
+										moveElement(draggingElementInfo.type, draggingElementInfo.id, nowFolderData.folderId == undefined ? TO_DELETE : nowFolderData.folderId);
+									}
+								}
+							}
 						}));
 						
 						next();
@@ -361,9 +665,37 @@ BigWorld.Explorer = CLASS({
 							
 							elementList.append(BigWorld.ExplorerElement({
 								type : 'folder',
-								name : subFolderData.name
-							}, () => {
-								BigWorld.GO('folder/' + subFolderData.id);
+								name : subFolderData.name,
+								on : {
+									
+									tap : () => {
+										BigWorld.GO('folder/' + subFolderData.id);
+									},
+									
+									// 드래그를 시작합니다.
+									touchstart : (e) => {
+										
+										draggingElementInfo = {
+											type : 'folder',
+											id : subFolderData.id,
+											name : subFolderData.name,
+											startLeft : e.getLeft(),
+											startTop : e.getTop()
+										};
+									},
+									
+									// 드래그중인 요소를 이 폴더로 옮깁니다.
+									touchend : () => {
+										if (draggingElementInfo !== undefined && draggingElementInfo.id !== subFolderData.id) {
+											moveElement(draggingElementInfo.type, draggingElementInfo.id, subFolderData.id);
+										}
+									},
+									
+									// 컨텍스트 메뉴를 엽니다.
+									contextmenu : (e) => {
+										openFolderContexteMenu(e, subFolderData);
+									}
+								}
 							}));
 						},
 						success : next
@@ -384,7 +716,49 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (mapData, addUpdateHandler, addRemoveHandler) => {
 							
-							//TODO:
+							elementList.append(BigWorld.ExplorerElement({
+								type : 'map',
+								name : MSG(mapData.name),
+								on : {
+									
+									tap : () => {
+										BigWorld.GO_NEW_WIN('map/' + mapData.id);
+									},
+									
+									// 드래그를 시작합니다.
+									touchstart : (e) => {
+										
+										draggingElementInfo = {
+											type : 'map',
+											id : mapData.id,
+											name : MSG(mapData.name),
+											startLeft : e.getLeft(),
+											startTop : e.getTop()
+										};
+									},
+									
+									// 컨텍스트 메뉴를 엽니다.
+									contextmenu : (e) => {
+										
+										openElementContextMenu(e,
+										
+										// changeNameHandler
+										() => {
+											//TODO:
+										},
+										
+										// moveElementHandler
+										() => {
+											//TODO:
+										},
+										
+										// removeElementHandler
+										() => {
+											//TODO:
+										});
+									}
+								}
+							}));
 						},
 						success : next
 					}));
@@ -404,7 +778,49 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (tileData, addUpdateHandler, addRemoveHandler) => {
 							
-							//TODO:
+							elementList.append(BigWorld.ExplorerElement({
+								type : 'tile',
+								name : MSG(tileData.name),
+								on : {
+									
+									tap : () => {
+										BigWorld.GO_NEW_WIN('tile/' + tileData.id);
+									},
+									
+									// 드래그를 시작합니다.
+									touchstart : (e) => {
+										
+										draggingElementInfo = {
+											type : 'tile',
+											id : tileData.id,
+											name : MSG(tileData.name),
+											startLeft : e.getLeft(),
+											startTop : e.getTop()
+										};
+									},
+									
+									// 컨텍스트 메뉴를 엽니다.
+									contextmenu : (e) => {
+										
+										openElementContextMenu(e,
+										
+										// changeNameHandler
+										() => {
+											//TODO:
+										},
+										
+										// moveElementHandler
+										() => {
+											//TODO:
+										},
+										
+										// removeElementHandler
+										() => {
+											//TODO:
+										});
+									}
+								}
+							}));
 						},
 						success : next
 					}));
@@ -424,7 +840,49 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (objectData, addUpdateHandler, addRemoveHandler) => {
 							
-							//TODO:
+							elementList.append(BigWorld.ExplorerElement({
+								type : 'object',
+								name : MSG(objectData.name),
+								on : {
+									
+									tap : () => {
+										BigWorld.GO_NEW_WIN('object/' + objectData.id);
+									},
+									
+									// 드래그를 시작합니다.
+									touchstart : (e) => {
+										
+										draggingElementInfo = {
+											type : 'object',
+											id : objectData.id,
+											name : MSG(objectData.name),
+											startLeft : e.getLeft(),
+											startTop : e.getTop()
+										};
+									},
+									
+									// 컨텍스트 메뉴를 엽니다.
+									contextmenu : (e) => {
+										
+										openElementContextMenu(e,
+										
+										// changeNameHandler
+										() => {
+											//TODO:
+										},
+										
+										// moveElementHandler
+										() => {
+											//TODO:
+										},
+										
+										// removeElementHandler
+										() => {
+											//TODO:
+										});
+									}
+								}
+							}));
 						},
 						success : next
 					}));
@@ -444,7 +902,49 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (itemData, addUpdateHandler, addRemoveHandler) => {
 							
-							//TODO:
+							elementList.append(BigWorld.ExplorerElement({
+								type : 'item',
+								name : MSG(itemData.name),
+								on : {
+									
+									tap : () => {
+										BigWorld.GO_NEW_WIN('item/' + itemData.id);
+									},
+									
+									// 드래그를 시작합니다.
+									touchstart : (e) => {
+										
+										draggingElementInfo = {
+											type : 'item',
+											id : itemData.id,
+											name : MSG(itemData.name),
+											startLeft : e.getLeft(),
+											startTop : e.getTop()
+										};
+									},
+									
+									// 컨텍스트 메뉴를 엽니다.
+									contextmenu : (e) => {
+										
+										openElementContextMenu(e,
+										
+										// changeNameHandler
+										() => {
+											//TODO:
+										},
+										
+										// moveElementHandler
+										() => {
+											//TODO:
+										},
+										
+										// removeElementHandler
+										() => {
+											//TODO:
+										});
+									}
+								}
+							}));
 						},
 						success : next
 					}));
@@ -452,8 +952,57 @@ BigWorld.Explorer = CLASS({
 			}]);
 		});
 		
+		// 요소 드래그
+		let touchmoveEvent = EVENT('touchmove', (e) => {
+			
+			if (draggingElement === undefined) {
+				
+				if (
+				draggingElementInfo !== undefined && (
+					Math.abs(draggingElementInfo.startLeft - e.getLeft()) > 5 ||
+					Math.abs(draggingElementInfo.startTop - e.getTop()) > 5)
+				) {
+					draggingElement = DIV({
+						style : {
+							position : 'fixed',
+							left : e.getLeft() + 10,
+							top : e.getTop() + 10
+						},
+						c : draggingElementInfo.name
+					}).appendTo(BODY);
+				}
+			}
+			
+			else {
+				draggingElement.addStyle({
+					left : e.getLeft() + 10,
+					top : e.getTop() + 10
+				});
+			}
+		});
+		
+		let touchendEvent = EVENT('touchend', () => {
+			
+			if (draggingElement !== undefined) {
+				draggingElement.remove();
+				draggingElement = undefined;
+			}
+			
+			if (draggingElementInfo !== undefined) {
+				draggingElementInfo = undefined;
+			}
+		});
+		
 		inner.on('close', () => {
 			wrapper.remove();
+			
+			// 모든 요소들의 Watching 룸을 닫습니다.
+			EACH(exitElementsWatchingRooms, (exitElementsWatchingRoom) => {
+				exitElementsWatchingRoom();
+			});
+			
+			touchmoveEvent.remove();
+			touchendEvent.remove();
 		});
 	}
 });

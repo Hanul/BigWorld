@@ -235,6 +235,7 @@ BigWorld.ObjectModel = OBJECT({
 									
 									// 종류별 프레임 이미지들
 									frames : {
+										notEmpty : true,
 										array : true,
 										element : {
 											data : true,

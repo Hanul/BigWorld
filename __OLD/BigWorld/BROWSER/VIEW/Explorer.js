@@ -37,7 +37,7 @@ BigWorld.Explorer = CLASS({
 			c : [TR({
 				c : TD({
 					style : {
-						height : 28
+						height : 35
 					},
 					c : SkyDesktop.Toolbar({
 						buttons : [SkyDesktop.ToolbarButton({

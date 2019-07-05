@@ -98,6 +98,7 @@ BigWorld.ObjectModel = OBJECT({
 			},
 			
 			kinds : {
+				notEmpty : true,
 				
 				array : true,
 				element : {
@@ -137,6 +138,7 @@ BigWorld.ObjectModel = OBJECT({
 			},
 			
 			states : {
+				notEmpty : true,
 				
 				data : true,
 				property : {
@@ -146,6 +148,7 @@ BigWorld.ObjectModel = OBJECT({
 						
 						// 상태 이름
 						name : {
+							notEmpty : true,
 							data : true,
 							detail : {
 								en : {
@@ -173,6 +176,7 @@ BigWorld.ObjectModel = OBJECT({
 						
 						// 상태별 파트
 						parts : {
+							notEmpty : true,
 							
 							array : true,
 							element : {
@@ -236,6 +240,7 @@ BigWorld.ObjectModel = OBJECT({
 									// 종류별 프레임 이미지들
 									frames : {
 										notEmpty : true,
+										
 										array : true,
 										element : {
 											data : true,
@@ -278,7 +283,22 @@ BigWorld.ObjectModel = OBJECT({
 					[{
 						z : 0
 					}]
-				]
+				],
+				
+				kinds : [{
+					name : {
+						en : 'Kind 1'
+					}
+				}],
+				
+				states : {
+					state1 : {
+						name : {
+							en : 'State 1'
+						},
+						parts : []
+					}
+				}
 			},
 			methodConfig : {
 				create : {

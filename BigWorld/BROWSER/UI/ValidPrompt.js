@@ -32,17 +32,14 @@ BigWorld.ValidPrompt = METHOD({
 				c : title
 			}),
 			
-			isToSelectObject === true ? UUI.BUTTON_H({
+			isToSelectObject === true ? SkyDesktop.Button({
 				style : {
-					marginTop : 10,
-					padding : 4,
-					border : '1px solid #999',
-					borderRadius : 4
+					margin : 'auto',
+					marginTop : 10
 				},
 				icon : IMG({
 					src : BigWorld.R('explorer/menu/object.png')
 				}),
-				spacing : 10,
 				title : '대상 오브젝트 선택',
 				on : {
 					tap : (e, button) => {

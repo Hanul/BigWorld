@@ -492,6 +492,7 @@ BigWorld.Explorer = CLASS({
 											// 아이템을 생성합니다.
 											BigWorld.ItemModel.create({
 												folderId : nowFolderId,
+												objectId : objectId,
 												name : {
 													ko : itemName
 												}

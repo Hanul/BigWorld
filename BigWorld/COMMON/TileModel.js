@@ -74,6 +74,7 @@ BigWorld.TileModel = OBJECT({
 			},
 			
 			kinds : {
+				notEmpty : true,
 				
 				array : true,
 				element : {
@@ -113,6 +114,7 @@ BigWorld.TileModel = OBJECT({
 			},
 			
 			states : {
+				notEmpty : true,
 				
 				data : true,
 				property : {
@@ -122,6 +124,7 @@ BigWorld.TileModel = OBJECT({
 						
 						// 상태별 파트
 						parts : {
+							notEmpty : true,
 							
 							array : true,
 							element : {
@@ -185,6 +188,7 @@ BigWorld.TileModel = OBJECT({
 									// 종류별 프레임 이미지들
 									frames : {
 										notEmpty : true,
+										
 										array : true,
 										element : {
 											data : true,
@@ -228,23 +232,20 @@ BigWorld.TileModel = OBJECT({
 		return {
 			name : 'Tile',
 			initData : {
+				
+				sectionMap : initSectionMap,
+				
+				kinds : [{
+					name : {
+						en : 'Kind 1'
+					}
+				}],
+				
 				states : {
-					emptyEdge : {},
-					leftEdge : {},
-					topEdge : {},
-					rightEdge : {},
-					bottomEdge : {},
-					leftTopEdge : {},
-					topRightEdge : {},
-					rightBottomEdge : {},
-					bottomLeftEdge : {},
-					noRightEdge : {},
-					noBottomEdge : {},
-					noLeftEdge : {},
-					noTopEdge : {},
-					fullEdge : {}
-				},
-				sectionMap : initSectionMap
+					emptyEdge : {
+						parts : []
+					}
+				}
 			},
 			methodConfig : {
 				create : {

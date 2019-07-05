@@ -6,6 +6,7 @@ BigWorld.SelectPopup = CLASS({
 		
 		let title = params.title;
 		
+		// 폴더가 열려있는지 기록을 저장하는 스토어
 		let folderOpenedStore = BigWorld.STORE('folderOpenedStore');
 		
 		let rootFolder;

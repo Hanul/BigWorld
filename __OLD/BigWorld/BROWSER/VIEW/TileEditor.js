@@ -1163,29 +1163,7 @@ BigWorld.TileEditor = CLASS({
 											});
 										}
 									}
-								}), SkyDesktop.ToolbarButton({
-									icon : IMG({
-										src : BigWorld.R('tileeditor/menu/delete.png')
-									}),
-									title : '타일 제거',
-									on : {
-										tap : () => {
-											
-											SkyDesktop.Confirm({
-												okButtonTitle : '제거',
-												msg : '정말 제거하시겠습니까?'
-											}, () => {
-												
-												let loadingBar = SkyDesktop.LoadingBar('lime');
-												
-												BigWorld.TileModel.remove(tileData.id, () => {
-													isRemoved = true;
-													close();
-												});
-											});
-										}
-									}
-								})]
+
 							})
 						})
 					}), TR({

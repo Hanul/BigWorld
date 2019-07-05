@@ -46,6 +46,7 @@ BigWorld.ItemModel = OBJECT({
 			},
 			
 			kinds : {
+				notEmpty : true,
 				
 				array : true,
 				element : {
@@ -85,6 +86,7 @@ BigWorld.ItemModel = OBJECT({
 			},
 			
 			states : {
+				notEmpty : true,
 				
 				data : true,
 				property : {
@@ -94,6 +96,7 @@ BigWorld.ItemModel = OBJECT({
 						
 						// 상태별 파트
 						parts : {
+							notEmpty : true,
 							
 							array : true,
 							element : {
@@ -157,6 +160,7 @@ BigWorld.ItemModel = OBJECT({
 									// 종류별 프레임 이미지들
 									frames : {
 										notEmpty : true,
+										
 										array : true,
 										element : {
 											data : true,

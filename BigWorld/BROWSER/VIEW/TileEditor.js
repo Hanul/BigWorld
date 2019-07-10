@@ -20,6 +20,7 @@ BigWorld.TileEditor = CLASS({
 		let selectedKind;
 		let selectedState;
 		let editorWrapper;
+		let sectionEditor;
 		
 		let isRemoved;
 		
@@ -222,6 +223,37 @@ BigWorld.TileEditor = CLASS({
 		rootKind.open();
 		rootState.open();
 		
+		let saveTile = () => {
+			
+			if (nowTileData !== undefined) {
+				
+				let loadingBar = SkyDesktop.LoadingBar('lime');
+				
+				// 변경된 타일 데이터 저장
+				BigWorld.TileModel.update(nowTileData, {
+					
+					notValid : () => {
+						loadingBar.done();
+						
+						SkyDesktop.Alert({
+							msg : '타일을 저장할 수 없습니다. 데이터를 확인해주시기 바랍니다.'
+						});
+					},
+					
+					success : () => {
+						loadingBar.done();
+						
+						SkyDesktop.Noti('타일을 저장했습니다.');
+					}
+				});
+				
+				// 미리보기 새로고침
+				if (sectionEditor !== undefined) {
+					sectionEditor.refreshPreview();
+				}
+			}
+		};
+		
 		// 현재 선택된 종류와 상태의 내용을 수정하는 에디터를 엽니다.
 		let openEditor = () => {
 			editorWrapper.empty();
@@ -233,21 +265,30 @@ BigWorld.TileEditor = CLASS({
 				}));
 				
 				// 섹션 편집
-				editorWrapper.append(BigWorld.SectionEditor({
+				editorWrapper.append(sectionEditor = BigWorld.SectionEditor({
 					style : {
 						marginTop : 10
 					},
-					sectionMap : nowTileData.sectionMap
+					sectionMap : nowTileData.sectionMap,
+					changeDirection : (direction) => {
+						partsEditor.changeDirection(direction)
+					}
 				}));
 				
+				let partsEditor;
+				
 				// 파트 편집
-				editorWrapper.append(BigWorld.PartEditor({
+				editorWrapper.append(partsEditor = BigWorld.PartsEditor({
 					style : {
 						marginTop : 10
 					},
-					stateInfo : nowTileData.states[nowState],
-					kind : nowKind
+					stateInfos : nowTileData.states,
+					state : nowState,
+					kind : nowKind,
+					saveTile : saveTile
 				}));
+				
+				partsEditor.changeDirection(sectionEditor.getDirection());
 			}
 		};
 		

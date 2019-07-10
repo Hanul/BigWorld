@@ -252,20 +252,19 @@ BigWorld.TileEditor = CLASS({
 		};
 		
 		EACH([
-			'emptyEdge',
-			'leftEdge',
-			'topEdge',
-			'rightEdge',
-			'bottomEdge',
-			'leftTopEdge',
-			'topRightEdge',
-			'rightBottomEdge',
-			'bottomLeftEdge',
-			'noRightEdge',
-			'noBottomEdge',
-			'noLeftEdge',
-			'noTopEdge',
-			'fullEdge'
+			'center',
+			'left',
+			'leftTop',
+			'top',
+			'rightTop',
+			'right',
+			'rightBottom',
+			'bottom',
+			'leftBottom',
+			'fillLeftBottom',
+			'fillLeftTop',
+			'fillRightTop',
+			'fillRightBottom'
 		], (stateName) => {
 			
 			let state;
@@ -348,7 +347,7 @@ BigWorld.TileEditor = CLASS({
 				
 				// 맨 처음에는 첫 종류와 첫 상태를 열기
 				rootKind.getItem(0).tap();
-				rootState.getItem('emptyEdge').tap();
+				rootState.getItem('center').tap();
 			});
 		});
 		

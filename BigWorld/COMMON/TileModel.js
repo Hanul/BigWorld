@@ -242,7 +242,7 @@ BigWorld.TileModel = OBJECT({
 				}],
 				
 				states : {
-					emptyEdge : {
+					center : {
 						parts : []
 					}
 				}

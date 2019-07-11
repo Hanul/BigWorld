@@ -270,8 +270,19 @@ BigWorld.TileEditor = CLASS({
 						marginTop : 10
 					},
 					sectionMap : nowTileData.sectionMap,
+					
 					changeDirection : (direction) => {
 						partsEditor.changeDirection(direction)
+					},
+					
+					refreshPreview : (previewScreen, direction) => {
+						
+						previewScreen.append(BigWorld.Tile({
+							tileData : nowTileData,
+							kind : nowKind,
+							state : nowState,
+							direction : direction
+						}));
 					}
 				}));
 				

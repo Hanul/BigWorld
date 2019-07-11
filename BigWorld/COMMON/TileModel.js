@@ -191,23 +191,7 @@ BigWorld.TileModel = OBJECT({
 										
 										array : true,
 										element : {
-											data : true,
-											detail : {
-												
-												// 방향별 이미지들
-												downImageId : {
-													id : true
-												},
-												leftImageId : {
-													id : true
-												},
-												upImageId : {
-													id : true
-												},
-												rightImageId : {
-													id : true
-												}
-											}
+											id : true
 										}
 									}
 								}

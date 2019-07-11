@@ -282,7 +282,7 @@ BigWorld.PartEditor = CLASS({
 									partInfo.frames[kind] = {};
 								}
 								
-								partInfo.frames[kind][direction + 'ImageId'] = imageId;
+								partInfo.frames[kind] = imageId;
 								
 								saveTile();
 							}
@@ -315,7 +315,7 @@ BigWorld.PartEditor = CLASS({
 		};
 		
 		if (partInfo.frames[kind] !== undefined) {
-			setImageId(partInfo.frames[kind][direction + 'ImageId']);
+			setImageId(partInfo.frames[kind]);
 		}
 		
 		isChangeToSave = true;

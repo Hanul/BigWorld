@@ -1,423 +1,665 @@
-BigWorld.TileEditor = CLASS({
+BigWorld.TileEditor = CLASS(() => {
 	
-	preset : () => {
-		return VIEW;
-	},
+	const TILE_STATES = [
+		'center',
+		'left',
+		'leftTop',
+		'top',
+		'rightTop',
+		'right',
+		'rightBottom',
+		'bottom',
+		'leftBottom',
+		'fillLeftBottom',
+		'fillLeftTop',
+		'fillRightTop',
+		'fillRightBottom'
+	];
 	
-	init : (inner, self) => {
+	return {
 		
-		TITLE('BigWorld 타일 에디터');
+		preset : () => {
+			return VIEW;
+		},
 		
-		let tileEditorStore = BigWorld.STORE('tileEditorStore');
-		
-		let nowTileId;
-		let nowTileData;
-		let nowKind;
-		let nowState;
-		
-		let rootKind;
-		let rootState;
-		let selectedKind;
-		let selectedState;
-		let editorWrapper;
-		let sectionEditor;
-		
-		let isRemoved;
-		
-		let wrapper = TABLE({
-			style : {
-				position : 'absolute',
-				width : '100%',
-				height : '100%'
-			},
-			c : [
+		init : (inner, self) => {
 			
-			// 상단 메뉴
-			TR({
-				c : TD({
-					style : {
-						height : 28
-					},
-					c : SkyDesktop.Toolbar({
-						buttons : [
-						
-						// 종류 추가 버튼
-						SkyDesktop.ToolbarButton({
-							icon : IMG({
-								src : BigWorld.R('tileeditor/menu/kind.png')
-							}),
-							title : '종류 추가',
-							on : {
-								tap : () => {
-									
-									BigWorld.ValidPrompt({
-										title : '종류 추가',
-										inputName : 'name.ko',
-										placeholder : '종류 이름',
-										errorMsgs : {
-											'name.ko' : {
-												size : (validParams) => {
-													return '최대 ' + validParams.max + '글자입니다.';
-												}
-											}
-										},
-										okButtonTitle : '추가'
-									}, (kindName, showErrors, removePrompt) => {
-										
-										if (kindName.trim() === '') {
-											SkyDesktop.Alert({
-												msg : '추가할 종류 이름을 입력해주세요.'
-											});
-										} else {
-											
-											let kindInfo = {
-												name : {
-													ko : kindName
-												}
-											};
-											
-											// 타일을 수정합니다.
-											BigWorld.TileModel.update({
-												id : nowTileId,
-												$push : {
-													kinds : kindInfo
-												}
-											}, {
-												notValid : showErrors,
-												success : () => {
-													
-													addKind(nowTileData.kinds.length, kindInfo);
-													nowTileData.kinds.push(kindInfo);
-													
-													removePrompt();
-												}
-											});
-										}
-									});
-								}
-							}
-						}),
-						
-						// 삭제 버튼
-						SkyDesktop.ToolbarButton({
-							icon : IMG({
-								src : BigWorld.R('tileeditor/menu/remove.png')
-							}),
-							title : '타일 삭제',
-							on : {
-								tap : () => {
-									
-									SkyDesktop.Confirm({
-										msg : '타일을 삭제하시겠습니까?',
-										okButtonTitle : '삭제'
-									}, () => {
-										
-										let loadingBar = SkyDesktop.LoadingBar('lime');
-										
-										BigWorld.TileModel.remove(nowTileId, () => {
-											isRemoved = true;
-											close();
-										});
-									});
-								}
-							}
-						})]
-					})
-				})
-			}),
+			TITLE('BigWorld 타일 에디터');
 			
-			// 하단 내용
-			TR({
+			let tileEditorStore = BigWorld.STORE('tileEditorStore');
+			
+			let nowTileId;
+			let nowTileData;
+			let nowKind;
+			let nowState;
+			
+			let rootKind;
+			let rootState;
+			let selectedKind;
+			let selectedState;
+			let editorWrapper;
+			let sectionEditor;
+			
+			let isRemoved;
+			
+			let wrapper = TABLE({
 				style : {
+					position : 'absolute',
+					width : '100%',
 					height : '100%'
 				},
-				c : TD({
-					c : SkyDesktop.HorizontalTabList({
-						tabs : [
-						
-						// 종류 목록
-						SkyDesktop.Tab({
-							size : 15,
-							c : SkyDesktop.FileTree({
-								items : {
-									
-									// root 종류
-									root : rootKind = SkyDesktop.Folder({
-										style : {
-											cursor : 'pointer'
-										},
-										icon : IMG({
-											src : BigWorld.R('tileeditor/menu/kind.png')
-										}),
-										title : '종류',
-										isToNotSort : true,
-										on : {
-											
-											// 열리고 닫혀도 아이콘의 변경이 없어야 합니다.
-											open : (e, item) => {
-												item.setIcon(IMG({
-													src : BigWorld.R('tileeditor/menu/kind.png')
-												}));
+				c : [
+				
+				// 상단 메뉴
+				TR({
+					c : TD({
+						style : {
+							height : 28
+						},
+						c : SkyDesktop.Toolbar({
+							buttons : [
+							
+							// 종류 추가 버튼
+							SkyDesktop.ToolbarButton({
+								icon : IMG({
+									src : BigWorld.R('tileeditor/menu/kind.png')
+								}),
+								title : '종류 추가',
+								on : {
+									tap : () => {
+										
+										BigWorld.ValidPrompt({
+											title : '종류 추가',
+											inputName : 'name.ko',
+											placeholder : '종류 이름',
+											errorMsgs : {
+												'name.ko' : {
+													size : (validParams) => {
+														return '최대 ' + validParams.max + '글자입니다.';
+													}
+												}
 											},
-											close : (e, item) => {
-												item.setIcon(IMG({
-													src : BigWorld.R('tileeditor/menu/kind.png')
-												}));
-											}
-										}
-									})
-								}
-							})
-						}),
-						
-						// 상태 목록
-						SkyDesktop.Tab({
-							size : 15,
-							c : SkyDesktop.FileTree({
-								items : {
-									
-									// root 상태
-									root : rootState = SkyDesktop.Folder({
-										style : {
-											cursor : 'pointer'
-										},
-										icon : IMG({
-											src : BigWorld.R('tileeditor/menu/state.png')
-										}),
-										title : '상태',
-										isToNotSort : true,
-										on : {
+											okButtonTitle : '추가'
+										}, (kindName, showErrors, removePrompt) => {
 											
-											// 열리고 닫혀도 아이콘의 변경이 없어야 합니다.
-											open : (e, item) => {
-												item.setIcon(IMG({
-													src : BigWorld.R('tileeditor/menu/state.png')
-												}));
-											},
-											close : (e, item) => {
-												item.setIcon(IMG({
-													src : BigWorld.R('tileeditor/menu/state.png')
-												}));
+											if (kindName.trim() === '') {
+												SkyDesktop.Alert({
+													msg : '추가할 종류 이름을 입력해주세요.'
+												});
+											} else {
+												
+												let kindInfo = {
+													name : {
+														ko : kindName
+													}
+												};
+												
+												// 타일을 수정합니다.
+												BigWorld.TileModel.update({
+													id : nowTileId,
+													$push : {
+														kinds : kindInfo
+													}
+												}, {
+													notValid : showErrors,
+													success : () => {
+														
+														addKind(nowTileData.kinds.length, kindInfo);
+														nowTileData.kinds.push(kindInfo);
+														
+														removePrompt();
+													}
+												});
 											}
-										}
-									})
+										});
+									}
 								}
-							})
-						}),
-						
-						// 편집 뷰
-						SkyDesktop.Tab({
-							size : 70,
-							c : editorWrapper = DIV({
-								style : {
-									padding : 10
+							}),
+							
+							// 삭제 버튼
+							SkyDesktop.ToolbarButton({
+								icon : IMG({
+									src : BigWorld.R('tileeditor/menu/remove.png')
+								}),
+								title : '타일 삭제',
+								on : {
+									tap : () => {
+										
+										SkyDesktop.Confirm({
+											msg : '타일을 삭제하시겠습니까?',
+											okButtonTitle : '삭제'
+										}, () => {
+											
+											let loadingBar = SkyDesktop.LoadingBar('lime');
+											
+											BigWorld.TileModel.remove(nowTileId, () => {
+												isRemoved = true;
+												close();
+											});
+										});
+									}
 								}
-							})
-						})]
+							})]
+						})
 					})
-				})
-			})]
-		}).appendTo(BODY);
-		
-		// root 종류와 상태는 처음부터 열려있습니다.
-		rootKind.open();
-		rootState.open();
-		
-		let saveTile = () => {
-			
-			if (nowTileData !== undefined) {
+				}),
 				
-				let loadingBar = SkyDesktop.LoadingBar('lime');
-				
-				// 변경된 타일 데이터 저장
-				BigWorld.TileModel.update(nowTileData, {
-					
-					notValid : () => {
-						loadingBar.done();
-						
-						SkyDesktop.Alert({
-							msg : '타일을 저장할 수 없습니다. 데이터를 확인해주시기 바랍니다.'
-						});
+				// 하단 내용
+				TR({
+					style : {
+						height : '100%'
 					},
-					
-					success : () => {
-						loadingBar.done();
-						
-						SkyDesktop.Noti('타일을 저장했습니다.');
-					}
-				});
+					c : TD({
+						c : SkyDesktop.HorizontalTabList({
+							tabs : [
+							
+							// 종류 목록
+							SkyDesktop.Tab({
+								size : 15,
+								c : SkyDesktop.FileTree({
+									items : {
+										
+										// root 종류
+										root : rootKind = SkyDesktop.Folder({
+											style : {
+												cursor : 'pointer'
+											},
+											icon : IMG({
+												src : BigWorld.R('tileeditor/menu/kind.png')
+											}),
+											title : '종류',
+											isToNotSort : true,
+											on : {
+												
+												// 열리고 닫혀도 아이콘의 변경이 없어야 합니다.
+												open : (e, item) => {
+													item.setIcon(IMG({
+														src : BigWorld.R('tileeditor/menu/kind.png')
+													}));
+												},
+												close : (e, item) => {
+													item.setIcon(IMG({
+														src : BigWorld.R('tileeditor/menu/kind.png')
+													}));
+												}
+											}
+										})
+									}
+								})
+							}),
+							
+							// 상태 목록
+							SkyDesktop.Tab({
+								size : 15,
+								c : SkyDesktop.FileTree({
+									items : {
+										
+										// root 상태
+										root : rootState = SkyDesktop.Folder({
+											style : {
+												cursor : 'pointer'
+											},
+											icon : IMG({
+												src : BigWorld.R('tileeditor/menu/state.png')
+											}),
+											title : '상태',
+											isToNotSort : true,
+											on : {
+												
+												// 열리고 닫혀도 아이콘의 변경이 없어야 합니다.
+												open : (e, item) => {
+													item.setIcon(IMG({
+														src : BigWorld.R('tileeditor/menu/state.png')
+													}));
+												},
+												close : (e, item) => {
+													item.setIcon(IMG({
+														src : BigWorld.R('tileeditor/menu/state.png')
+													}));
+												}
+											}
+										})
+									}
+								})
+							}),
+							
+							// 편집 뷰
+							SkyDesktop.Tab({
+								size : 70,
+								c : editorWrapper = DIV({
+									style : {
+										padding : 10
+									}
+								})
+							})]
+						})
+					})
+				})]
+			}).appendTo(BODY);
+			
+			// root 종류와 상태는 처음부터 열려있습니다.
+			rootKind.open();
+			rootState.open();
+			
+			let saveTile = () => {
 				
-				// 미리보기 새로고침
-				if (sectionEditor !== undefined) {
-					sectionEditor.refreshPreview();
+				if (nowTileData !== undefined) {
+					
+					let loadingBar = SkyDesktop.LoadingBar('lime');
+					
+					// 변경된 타일 데이터 저장
+					BigWorld.TileModel.update(nowTileData, {
+						
+						notValid : () => {
+							loadingBar.done();
+							
+							SkyDesktop.Alert({
+								msg : '타일을 저장할 수 없습니다. 데이터를 확인해주시기 바랍니다.'
+							});
+						},
+						
+						success : () => {
+							loadingBar.done();
+							
+							SkyDesktop.Noti('타일을 저장했습니다.');
+						}
+					});
+					
+					// 미리보기 새로고침
+					if (sectionEditor !== undefined) {
+						sectionEditor.refreshPreview();
+					}
 				}
-			}
-		};
-		
-		// 현재 선택된 종류와 상태의 내용을 수정하는 에디터를 엽니다.
-		let openEditor = () => {
-			editorWrapper.empty();
+			};
 			
-			if (nowKind !== undefined && nowState !== undefined) {
+			// 현재 선택된 종류와 상태의 내용을 수정하는 에디터를 엽니다.
+			let openEditor = () => {
+				editorWrapper.empty();
 				
-				editorWrapper.append(H3({
-					c : '선택된 종류: ' + selectedKind.getTitle() + ' / 선택된 상태: ' + selectedState.getTitle()
-				}));
-				
-				// 섹션 편집
-				editorWrapper.append(sectionEditor = BigWorld.SectionEditor({
-					style : {
-						marginTop : 10
-					},
-					sectionMap : nowTileData.sectionMap,
+				if (nowKind !== undefined && nowState !== undefined) {
 					
-					changeDirection : (direction) => {
-						partsEditor.changeDirection(direction)
-					},
+					editorWrapper.append(H3({
+						c : '선택된 종류: ' + selectedKind.getTitle() + ' / 선택된 상태: ' + selectedState.getTitle()
+					}));
 					
-					refreshPreview : (previewScreen, direction) => {
+					// 섹션 편집
+					editorWrapper.append(sectionEditor = BigWorld.SectionEditor({
+						style : {
+							marginTop : 10
+						},
+						sectionMap : nowTileData.sectionMap,
 						
-						previewScreen.append(BigWorld.Tile({
-							tileData : nowTileData,
-							kind : nowKind,
-							state : nowState,
-							direction : direction
-						}));
-					}
-				}));
-				
-				let partsEditor;
-				
-				// 파트 편집
-				editorWrapper.append(partsEditor = BigWorld.PartsEditor({
-					style : {
-						marginTop : 10
-					},
-					stateInfos : nowTileData.states,
-					state : nowState,
-					kind : nowKind,
-					saveTile : saveTile
-				}));
-				
-				partsEditor.changeDirection(sectionEditor.getDirection());
-			}
-		};
-		
-		EACH([
-			'center',
-			'left',
-			'leftTop',
-			'top',
-			'rightTop',
-			'right',
-			'rightBottom',
-			'bottom',
-			'leftBottom',
-			'fillLeftBottom',
-			'fillLeftTop',
-			'fillRightTop',
-			'fillRightBottom'
-		], (stateName) => {
-			
-			let state;
-			
-			rootState.addItem({
-				key : stateName,
-				item : state = SkyDesktop.File({
-					style : {
-						cursor : 'pointer'
-					},
-					icon : IMG({
-						src : BigWorld.R('tileeditor/state/' + stateName + '.png')
-					}),
-					title : stateName.replace(/([A-Z]+)*([A-Z][a-z])/g, '$1 $2').toLowerCase(),
-					on : {
-						tap : () => {
+						changeDirection : (direction) => {
+							partsEditor.changeDirection(direction)
+						},
+						
+						refreshPreview : (previewScreen, direction) => {
 							
-							if (selectedState !== undefined) {
-								selectedState.deselect();
-							}
+							let kindMap = {};
 							
-							state.select();
-							selectedState = state;
+							EACH(TILE_STATES, (state) => {
+								
+								let stateInfo = nowTileData.states[state];
+								if (stateInfo !== undefined) {
+									
+									kindMap[state] = [];
+									
+									EACH(stateInfo.parts, (partInfo, partIndex) => {
+										kindMap[state][partIndex] = RANDOM(partInfo.frames.length);
+									});
+								}
+							});
 							
-							nowState = stateName;
-							openEditor();
+							previewScreen.append(BigWorld.Tile({
+								col : 0,
+								row : 0,
+								tileData : nowTileData,
+								kindMap : kindMap
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : 0,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : -1,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : -2,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								rightTopTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								rightTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -2,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id,
+								leftBottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -1,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 0,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 1,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 2,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id,
+								rightBottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : -3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : -2,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id,
+								leftTopTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : -1,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : 0,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : 1,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : 2,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id,
+								leftBottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 3,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								leftTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 2,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTopTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 1,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : 0,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -1,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -2,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								leftTileId : nowTileData.id,
+								leftTopTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : 3,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								rightTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : 2,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								rightBottomTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
+							
+							previewScreen.append(BigWorld.Tile({
+								col : -3,
+								row : 1,
+								tileData : nowTileData,
+								kindMap : kindMap,
+								topTileId : nowTileData.id,
+								bottomTileId : nowTileData.id
+							}));
 						}
-					}
-				})
-			});
-		});
-		
-		let addKind = (index, kindInfo) => {
+					}));
+					
+					let partsEditor;
+					
+					// 파트 편집
+					editorWrapper.append(partsEditor = BigWorld.PartsEditor({
+						style : {
+							marginTop : 10
+						},
+						stateInfos : nowTileData.states,
+						state : nowState,
+						kind : nowKind,
+						saveTile : saveTile
+					}));
+					
+					partsEditor.changeDirection(sectionEditor.getDirection());
+				}
+			};
 			
-			let kind;
-			
-			rootKind.addItem({
-				key : index,
-				item : kind = SkyDesktop.File({
-					style : {
-						cursor : 'pointer'
-					},
-					title : MSG(kindInfo.name),
-					on : {
-						tap : () => {
-							
-							if (selectedKind !== undefined) {
-								selectedKind.deselect();
+			EACH(TILE_STATES, (stateName) => {
+				
+				let state;
+				
+				rootState.addItem({
+					key : stateName,
+					item : state = SkyDesktop.File({
+						style : {
+							cursor : 'pointer'
+						},
+						icon : IMG({
+							src : BigWorld.R('tileeditor/state/' + stateName + '.png')
+						}),
+						title : stateName.replace(/([A-Z]+)*([A-Z][a-z])/g, '$1 $2').toLowerCase(),
+						on : {
+							tap : () => {
+								
+								if (selectedState !== undefined) {
+									selectedState.deselect();
+								}
+								
+								state.select();
+								selectedState = state;
+								
+								nowState = stateName;
+								openEditor();
 							}
-							
-							kind.select();
-							selectedKind = kind;
-							
-							nowKind = index;
-							openEditor();
 						}
-					}
-				})
-			});
-		};
-		
-		inner.on('paramsChange', (params) => {
-			nowTileId = params.tileId;
-			
-			// 초기화
-			selectedKind = undefined;
-			rootKind.removeAllItems();
-			editorWrapper.empty();
-			
-			// 타일 데이터를 불러옵니다.
-			BigWorld.TileModel.get(nowTileId, (tileData) => {
-				nowTileData = tileData;
-				
-				console.log(tileData);
-				
-				// 종류들 생성
-				EACH(tileData.kinds, (kindInfo, i) => {
-					addKind(i, kindInfo);
+					})
 				});
-				
-				// 맨 처음에는 첫 종류와 첫 상태를 열기
-				rootKind.getItem(0).tap();
-				rootState.getItem('center').tap();
 			});
-		});
-		
-		// 새로고침 막기
-		window.addEventListener('beforeunload', (e) => {
-			if (isRemoved !== true) {
-				e.returnValue = null;
-				return null;
-			}
-		});
-		
-		// 틀 어긋난 부분 수정
-		DELAY(0.2, () => {
-			EVENT.fireAll('resize');
-		});
-
-		inner.on('close', () => {
-			wrapper.remove();
-		});
-	}
+			
+			let addKind = (index, kindInfo) => {
+				
+				let kind;
+				
+				rootKind.addItem({
+					key : index,
+					item : kind = SkyDesktop.File({
+						style : {
+							cursor : 'pointer'
+						},
+						title : MSG(kindInfo.name),
+						on : {
+							tap : () => {
+								
+								if (selectedKind !== undefined) {
+									selectedKind.deselect();
+								}
+								
+								kind.select();
+								selectedKind = kind;
+								
+								nowKind = index;
+								openEditor();
+							}
+						}
+					})
+				});
+			};
+			
+			inner.on('paramsChange', (params) => {
+				nowTileId = params.tileId;
+				
+				// 초기화
+				selectedKind = undefined;
+				rootKind.removeAllItems();
+				editorWrapper.empty();
+				
+				// 타일 데이터를 불러옵니다.
+				BigWorld.TileModel.get(nowTileId, (tileData) => {
+					nowTileData = tileData;
+					
+					// 종류들 생성
+					EACH(tileData.kinds, (kindInfo, i) => {
+						addKind(i, kindInfo);
+					});
+					
+					// 맨 처음에는 첫 종류와 첫 상태를 열기
+					rootKind.getItem(0).tap();
+					rootState.getItem('center').tap();
+				});
+			});
+			
+			// 새로고침 막기
+			window.addEventListener('beforeunload', (e) => {
+				if (isRemoved !== true) {
+					e.returnValue = null;
+					return null;
+				}
+			});
+			
+			// 틀 어긋난 부분 수정
+			DELAY(0.2, () => {
+				EVENT.fireAll('resize');
+			});
+	
+			inner.on('close', () => {
+				wrapper.remove();
+			});
+		}
+	};
 });

@@ -39,40 +39,6 @@ BigWorld.TileModel = OBJECT({
 				}
 			},
 			
-			sectionMap : {
-				notEmpty : true,
-				
-				// row
-				array : true,
-				element : {
-					
-					// col
-					array : true,
-					element : {
-						
-						data : true,
-						detail : {
-							
-							// 섹션의 높이
-							z : {
-								notEmpty : true,
-								integer : true
-							},
-							
-							// 섹션이 지나갈 수 없는 부분인지
-							isBlock : {
-								bool : true
-							},
-							
-							// 섹션 위에 올라서면 특정 액션을 실행하는 트리거인지
-							isTrigger : {
-								bool : true
-							}
-						}
-					}
-				}
-			},
-			
 			kinds : {
 				notEmpty : true,
 				
@@ -121,6 +87,41 @@ BigWorld.TileModel = OBJECT({
 					
 					data : true,
 					detail : {
+						
+						// 상태별 섹션 맵
+						sectionMap : {
+							notEmpty : true,
+							
+							// row
+							array : true,
+							element : {
+								
+								// col
+								array : true,
+								element : {
+									
+									data : true,
+									detail : {
+										
+										// 섹션의 높이
+										z : {
+											notEmpty : true,
+											integer : true
+										},
+										
+										// 섹션이 지나갈 수 없는 부분인지
+										isBlock : {
+											bool : true
+										},
+										
+										// 섹션 위에 올라서면 특정 액션을 실행하는 트리거인지
+										isTrigger : {
+											bool : true
+										}
+									}
+								}
+							}
+						},
 						
 						// 상태별 파트
 						parts : {
@@ -202,22 +203,9 @@ BigWorld.TileModel = OBJECT({
 			}
 		};
 		
-		let initSectionMap = [];
-		REPEAT(CONFIG.BigWorld.tileSectionLevel, () => {
-			let initSections = [];
-			REPEAT(CONFIG.BigWorld.tileSectionLevel, () => {
-				initSections.push({
-					z : 0
-				});
-			});
-			initSectionMap.push(initSections);
-		});
-		
 		return {
 			name : 'Tile',
 			initData : {
-				
-				sectionMap : initSectionMap,
 				
 				kinds : [{
 					name : {

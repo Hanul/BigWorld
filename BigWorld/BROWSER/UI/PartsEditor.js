@@ -40,6 +40,7 @@ BigWorld.PartsEditor = CLASS({
 						// 상태가 없으면 생성
 						if (stateInfo === undefined) {
 							stateInfo = stateInfos[state] = {
+								sectionMap : BigWorld.Tile.getInitSectionMap(),
 								parts : []
 							};
 						}

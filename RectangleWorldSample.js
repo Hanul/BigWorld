@@ -11,9 +11,9 @@ BOOT({
 		
 		BigWorld : {
 			tileType : 'rectangle',
-			tileSectionLevel : 3,
-			sectionWidth : 16,
-			sectionHeight : 16
+			tileSectionLevel : 1,
+			sectionWidth : 512,
+			sectionHeight : 512
 		}
 	},
 	

@@ -23,12 +23,12 @@ BigWorld.MapTileModel = OBJECT({
 				integer : true
 			},
 			
-			tileRow : {
+			col : {
 				notEmpty : true,
 				integer : true
 			},
 			
-			tileCol : {
+			row : {
 				notEmpty : true,
 				integer : true
 			}

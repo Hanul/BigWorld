@@ -37,8 +37,10 @@ BigWorld.TileEditor = CLASS(() => {
 			let rootState;
 			let selectedKind;
 			let selectedState;
+			
 			let editorWrapper;
 			let sectionEditor;
+			let tilePreview;
 			
 			let isRemoved;
 			
@@ -94,22 +96,13 @@ BigWorld.TileEditor = CLASS(() => {
 													}
 												};
 												
-												// 타일을 수정합니다.
-												BigWorld.TileModel.update({
-													id : nowTileId,
-													$push : {
-														kinds : kindInfo
-													}
-												}, {
-													notValid : showErrors,
-													success : () => {
-														
-														addKind(nowTileData.kinds.length, kindInfo);
-														nowTileData.kinds.push(kindInfo);
-														
-														removePrompt();
-													}
-												});
+												nowTileData.kinds.push(kindInfo);
+												
+												saveTile();
+												
+												addKind(nowTileData.kinds.length - 1, kindInfo).tap();
+												
+												removePrompt();
 											}
 										});
 									}
@@ -241,11 +234,19 @@ BigWorld.TileEditor = CLASS(() => {
 			rootKind.open();
 			rootState.open();
 			
+			// 변경된 타일 정보를 저장합니다.
 			let saveTile = () => {
 				
 				if (nowTileData !== undefined) {
 					
 					let loadingBar = SkyDesktop.LoadingBar('lime');
+					
+					// 섹션맵이 없는 경우 추가
+					EACH(nowTileData.states, (stateInfo) => {
+						if (stateInfo.sectionMap === undefined) {
+							stateInfo.sectionMap = BigWorld.Tile.getInitSectionMap();
+						}
+					});
 					
 					// 변경된 타일 데이터 저장
 					BigWorld.TileModel.update(nowTileData, {
@@ -267,7 +268,8 @@ BigWorld.TileEditor = CLASS(() => {
 					
 					// 미리보기 새로고침
 					if (sectionEditor !== undefined) {
-						sectionEditor.refreshPreview();
+						sectionEditor.refresh();
+						tilePreview.refresh();
 					}
 				}
 			};
@@ -279,21 +281,63 @@ BigWorld.TileEditor = CLASS(() => {
 				if (nowKind !== undefined && nowState !== undefined) {
 					
 					editorWrapper.append(H3({
-						c : '선택된 종류: ' + selectedKind.getTitle() + ' / 선택된 상태: ' + selectedState.getTitle()
+						c : '선택된 종류: ' + MSG(nowTileData.kinds[nowKind].name) + ' / 선택된 상태: ' + selectedState.getTitle()
 					}));
 					
 					// 섹션 편집
 					editorWrapper.append(sectionEditor = BigWorld.SectionEditor({
+						
 						style : {
+							flt : 'left',
 							marginTop : 10
 						},
-						sectionMap : nowTileData.sectionMap,
 						
-						changeDirection : (direction) => {
-							partsEditor.changeDirection(direction)
+						sectionMap : nowTileData.states[nowState] === undefined ? BigWorld.Tile.getInitSectionMap() : nowTileData.states[nowState].sectionMap,
+						
+						elementData : {
+							leftSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
+							upSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
+							rightSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
+							downSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1
 						},
 						
-						refreshPreview : (previewScreen, direction) => {
+						isTileMode : true,
+						
+						save : saveTile,
+						refresh : (previewScreen, direction) => {
+							
+							let stateInfo = nowTileData.states[nowState];
+							if (stateInfo !== undefined) {
+								
+								EACH(stateInfo.parts, (partInfo) => {
+									
+									let frameImageId = partInfo.frames[nowKind];
+									if (frameImageId !== undefined) {
+										
+										previewScreen.append(SkyEngine.Sprite({
+											src : BigWorld.RF(frameImageId),
+											fps : partInfo.fps,
+											frameCount : partInfo.frameCount,
+											zIndex : partInfo.zIndex,
+											x : partInfo.x,
+											y : partInfo.y
+										}));
+									}
+								});
+							}
+						}
+					}));
+					
+					// 미리보기
+					editorWrapper.append(tilePreview = BigWorld.TilePreview({
+						
+						style : {
+							flt : 'left',
+							marginLeft : 10,
+							marginTop : 10
+						},
+						
+						refresh : (previewScreen, direction) => {
 							
 							let kindMap = {};
 							
@@ -305,7 +349,7 @@ BigWorld.TileEditor = CLASS(() => {
 									kindMap[state] = [];
 									
 									EACH(stateInfo.parts, (partInfo, partIndex) => {
-										kindMap[state][partIndex] = RANDOM(partInfo.frames.length);
+										kindMap[state][partIndex] = nowKind;
 									});
 								}
 							});
@@ -543,9 +587,44 @@ BigWorld.TileEditor = CLASS(() => {
 						}
 					}));
 					
-					let partsEditor;
+					// 스케일 조정
+					editorWrapper.append(UUI.FULL_INPUT({
+						style : {
+							marginLeft : 10,
+							marginTop : 10,
+							flt : 'left',
+							width : 30
+						},
+						value : tileEditorStore.get('scale'),
+						placeholder : '배율',
+						on : {
+							change : (e, input) => {
+								
+								let previewScale = REAL(input.getValue());
+								
+								tileEditorStore.save({
+									name : 'scale',
+									value : previewScale
+								});
+								
+								sectionEditor.setScale(previewScale);
+								sectionEditor.refresh();
+								
+								tilePreview.setScale(previewScale);
+								tilePreview.refresh();
+							}
+						}
+					}));
+					
+					editorWrapper.append(CLEAR_BOTH());
+					
+					if (tileEditorStore.get('scale') != undefined) {
+						sectionEditor.setScale(tileEditorStore.get('scale'));
+						tilePreview.setScale(tileEditorStore.get('scale'));
+					}
 					
 					// 파트 편집
+					let partsEditor;
 					editorWrapper.append(partsEditor = BigWorld.PartsEditor({
 						style : {
 							marginTop : 10
@@ -553,44 +632,16 @@ BigWorld.TileEditor = CLASS(() => {
 						stateInfos : nowTileData.states,
 						state : nowState,
 						kind : nowKind,
-						saveTile : saveTile
+						save : saveTile
 					}));
 					
-					partsEditor.changeDirection(sectionEditor.getDirection());
+					// 파트 에디터 열기
+					let stateInfo = nowTileData.states[nowState];
+					if (stateInfo !== undefined) {
+						EACH(stateInfo.parts, partsEditor.addPartEditor);
+					}
 				}
 			};
-			
-			EACH(TILE_STATES, (stateName) => {
-				
-				let state;
-				
-				rootState.addItem({
-					key : stateName,
-					item : state = SkyDesktop.File({
-						style : {
-							cursor : 'pointer'
-						},
-						icon : IMG({
-							src : BigWorld.R('tileeditor/state/' + stateName + '.png')
-						}),
-						title : stateName.replace(/([A-Z]+)*([A-Z][a-z])/g, '$1 $2').toLowerCase(),
-						on : {
-							tap : () => {
-								
-								if (selectedState !== undefined) {
-									selectedState.deselect();
-								}
-								
-								state.select();
-								selectedState = state;
-								
-								nowState = stateName;
-								openEditor();
-							}
-						}
-					})
-				});
-			});
 			
 			let addKind = (index, kindInfo) => {
 				
@@ -604,6 +655,7 @@ BigWorld.TileEditor = CLASS(() => {
 						},
 						title : MSG(kindInfo.name),
 						on : {
+							
 							tap : () => {
 								
 								if (selectedKind !== undefined) {
@@ -615,11 +667,141 @@ BigWorld.TileEditor = CLASS(() => {
 								
 								nowKind = index;
 								openEditor();
+							},
+							
+							// 오른 클릭 메뉴
+							contextmenu : (e) => {
+								
+								let contextMenu = SkyDesktop.ContextMenu({
+									e : e,
+									c : [SkyDesktop.ContextMenuItem({
+										title : '정보 수정',
+										icon : IMG({
+											src : BigWorld.R('tileeditor/menu/edit.png')
+										}),
+										on : {
+											tap : () => {
+												
+												BigWorld.ValidPrompt({
+													title : '종류 수정',
+													inputName : 'name.ko',
+													placeholder : '종류 이름',
+													value : kindInfo.name.ko,
+													errorMsgs : {
+														'name.ko' : {
+															size : (validParams) => {
+																return '최대 ' + validParams.max + '글자입니다.';
+															}
+														}
+													},
+													okButtonTitle : '수정'
+												}, (kindName, showErrors, removePrompt) => {
+													
+													if (kindName.trim() === '') {
+														SkyDesktop.Alert({
+															msg : '종류 이름을 입력해주세요.'
+														});
+													} else {
+														
+														kindInfo.name = {
+															ko : kindName
+														};
+														
+														saveTile();
+														
+														kind.setTitle(MSG(kindInfo.name));
+														
+														removePrompt();
+													}
+												});
+												
+												contextMenu.remove();
+											}
+										}
+									}), nowTileData.kinds.length <= 1 ? undefined : SkyDesktop.ContextMenuItem({
+										title : '종류 삭제',
+										icon : IMG({
+											src : BigWorld.R('tileeditor/menu/remove.png')
+										}),
+										on : {
+											tap : () => {
+												
+												SkyDesktop.Confirm({
+													msg : '정말 종류를 삭제하시겠습니까?'
+												}, () => {
+													
+													let kindIndex = FIND({
+														array : nowTileData.kinds,
+														value : kindInfo
+													});
+													
+													nowTileData.kinds.splice(kindIndex, 1);
+													
+													// 상태의 파트에서 이 종류의 프레임들을 모두 삭제
+													EACH(nowTileData.states, (stateInfo) => {
+														
+														EACH(stateInfo.parts, (partInfo) => {
+															
+															partInfo.frames.splice(kindIndex, 1);
+														});
+													});
+													
+													saveTile();
+													
+													rootKind.removeItem(kindIndex);
+													
+													if (nowKind === kindIndex) {
+														nowKind = 0;
+														openEditor();
+													}
+												});
+												
+												contextMenu.remove();
+											}
+										}
+									})]
+								});
+								
+								e.stop();
 							}
 						}
 					})
 				});
+				
+				return kind;
 			};
+			
+			EACH(TILE_STATES, (stateId) => {
+				
+				let state;
+				
+				rootState.addItem({
+					key : stateId,
+					item : state = SkyDesktop.File({
+						style : {
+							cursor : 'pointer'
+						},
+						icon : IMG({
+							src : BigWorld.R('tileeditor/state/' + stateId + '.png')
+						}),
+						title : stateId.replace(/([A-Z]+)*([A-Z][a-z])/g, '$1 $2').toLowerCase(),
+						on : {
+							tap : () => {
+								
+								if (selectedState !== undefined) {
+									selectedState.deselect();
+								}
+								
+								state.select();
+								selectedState = state;
+								
+								nowState = stateId;
+								openEditor();
+							}
+						}
+					})
+				});
+			});
 			
 			inner.on('paramsChange', (params) => {
 				nowTileId = params.tileId;

@@ -292,9 +292,9 @@ BigWorld.ObjectModel = OBJECT({
 				}],
 				
 				states : {
-					state1 : {
+					idle : {
 						name : {
-							en : 'State 1'
+							en : 'Idle'
 						},
 						parts : []
 					}

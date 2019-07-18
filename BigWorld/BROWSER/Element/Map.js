@@ -7,7 +7,5 @@ BigWorld.Map = CLASS({
 	init : (inner, self, params) => {
 		//REQUIRED: params
 		//REQUIRED: params.mapData
-		
-		let mapData = params.mapData;
 	}
 });

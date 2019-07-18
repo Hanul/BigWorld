@@ -9,13 +9,13 @@ BigWorld.PartsEditor = CLASS({
 		//REQUIRED: params.stateInfos
 		//REQUIRED: params.state
 		//REQUIRED: params.kind
-		//REQUIRED: params.saveTile
+		//REQUIRED: params.save
 		
 		let stateInfos = params.stateInfos;
 		let state = params.state;
 		let kind = params.kind;
 		
-		let saveTile = params.saveTile;
+		let saveHandler = params.save;
 		
 		let nowDirection;
 		
@@ -40,7 +40,6 @@ BigWorld.PartsEditor = CLASS({
 						// 상태가 없으면 생성
 						if (stateInfo === undefined) {
 							stateInfo = stateInfos[state] = {
-								sectionMap : BigWorld.Tile.getInitSectionMap(),
 								parts : []
 							};
 						}
@@ -60,7 +59,7 @@ BigWorld.PartsEditor = CLASS({
 						
 						addPartEditor(partInfo);
 						
-						saveTile();
+						saveHandler();
 					}
 				}
 			}),
@@ -83,7 +82,7 @@ BigWorld.PartsEditor = CLASS({
 							EACH(partEditorList.getChildren(), (partEditor) => {
 								partEditor.moveLeft1Pixel();
 							});
-							saveTile();
+							saveHandler();
 						}
 					}
 				}
@@ -107,7 +106,7 @@ BigWorld.PartsEditor = CLASS({
 							EACH(partEditorList.getChildren(), (partEditor) => {
 								partEditor.moveRight1Pixel();
 							});
-							saveTile();
+							saveHandler();
 						}
 					}
 				}
@@ -131,7 +130,7 @@ BigWorld.PartsEditor = CLASS({
 							EACH(partEditorList.getChildren(), (partEditor) => {
 								partEditor.moveUp1Pixel();
 							});
-							saveTile();
+							saveHandler();
 						}
 					}
 				}
@@ -155,7 +154,7 @@ BigWorld.PartsEditor = CLASS({
 							EACH(partEditorList.getChildren(), (partEditor) => {
 								partEditor.moveDown1Pixel();
 							});
-							saveTile();
+							saveHandler();
 						}
 					}
 				}
@@ -173,7 +172,7 @@ BigWorld.PartsEditor = CLASS({
 			partEditorList = DIV()]
 		}));
 		
-		let addPartEditor = (partInfo) => {
+		let addPartEditor = self.addPartEditor = (partInfo) => {
 			
 			partEditorList.append(BigWorld.PartEditor({
 				style : {
@@ -182,7 +181,7 @@ BigWorld.PartsEditor = CLASS({
 				partInfo : partInfo,
 				kind : kind,
 				direction : nowDirection,
-				saveTile : saveTile,
+				save : saveHandler,
 				removePart : () => {
 					
 					REMOVE({
@@ -195,7 +194,7 @@ BigWorld.PartsEditor = CLASS({
 						delete stateInfos[state];
 					}
 					
-					saveTile();
+					saveHandler();
 				}
 			}));
 		};

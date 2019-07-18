@@ -891,7 +891,17 @@ BigWorld.Explorer = CLASS({
 										
 										// removeElementHandler
 										() => {
-											//TODO:
+											
+											SkyDesktop.Confirm({
+												msg : '정말 오브젝트를 삭제하시겠습니까?'
+											}, () => {
+												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												BigWorld.ObjectModel.remove(objectData.id, () => {
+													loadingBar.done();
+												});
+											});
 										});
 									}
 								}

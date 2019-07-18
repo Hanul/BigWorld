@@ -5,15 +5,27 @@ BigWorld.ValidPrompt = METHOD({
 		//OPTIONAL: params.title
 		//OPTIONAL: params.inputName
 		//OPTIONAL: params.placeholder
+		//OPTIONAL: params.value
+		//OPTIONAL: params.inputName2
+		//OPTIONAL: params.placeholder2
+		//OPTIONAL: params.value2
 		//OPTIONAL: params.errorMsgs
 		//OPTIONAL: params.okButtonTitle
 		//OPTIONAL: params.isToSelectObject
 		//REQUIRED: callback
 		
 		let title = params.title;
+		
 		let inputName = params.inputName;
 		let placeholder = params.placeholder;
+		let value = params.value;
+		
+		let inputName2 = params.inputName2;
+		let placeholder2 = params.placeholder2;
+		let value2 = params.value2;
+		
 		let errorMsgs = params.errorMsgs;
+		
 		let okButtonTitle = params.okButtonTitle;
 		let isToSelectObject = params.isToSelectObject;
 		
@@ -21,6 +33,8 @@ BigWorld.ValidPrompt = METHOD({
 		
 		let form;
 		let input;
+		let input2;
+		
 		let confirm = SkyDesktop.Confirm({
 			okButtonTitle : okButtonTitle,
 			msg : [
@@ -70,13 +84,26 @@ BigWorld.ValidPrompt = METHOD({
 						borderRadius : 4
 					},
 					name : inputName,
-					placeholder : placeholder
-				})]
+					placeholder : placeholder,
+					value : value
+				}), inputName2 !== undefined ? input2 = INPUT({
+					style : {
+						width : 222,
+						padding : 8,
+						border : '1px solid #999',
+						borderRadius : 4
+					},
+					name : inputName2,
+					placeholder : placeholder2,
+					value : value2
+				}) : undefined]
 			})]
 		}, () => {
 			
 			if (isToSelectObject === true) {
 				callback(selectedObjectId, input.getValue(), form.showErrors, confirm.remove);
+			} else if (input2 !== undefined) {
+				callback(input.getValue(), input2.getValue(), form.showErrors, confirm.remove);
 			} else {
 				callback(input.getValue(), form.showErrors, confirm.remove);
 			}
@@ -84,6 +111,6 @@ BigWorld.ValidPrompt = METHOD({
 			return false;
 		});
 		
-		input.focus();
+		input.select();
 	}
 });

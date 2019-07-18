@@ -39,6 +39,10 @@ BigWorld.TileModel = OBJECT({
 				}
 			},
 			
+			color : {
+				size : 7
+			},
+			
 			kinds : {
 				notEmpty : true,
 				
@@ -215,6 +219,7 @@ BigWorld.TileModel = OBJECT({
 				
 				states : {
 					center : {
+						sectionMap : [],
 						parts : []
 					}
 				}

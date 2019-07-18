@@ -8,16 +8,16 @@ BigWorld.PartEditor = CLASS({
 		//REQUIRED: params
 		//REQUIRED: params.partInfo
 		//REQUIRED: params.kind
-		//REQUIRED: params.direction
-		//REQUIRED: params.saveTile
+		//OPTIONAL: params.direction
+		//REQUIRED: params.save
 		//REQUIRED: params.removePart
 		
 		let partInfo = params.partInfo;
 		let kind = params.kind;
 		let direction = params.direction;
 		
-		let saveTile = params.saveTile;
-		let removePart = params.removePart;
+		let saveHandler = params.save;
+		let removePartHandler = params.removePart;
 		
 		let imageId;
 		let isChangeToSave;
@@ -140,7 +140,7 @@ BigWorld.PartEditor = CLASS({
 								on : {
 									tap : () => {
 										moveLeft1Pixel();
-										saveTile();
+										saveHandler();
 									}
 								}
 							}), UUI.ICON_BUTTON({
@@ -155,7 +155,7 @@ BigWorld.PartEditor = CLASS({
 								on : {
 									tap : () => {
 										moveRight1Pixel();
-										saveTile();
+										saveHandler();
 									}
 								}
 							})]
@@ -193,7 +193,7 @@ BigWorld.PartEditor = CLASS({
 								on : {
 									tap : () => {
 										moveUp1Pixel();
-										saveTile();
+										saveHandler();
 									}
 								}
 							}), UUI.ICON_BUTTON({
@@ -208,7 +208,7 @@ BigWorld.PartEditor = CLASS({
 								on : {
 									tap : () => {
 										moveDown1Pixel();
-										saveTile();
+										saveHandler();
 									}
 								}
 							})]
@@ -260,7 +260,7 @@ BigWorld.PartEditor = CLASS({
 									SkyDesktop.Confirm({
 										msg : '정말 [' + MSG(partInfo.name) + '] 파트를 제거하시겠습니까?'
 									}, () => {
-										removePart();
+										removePartHandler();
 										self.remove();
 									});
 								}
@@ -278,13 +278,20 @@ BigWorld.PartEditor = CLASS({
 								partInfo.x = INTEGER(data.x);
 								partInfo.y = INTEGER(data.y);
 								
-								if (partInfo.frames[kind] === undefined) {
-									partInfo.frames[kind] = {};
+								if (direction === undefined) {
+									partInfo.frames[kind] = imageId;
 								}
 								
-								partInfo.frames[kind] = imageId;
+								else {
+									
+									if (partInfo.frames[kind] === undefined) {
+										partInfo.frames[kind] = {};
+									}
+									
+									partInfo.frames[kind][direction + 'ImageId'] = imageId;
+								}
 								
-								saveTile();
+								saveHandler();
 							}
 						}
 					})
@@ -315,7 +322,14 @@ BigWorld.PartEditor = CLASS({
 		};
 		
 		if (partInfo.frames[kind] !== undefined) {
-			setImageId(partInfo.frames[kind]);
+			
+			if (direction === undefined) {
+				setImageId(partInfo.frames[kind]);
+			}
+			
+			else if (partInfo.frames[kind][direction + 'ImageId'] !== undefined) {
+				setImageId(partInfo.frames[kind][direction + 'ImageId']);
+			}
 		}
 		
 		isChangeToSave = true;

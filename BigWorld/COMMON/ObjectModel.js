@@ -6,6 +6,12 @@ BigWorld.ObjectModel = OBJECT({
 	
 	params : () => {
 		
+		let sectionLevelValidDataSet = {
+			notEmpty : true,
+			integer : true,
+			min : 0
+		};
+		
 		let partDirectionValidDataSet = {
 			
 			// 파트의 표기 순서
@@ -77,28 +83,15 @@ BigWorld.ObjectModel = OBJECT({
 				}
 			},
 			
-			leftSectionLevel : {
+			sectionLevels : {
 				notEmpty : true,
-				integer : true,
-				min : 0
-			},
-			
-			upSectionLevel : {
-				notEmpty : true,
-				integer : true,
-				min : 0
-			},
-			
-			rightSectionLevel : {
-				notEmpty : true,
-				integer : true,
-				min : 0
-			},
-			
-			downSectionLevel : {
-				notEmpty : true,
-				integer : true,
-				min : 0
+				data : true,
+				detail : {
+					left : sectionLevelValidDataSet,
+					up : sectionLevelValidDataSet,
+					right : sectionLevelValidDataSet,
+					down : sectionLevelValidDataSet
+				}
 			},
 			
 			sectionMap : {
@@ -131,6 +124,33 @@ BigWorld.ObjectModel = OBJECT({
 								bool : true
 							}
 						}
+					}
+				}
+			},
+			
+			touchArea : {
+				notEmpty : true,
+				data : true,
+				detail : {
+					
+					x : {
+						notEmpty : true,
+						integer : true
+					},
+					
+					y : {
+						notEmpty : true,
+						integer : true
+					},
+					
+					width : {
+						notEmpty : true,
+						integer : true
+					},
+					
+					height : {
+						notEmpty : true,
+						integer : true
 					}
 				}
 			},
@@ -278,16 +298,25 @@ BigWorld.ObjectModel = OBJECT({
 			name : 'Object',
 			initData : {
 				
-				upSectionLevel : 0,
-				rightSectionLevel : 0,
-				downSectionLevel : 0,
-				leftSectionLevel : 0,
+				sectionLevels : {
+					left : 0,
+					up : 0,
+					right : 0,
+					down : 0,
+				},
 				
 				sectionMap : [
 					[{
 						z : 0
 					}]
 				],
+				
+				touchArea : {
+					x : 0,
+					y : 0,
+					width : CONFIG.BigWorld.sectionWidth,
+					height : CONFIG.BigWorld.sectionHeight
+				},
 				
 				kinds : [{
 					name : {

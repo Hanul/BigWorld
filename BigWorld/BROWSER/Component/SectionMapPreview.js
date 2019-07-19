@@ -7,19 +7,17 @@ BigWorld.SectionMapPreview = CLASS({
 	init : (inner, self, params) => {
 		//REQUIRED: params
 		//REQUIRED: params.sectionMap
-		//REQUIRED: params.leftSectionLevel
-		//REQUIRED: params.upSectionLevel
-		//REQUIRED: params.rightSectionLevel
-		//REQUIRED: params.downSectionLevel
+		//REQUIRED: params.sectionLevels
+		//OPTIONAL: params.touchAreaInfo
+		//OPTIONAL: params.borderScale
 		//REQUIRED: params.direction
 		//REQUIRED: params.isEditMode
 		//REQUIRED: params.selectSection
 		
 		let sectionMap = params.sectionMap;
-		let leftSectionLevel = params.leftSectionLevel;
-		let upSectionLevel = params.upSectionLevel;
-		let rightSectionLevel = params.rightSectionLevel;
-		let downSectionLevel = params.downSectionLevel;
+		let sectionLevels = params.sectionLevels;
+		let touchAreaInfo = params.touchAreaInfo;
+		let borderScale = params.borderScale;
 		
 		let direction = params.direction;
 		let isEditMode = params.isEditMode;
@@ -37,20 +35,20 @@ BigWorld.SectionMapPreview = CLASS({
 					let x, y;
 					
 					if (direction === 'down') {
-						x = (sectionCol - leftSectionLevel) * CONFIG.BigWorld.sectionWidth;
-						y = (sectionRow - upSectionLevel) * CONFIG.BigWorld.sectionHeight;
+						x = (sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
+						y = (sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
 					}
 					if (direction === 'left') {
-						x = -(sectionRow - upSectionLevel) * CONFIG.BigWorld.sectionHeight;
-						y = (sectionCol - leftSectionLevel) * CONFIG.BigWorld.sectionWidth;
+						x = -(sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
+						y = (sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
 					}
 					if (direction === 'up') {
-						x = -(sectionCol - leftSectionLevel) * CONFIG.BigWorld.sectionWidth;
-						y = -(sectionRow - upSectionLevel) * CONFIG.BigWorld.sectionHeight;
+						x = -(sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
+						y = -(sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
 					}
 					if (direction === 'right') {
-						x = (sectionRow - upSectionLevel) * CONFIG.BigWorld.sectionHeight;
-						y = -(sectionCol - leftSectionLevel) * CONFIG.BigWorld.sectionWidth;
+						x = (sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
+						y = -(sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
 					}
 					
 					self.append(SkyEngine.Rect({
@@ -80,6 +78,19 @@ BigWorld.SectionMapPreview = CLASS({
 					}));
 				});
 			});
+			
+			if (touchAreaInfo !== undefined) {
+				self.append(SkyEngine.Rect({
+					
+					x : touchAreaInfo.x,
+					y : touchAreaInfo.y,
+					
+					width : touchAreaInfo.width,
+					height : touchAreaInfo.height,
+					
+					border : borderScale + 'px solid #00FF00'
+				}));
+			}
 		});
 	}
 });

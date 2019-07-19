@@ -34,7 +34,7 @@ BigWorld.Explorer = CLASS({
 					createTime : 1
 				}
 			}, {
-				handler : (subFolderData, addUpdateHandler, addRemoveHandler) => {
+				handler : (subFolderData, addUpdateHandler, addRemoveHandler, exit) => {
 					
 					let subFolder;
 					
@@ -108,6 +108,26 @@ BigWorld.Explorer = CLASS({
 						subFolder.select();
 						selectedFolder = subFolder;
 					}
+					
+					// 폴더가 수정된 경우
+					addUpdateHandler((newFolderData) => {
+						
+						// 다른 폴더로 이전된 경우
+						if (newFolderData.folderId !== (parentFolderId === TO_DELETE ? undefined : parentFolderId)) {
+							exit();
+							parentFolder.removeItem(subFolderData.id);
+						}
+						
+						// 그게 아니라면 이름만 바꿉니다.
+						else {
+							subFolder.setTitle(newFolderData.name);
+						}
+					});
+					
+					// 폴더가 삭제된 경우
+					addRemoveHandler(() => {
+						parentFolder.removeItem(subFolderData.id);
+					});
 				}
 			});
 			
@@ -186,24 +206,11 @@ BigWorld.Explorer = CLASS({
 		};
 		
 		// 특정 요소의 컨텍스트 메뉴를 엽니다.
-		let openElementContextMenu = (e, changeNameHandler, moveElementHandler, removeElementHandler) => {
+		let openElementContextMenu = (e, moveElementHandler, changeNameHandler, removeElementHandler) => {
 			
 			let contextMenu = SkyDesktop.ContextMenu({
 				e : e,
 				c : [
-				
-				SkyDesktop.ContextMenuItem({
-					title : '이름 변경',
-					icon : IMG({
-						src : BigWorld.R('explorer/contextmenu/changename.png')
-					}),
-					on : {
-						tap : () => {
-							changeNameHandler();
-							contextMenu.remove();
-						}
-					}
-				}),
 				
 				SkyDesktop.ContextMenuItem({
 					title : '폴더 이동',
@@ -213,6 +220,19 @@ BigWorld.Explorer = CLASS({
 					on : {
 						tap : () => {
 							moveElementHandler();
+							contextMenu.remove();
+						}
+					}
+				}),
+				
+				SkyDesktop.ContextMenuItem({
+					title : '이름 변경',
+					icon : IMG({
+						src : BigWorld.R('explorer/contextmenu/changename.png')
+					}),
+					on : {
+						tap : () => {
+							changeNameHandler();
 							contextMenu.remove();
 						}
 					}
@@ -240,23 +260,62 @@ BigWorld.Explorer = CLASS({
 			
 			openElementContextMenu(e,
 			
-			// changeNameHandler
-			() => {
-				//TODO:
-			},
-			
 			// moveElementHandler
 			() => {
-				BigWorld.SelectFolderPopup((folderData) => {
-					//TODO:
+				BigWorld.SelectFolderPopup((folderId) => {
+					moveElement('folder', folderData.id, folderId);
+				});
+			},
+			
+			// changeNameHandler
+			() => {
+				
+				BigWorld.ValidPrompt({
+					title : '폴더 이름 변경',
+					inputName : 'name',
+					placeholder : '폴더 이름',
+					value : folderData.name,
+					errorMsgs : {
+						name : {
+							size : (validParams) => {
+								return '최대 ' + validParams.max + '글자입니다.';
+							}
+						}
+					},
+					okButtonTitle : '변경 완료'
+				}, (folderName, showErrors, removePrompt) => {
 					
-					console.log(folderData);
+					if (folderName.trim() === '') {
+						SkyDesktop.Alert({
+							msg : '변경할 폴더 이름을 입력해주세요.'
+						});
+					} else {
+						
+						// 폴더 이름을 변경합니다.
+						BigWorld.FolderModel.update({
+							id : folderData.id,
+							name : folderName
+						}, {
+							notValid : showErrors,
+							success : removePrompt
+						});
+					}
 				});
 			},
 			
 			// removeElementHandler
 			() => {
-				//TODO:
+				
+				SkyDesktop.Confirm({
+					msg : '정말 폴더를 삭제하시겠습니까? 폴더를 삭제하면 폴더 내 모든 요소들이 삭제됩니다.'
+				}, () => {
+					
+					let loadingBar = SkyDesktop.LoadingBar('lime');
+					
+					BigWorld.FolderModel.remove(folderData.id, () => {
+						loadingBar.done();
+					});
+				});
 			});
 		};
 		
@@ -674,9 +733,10 @@ BigWorld.Explorer = CLASS({
 							createTime : 1
 						}
 					}, {
-						handler : (subFolderData, addUpdateHandler, addRemoveHandler) => {
+						handler : (subFolderData, addUpdateHandler, addRemoveHandler, exit) => {
 							
-							elementList.append(BigWorld.ExplorerElement({
+							let element;
+							elementList.append(element = BigWorld.ExplorerElement({
 								type : 'folder',
 								name : subFolderData.name,
 								on : {
@@ -710,6 +770,26 @@ BigWorld.Explorer = CLASS({
 									}
 								}
 							}));
+							
+							// 폴더가 수정된 경우
+							addUpdateHandler((newFolderData) => {
+								
+								// 다른 폴더로 이전된 경우
+								if (newFolderData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
+									exit();
+									elementList.removeItem(subFolderData.id);
+								}
+								
+								// 그게 아니라면 이름만 바꿉니다.
+								else {
+									element.changeName(newFolderData.name);
+								}
+							});
+							
+							// 폴더가 삭제된 경우
+							addRemoveHandler(() => {
+								elementList.removeItem(subFolderData.id);
+							});
 						},
 						success : next
 					}));
@@ -727,9 +807,10 @@ BigWorld.Explorer = CLASS({
 							createTime : 1
 						}
 					}, {
-						handler : (mapData, addUpdateHandler, addRemoveHandler) => {
+						handler : (mapData, addUpdateHandler, addRemoveHandler, exit) => {
 							
-							elementList.append(BigWorld.ExplorerElement({
+							let element;
+							elementList.append(element = BigWorld.ExplorerElement({
 								type : 'map',
 								name : MSG(mapData.name),
 								on : {
@@ -755,23 +836,88 @@ BigWorld.Explorer = CLASS({
 										
 										openElementContextMenu(e,
 										
-										// changeNameHandler
-										() => {
-											//TODO:
-										},
-										
 										// moveElementHandler
 										() => {
-											//TODO:
+											BigWorld.SelectFolderPopup((folderId) => {
+												moveElement('map', mapData.id, folderId);
+											});
+										},
+										
+										// changeNameHandler
+										() => {
+											
+											BigWorld.ValidPrompt({
+												title : '맵 이름 변경',
+												inputName : 'name.ko',
+												placeholder : '맵 이름',
+												value : mapData.name.ko,
+												errorMsgs : {
+													'name.ko' : {
+														size : (validParams) => {
+															return '최대 ' + validParams.max + '글자입니다.';
+														}
+													}
+												},
+												okButtonTitle : '변경 완료'
+											}, (mapName, showErrors, removePrompt) => {
+												
+												if (mapName.trim() === '') {
+													SkyDesktop.Alert({
+														msg : '변경할 맵 이름을 입력해주세요.'
+													});
+												} else {
+													
+													// 맵 이름을 변경합니다.
+													BigWorld.MapModel.update({
+														id : mapData.id,
+														name : {
+															ko : mapName
+														}
+													}, {
+														notValid : showErrors,
+														success : removePrompt
+													});
+												}
+											});
 										},
 										
 										// removeElementHandler
 										() => {
-											//TODO:
+											
+											SkyDesktop.Confirm({
+												msg : '정말 맵을 삭제하시겠습니까?'
+											}, () => {
+												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												BigWorld.MapModel.remove(mapData.id, () => {
+													loadingBar.done();
+												});
+											});
 										});
 									}
 								}
 							}));
+							
+							// 맵이 수정된 경우
+							addUpdateHandler((newMapData) => {
+								
+								// 다른 폴더로 이전된 경우
+								if (newMapData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
+									exit();
+									elementList.removeItem(mapData.id);
+								}
+								
+								// 그게 아니라면 이름만 바꿉니다.
+								else {
+									element.changeName(MSG(newMapData.name));
+								}
+							});
+							
+							// 맵이 삭제된 경우
+							addRemoveHandler(() => {
+								elementList.removeItem(mapData.id);
+							});
 						},
 						success : next
 					}));
@@ -791,7 +937,8 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (tileData, addUpdateHandler, addRemoveHandler) => {
 							
-							elementList.append(BigWorld.ExplorerElement({
+							let element;
+							elementList.append(element = BigWorld.ExplorerElement({
 								type : 'tile',
 								name : MSG(tileData.name),
 								on : {
@@ -817,23 +964,88 @@ BigWorld.Explorer = CLASS({
 										
 										openElementContextMenu(e,
 										
-										// changeNameHandler
-										() => {
-											//TODO:
-										},
-										
 										// moveElementHandler
 										() => {
-											//TODO:
+											BigWorld.SelectFolderPopup((folderId) => {
+												moveElement('tile', tileData.id, folderId);
+											});
+										},
+										
+										// changeNameHandler
+										() => {
+											
+											BigWorld.ValidPrompt({
+												title : '타일 이름 변경',
+												inputName : 'name.ko',
+												placeholder : '타일 이름',
+												value : tileData.name.ko,
+												errorMsgs : {
+													'name.ko' : {
+														size : (validParams) => {
+															return '최대 ' + validParams.max + '글자입니다.';
+														}
+													}
+												},
+												okButtonTitle : '변경 완료'
+											}, (tileName, showErrors, removePrompt) => {
+												
+												if (tileName.trim() === '') {
+													SkyDesktop.Alert({
+														msg : '변경할 타일 이름을 입력해주세요.'
+													});
+												} else {
+													
+													// 타일 이름을 변경합니다.
+													BigWorld.TileModel.update({
+														id : tileData.id,
+														name : {
+															ko : tileName
+														}
+													}, {
+														notValid : showErrors,
+														success : removePrompt
+													});
+												}
+											});
 										},
 										
 										// removeElementHandler
 										() => {
-											//TODO:
+											
+											SkyDesktop.Confirm({
+												msg : '정말 타일을 삭제하시겠습니까?'
+											}, () => {
+												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												BigWorld.TileModel.remove(tileData.id, () => {
+													loadingBar.done();
+												});
+											});
 										});
 									}
 								}
 							}));
+							
+							// 타일이 수정된 경우
+							addUpdateHandler((newTileData) => {
+								
+								// 다른 폴더로 이전된 경우
+								if (newTileData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
+									exit();
+									elementList.removeItem(tileData.id);
+								}
+								
+								// 그게 아니라면 이름만 바꿉니다.
+								else {
+									element.changeName(MSG(newTileData.name));
+								}
+							});
+							
+							// 타일이 삭제된 경우
+							addRemoveHandler(() => {
+								elementList.removeItem(tileData.id);
+							});
 						},
 						success : next
 					}));
@@ -853,7 +1065,8 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (objectData, addUpdateHandler, addRemoveHandler) => {
 							
-							elementList.append(BigWorld.ExplorerElement({
+							let element;
+							elementList.append(element = BigWorld.ExplorerElement({
 								type : 'object',
 								name : MSG(objectData.name),
 								on : {
@@ -879,21 +1092,56 @@ BigWorld.Explorer = CLASS({
 										
 										openElementContextMenu(e,
 										
-										// changeNameHandler
-										() => {
-											//TODO:
-										},
-										
 										// moveElementHandler
 										() => {
-											//TODO:
+											BigWorld.SelectFolderPopup((folderId) => {
+												moveElement('object', objectData.id, folderId);
+											});
+										},
+										
+										// changeNameHandler
+										() => {
+											
+											BigWorld.ValidPrompt({
+												title : '오브젝트 이름 변경',
+												inputName : 'name.ko',
+												placeholder : '오브젝트 이름',
+												value : objectData.name.ko,
+												errorMsgs : {
+													'name.ko' : {
+														size : (validParams) => {
+															return '최대 ' + validParams.max + '글자입니다.';
+														}
+													}
+												},
+												okButtonTitle : '변경 완료'
+											}, (objectName, showErrors, removePrompt) => {
+												
+												if (objectName.trim() === '') {
+													SkyDesktop.Alert({
+														msg : '변경할 오브젝트 이름을 입력해주세요.'
+													});
+												} else {
+													
+													// 오브젝트 이름을 변경합니다.
+													BigWorld.ObjectModel.update({
+														id : objectData.id,
+														name : {
+															ko : objectName
+														}
+													}, {
+														notValid : showErrors,
+														success : removePrompt
+													});
+												}
+											});
 										},
 										
 										// removeElementHandler
 										() => {
 											
 											SkyDesktop.Confirm({
-												msg : '정말 오브젝트를 삭제하시겠습니까?'
+												msg : '정말 오브젝트를 삭제하시겠습니까? 오브젝트를 삭제하면 오브젝트와 연결된 모든 아이템들이 삭제됩니다.'
 											}, () => {
 												
 												let loadingBar = SkyDesktop.LoadingBar('lime');
@@ -906,6 +1154,26 @@ BigWorld.Explorer = CLASS({
 									}
 								}
 							}));
+							
+							// 오브젝트가 수정된 경우
+							addUpdateHandler((newObjectData) => {
+								
+								// 다른 폴더로 이전된 경우
+								if (newObjectData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
+									exit();
+									elementList.removeItem(objectData.id);
+								}
+								
+								// 그게 아니라면 이름만 바꿉니다.
+								else {
+									element.changeName(MSG(newObjectData.name));
+								}
+							});
+							
+							// 오브젝트가 삭제된 경우
+							addRemoveHandler(() => {
+								elementList.removeItem(objectData.id);
+							});
 						},
 						success : next
 					}));
@@ -925,7 +1193,8 @@ BigWorld.Explorer = CLASS({
 					}, {
 						handler : (itemData, addUpdateHandler, addRemoveHandler) => {
 							
-							elementList.append(BigWorld.ExplorerElement({
+							let element;
+							elementList.append(element = BigWorld.ExplorerElement({
 								type : 'item',
 								name : MSG(itemData.name),
 								on : {
@@ -951,23 +1220,88 @@ BigWorld.Explorer = CLASS({
 										
 										openElementContextMenu(e,
 										
-										// changeNameHandler
-										() => {
-											//TODO:
-										},
-										
 										// moveElementHandler
 										() => {
-											//TODO:
+											BigWorld.SelectFolderPopup((folderId) => {
+												moveElement('item', itemData.id, folderId);
+											});
+										},
+										
+										// changeNameHandler
+										() => {
+											
+											BigWorld.ValidPrompt({
+												title : '아이템 이름 변경',
+												inputName : 'name.ko',
+												placeholder : '아이템 이름',
+												value : itemData.name.ko,
+												errorMsgs : {
+													'name.ko' : {
+														size : (validParams) => {
+															return '최대 ' + validParams.max + '글자입니다.';
+														}
+													}
+												},
+												okButtonTitle : '변경 완료'
+											}, (itemName, showErrors, removePrompt) => {
+												
+												if (itemName.trim() === '') {
+													SkyDesktop.Alert({
+														msg : '변경할 아이템 이름을 입력해주세요.'
+													});
+												} else {
+													
+													// 아이템 이름을 변경합니다.
+													BigWorld.ItemModel.update({
+														id : itemData.id,
+														name : {
+															ko : itemName
+														}
+													}, {
+														notValid : showErrors,
+														success : removePrompt
+													});
+												}
+											});
 										},
 										
 										// removeElementHandler
 										() => {
-											//TODO:
+											
+											SkyDesktop.Confirm({
+												msg : '정말 아이템을 삭제하시겠습니까?'
+											}, () => {
+												
+												let loadingBar = SkyDesktop.LoadingBar('lime');
+												
+												BigWorld.ItemModel.remove(itemData.id, () => {
+													loadingBar.done();
+												});
+											});
 										});
 									}
 								}
 							}));
+							
+							// 아이템이 수정된 경우
+							addUpdateHandler((newItemData) => {
+								
+								// 다른 폴더로 이전된 경우
+								if (newItemData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
+									exit();
+									elementList.removeItem(itemData.id);
+								}
+								
+								// 그게 아니라면 이름만 바꿉니다.
+								else {
+									element.changeName(MSG(newItemData.name));
+								}
+							});
+							
+							// 아이템이 삭제된 경우
+							addRemoveHandler(() => {
+								elementList.removeItem(itemData.id);
+							});
 						},
 						success : next
 					}));

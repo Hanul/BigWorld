@@ -7,16 +7,17 @@ BigWorld.SectionEditor = CLASS({
 	init : (inner, self, params) => {
 		//REQUIRED: params
 		//REQUIRED: params.mode
-		//REQUIRED: params.sectionMap
-		//REQUIRED: params.elementData
-		//OPITONAL: params.y
+		//OPITONAL: params.sectionMap
+		//OPITONAL: params.sectionLevels
+		//OPITONAL: params.touchAreaInfo
 		//REQUIRED: params.save
 		//REQUIRED: params.changeDirection
 		//REQUIRED: params.refresh
 		
 		let mode = params.mode;
 		let sectionMap = params.sectionMap;
-		let elementData = params.elementData;
+		let sectionLevels = params.sectionLevels;
+		let touchAreaInfo = params.touchAreaInfo;
 		
 		let saveHandler = params.save;
 		let changeDirectionHandler = params.changeDirection;
@@ -28,7 +29,7 @@ BigWorld.SectionEditor = CLASS({
 		
 		let previewScreen;
 		
-		let y = mode === 'tile' ? 0 : 100;
+		let y = mode === 'tile' ? 0 : 107;
 		
 		// 프리뷰 스크린 생성
 		self.append(previewScreen = SkyEngine.SubScreen({
@@ -37,8 +38,8 @@ BigWorld.SectionEditor = CLASS({
 				backgroundColor : '#666',
 				color : '#fff'
 			},
-			width : 400,
-			height : 400,
+			width : 414,
+			height : 414,
 			y : y
 		}));
 		
@@ -76,16 +77,16 @@ BigWorld.SectionEditor = CLASS({
 			
 			// 가운데 점과 선을 그립니다.
 			EACH([SkyEngine.Rect({
-				width : 3,
-				height : 3,
+				width : 3 / previewScreen.getScaleX(),
+				height : 3 / previewScreen.getScaleX(),
 				color : '#00FFFF'
 			}), SkyEngine.Line({
-				startX : -200 / previewScreen.getScaleX(),
-				endX : 200 / previewScreen.getScaleX(),
+				startX : -207 / previewScreen.getScaleX(),
+				endX : 207 / previewScreen.getScaleX(),
 				border : (1 / previewScreen.getScaleX()) + 'px solid #00FFFF'
 			}), SkyEngine.Line({
-				startY : (-200 - y) / previewScreen.getScaleX(),
-				endY : (200 - y) / previewScreen.getScaleX(),
+				startY : (-207 - y) / previewScreen.getScaleX(),
+				endY : (207 - y) / previewScreen.getScaleX(),
 				border : (1 / previewScreen.getScaleX()) + 'px solid #00FFFF'
 			})], previewScreen.append);
 			
@@ -96,11 +97,9 @@ BigWorld.SectionEditor = CLASS({
 				previewScreen.append(sectionMapPreview = BigWorld.SectionMapPreview({
 					
 					sectionMap : sectionMap,
-					
-					leftSectionLevel : elementData.leftSectionLevel,
-					upSectionLevel : elementData.upSectionLevel,
-					rightSectionLevel : elementData.rightSectionLevel,
-					downSectionLevel : elementData.downSectionLevel,
+					sectionLevels : sectionLevels,
+					touchAreaInfo : touchAreaInfo,
+					borderScale : 1 / previewScreen.getScaleX(),
 					
 					direction : direction,
 					isEditMode : true,
@@ -216,7 +215,7 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								elementData.leftSectionLevel += 1;
+								sectionLevels.left += 1;
 								
 								EACH(sectionMap, (sections) => {
 									sections.unshift({
@@ -240,10 +239,10 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								elementData.upSectionLevel += 1;
+								sectionLevels.up += 1;
 								
 								let sections = [];
-								REPEAT(elementData.leftSectionLevel + elementData.rightSectionLevel + 1, () => {
+								REPEAT(sectionLevels.left + sectionLevels.right + 1, () => {
 									sections.push({
 										z : 0
 									});
@@ -266,7 +265,7 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								elementData.rightSectionLevel += 1;
+								sectionLevels.right += 1;
 								
 								EACH(sectionMap, (sections) => {
 									sections.push({
@@ -290,10 +289,10 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								elementData.downSectionLevel += 1;
+								sectionLevels.down += 1;
 								
 								let sections = [];
-								REPEAT(elementData.leftSectionLevel + elementData.rightSectionLevel + 1, () => {
+								REPEAT(sectionLevels.left + sectionLevels.right + 1, () => {
 									sections.push({
 										z : 0
 									});
@@ -333,8 +332,8 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								if (elementData.leftSectionLevel >= 1) {
-									elementData.leftSectionLevel -= 1;
+								if (sectionLevels.left >= 1) {
+									sectionLevels.left -= 1;
 									
 									EACH(sectionMap, (sections) => {
 										sections.shift();
@@ -357,8 +356,8 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								if (elementData.upSectionLevel >= 1) {
-									elementData.upSectionLevel -= 1;
+								if (sectionLevels.up >= 1) {
+									sectionLevels.up -= 1;
 									
 									sectionMap.shift();
 									
@@ -379,8 +378,8 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								if (elementData.rightSectionLevel >= 1) {
-									elementData.rightSectionLevel-= 1;
+								if (sectionLevels.right >= 1) {
+									sectionLevels.right-= 1;
 									
 									EACH(sectionMap, (sections) => {
 										sections.pop();
@@ -403,8 +402,8 @@ BigWorld.SectionEditor = CLASS({
 						on : {
 							tap : () => {
 								
-								if (elementData.downSectionLevel >= 1) {
-									elementData.downSectionLevel -= 1;
+								if (sectionLevels.down >= 1) {
+									sectionLevels.down -= 1;
 									
 									sectionMap.pop();
 									
@@ -494,7 +493,90 @@ BigWorld.SectionEditor = CLASS({
 							}
 						}
 					}), CLEAR_BOTH()]
-				})]
+				}),
+				
+				// 터치 영역 지정
+				mode === 'object' ? DIV({
+					style : {
+						marginTop : 10,
+						backgroundColor : '#ccc',
+						color : '#000',
+						padding : 10,
+						width : 214
+					},
+					c : [H1({
+						style : {
+							marginBottom : 10,
+							textAlign : 'center',
+							fontWeight : 'bold'
+						},
+						c : '터치 영역 지정'
+					}), UUI.FULL_INPUT({
+						style : {
+							flt : 'left',
+							width : 92
+						},
+						name : 'x',
+						placeholder : 'x',
+						value : touchAreaInfo.x,
+						on : {
+							change : (e, input) => {
+								touchAreaInfo.x = INTEGER(input.getValue());
+								saveHandler();
+							}
+						}
+					}),
+					
+					UUI.FULL_INPUT({
+						style : {
+							flt : 'right',
+							width : 92
+						},
+						name : 'y',
+						placeholder : 'y',
+						value : touchAreaInfo.y,
+						on : {
+							change : (e, input) => {
+								touchAreaInfo.y = INTEGER(input.getValue());
+								saveHandler();
+							}
+						}
+					}), UUI.FULL_INPUT({
+						style : {
+							marginTop : 10,
+							flt : 'left',
+							width : 92
+						},
+						name : 'width',
+						placeholder : 'width',
+						value : touchAreaInfo.width,
+						on : {
+							change : (e, input) => {
+								touchAreaInfo.width = INTEGER(input.getValue());
+								saveHandler();
+							}
+						}
+					}),
+					
+					UUI.FULL_INPUT({
+						style : {
+							marginTop : 10,
+							flt : 'right',
+							width : 92
+						},
+						name : 'height',
+						placeholder : 'height',
+						value : touchAreaInfo.height,
+						on : {
+							change : (e, input) => {
+								touchAreaInfo.height = INTEGER(input.getValue());
+								saveHandler();
+							}
+						}
+					}),
+					
+					CLEAR_BOTH()]
+				}) : undefined]
 			}));
 		}
 		

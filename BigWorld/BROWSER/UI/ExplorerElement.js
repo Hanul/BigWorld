@@ -21,7 +21,8 @@ BigWorld.ExplorerElement = CLASS({
 		let type = params.type;
 		let name = params.name;
 		
-		self.append(UUI.BUTTON({
+		let button;
+		self.append(button = UUI.BUTTON({
 			icon : IMG({
 				src : BigWorld.R('explorer/element/' + type + '.png'),
 				on : {
@@ -44,5 +45,13 @@ BigWorld.ExplorerElement = CLASS({
 				backgroundColor : 'transparent'
 			});
 		});
+		
+		let changeName = self.changeName = (_name) => {
+			//REQUIRED: name
+			
+			name = _name;
+			
+			button.setTitle(name);
+		};
 	}
 });

@@ -371,7 +371,7 @@ BigWorld.PartEditor = CLASS({
 			isChangeToSave = false;
 			
 			// 방향이 존재하지 않는 경우 (타일)
-			if (direction !== undefined) {
+			if (direction === undefined) {
 				partInfo.x -= 1;
 				xInput.setValue(partInfo.x);
 			}
@@ -394,7 +394,7 @@ BigWorld.PartEditor = CLASS({
 			isChangeToSave = false;
 			
 			// 방향이 존재하지 않는 경우 (타일)
-			if (direction !== undefined) {
+			if (direction === undefined) {
 				partInfo.x += 1;
 				xInput.setValue(partInfo.x);
 			}
@@ -417,7 +417,7 @@ BigWorld.PartEditor = CLASS({
 			isChangeToSave = false;
 			
 			// 방향이 존재하지 않는 경우 (타일)
-			if (direction !== undefined) {
+			if (direction === undefined) {
 				partInfo.y -= 1;
 				yInput.setValue(partInfo.y);
 			}
@@ -440,7 +440,7 @@ BigWorld.PartEditor = CLASS({
 			isChangeToSave = false;
 			
 			// 방향이 존재하지 않는 경우 (타일)
-			if (direction !== undefined) {
+			if (direction === undefined) {
 				partInfo.y += 1;
 				yInput.setValue(partInfo.y);
 			}

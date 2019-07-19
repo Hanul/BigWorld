@@ -1,8 +1,8 @@
 BigWorld.Tile = CLASS((cls) => {
 	
 	// 타일의 크기
-	let width = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
-	let height = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
+	let tileWidth = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
+	let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
 	
 	let initSectionMap = [];
 	REPEAT(CONFIG.BigWorld.tileSectionLevel, () => {
@@ -55,8 +55,8 @@ BigWorld.Tile = CLASS((cls) => {
 			let bottomTileId = params.bottomTileId;
 			let leftBottomTileId = params.leftBottomTileId;
 			
-			self.setX(col * width);
-			self.setY(row * height);
+			self.setX(col * tileWidth);
+			self.setY(row * tileHeight);
 			
 			let drawState = (state, x, y) => {
 				
@@ -93,26 +93,26 @@ BigWorld.Tile = CLASS((cls) => {
 					// 왼쪽 위와 아래가 같은 타일인 경우
 					if (leftTopTileId === tileData.id && leftBottomTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', -width, 0);
+						drawState('center', -tileWidth, 0);
 					}
 					
 					// 왼쪽 위가 같은 타일인 경우
 					else if (leftTopTileId === tileData.id) {
-						drawState('fillRightTop', -width, 0);
+						drawState('fillRightTop', -tileWidth, 0);
 					}
 					
 					// 왼쪽 아래가 같은 타일인 경우
 					else if (leftBottomTileId === tileData.id) {
-						drawState('fillRightBottom', -width, 0);
+						drawState('fillRightBottom', -tileWidth, 0);
 					}
 					
 					else {
-						drawState('left', -width, 0);
+						drawState('left', -tileWidth, 0);
 					}
 				}
 				
 				if (leftTileId !== tileData.id && leftTopTileId !== tileData.id && topTileId !== tileData.id) {
-					drawState('leftTop', -width, -height);
+					drawState('leftTop', -tileWidth, -tileHeight);
 				}
 				
 				// 위 타일이 다른 경우
@@ -121,12 +121,12 @@ BigWorld.Tile = CLASS((cls) => {
 					// 위 왼쪽과 위 오른쪽이 같은 타일인 경우
 					if (leftTopTileId === tileData.id && rightTopTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', 0, -height);
+						drawState('center', 0, -tileHeight);
 					}
 					
 					// 위 왼쪽이 같은 타일인 경우
 					else if (leftTopTileId === tileData.id) {
-						drawState('fillLeftBottom', 0, -height);
+						drawState('fillLeftBottom', 0, -tileHeight);
 					}
 					
 					// 위 오른쪽이 같은 타일인 경우
@@ -135,12 +135,12 @@ BigWorld.Tile = CLASS((cls) => {
 					}
 					
 					else {
-						drawState('top', 0, -height);
+						drawState('top', 0, -tileHeight);
 					}
 				}
 				
 				if (topTileId !== tileData.id && rightTopTileId !== tileData.id && rightTileId !== tileData.id) {
-					drawState('rightTop', width, -height);
+					drawState('rightTop', tileWidth, -tileHeight);
 				}
 				
 				// 오른쪽의 타일이 다른 경우
@@ -149,12 +149,12 @@ BigWorld.Tile = CLASS((cls) => {
 					// 오른쪽 위와 아래가 같은 타일인 경우
 					if (rightTopTileId === tileData.id && rightBottomTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', width, 0);
+						drawState('center', tileWidth, 0);
 					}
 					
 					// 오른쪽 위와 같은 타일인 경우
 					else if (rightTopTileId === tileData.id) {
-						drawState('fillLeftTop', width, 0);
+						drawState('fillLeftTop', tileWidth, 0);
 					}
 					
 					// 오른쪽 아래가 같은 타일인 경우
@@ -163,12 +163,12 @@ BigWorld.Tile = CLASS((cls) => {
 					}
 					
 					else {
-						drawState('right', width, 0);
+						drawState('right', tileWidth, 0);
 					}
 				}
 				
 				if (rightTileId !== tileData.id && rightBottomTileId !== tileData.id && bottomTileId !== tileData.id) {
-					drawState('rightBottom', width, height);
+					drawState('rightBottom', tileWidth, tileHeight);
 				}
 				
 				// 아래 타일이 다른 경우
@@ -177,7 +177,7 @@ BigWorld.Tile = CLASS((cls) => {
 					// 아래 왼쪽과 아래 오른쪽이 같은 타일인 경우
 					if (leftBottomTileId === tileData.id && rightBottomTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', 0, height);
+						drawState('center', 0, tileHeight);
 					}
 					
 					// 아래 왼쪽이 같은 타일인 경우
@@ -191,12 +191,12 @@ BigWorld.Tile = CLASS((cls) => {
 					}
 					
 					else {
-						drawState('bottom', 0, height);
+						drawState('bottom', 0, tileHeight);
 					}
 				}
 				
 				if (bottomTileId !== tileData.id && leftBottomTileId !== tileData.id && leftTileId !== tileData.id) {
-					drawState('leftBottom', -width, height);
+					drawState('leftBottom', -tileWidth, tileHeight);
 				}
 			});
 		}

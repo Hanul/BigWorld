@@ -24,8 +24,6 @@ BigWorld.ItemEditor = CLASS({
 		let editorWrapper;
 		let sectionEditor;
 		
-		let isRemoved;
-		
 		let wrapper = TABLE({
 			style : {
 				position : 'absolute',
@@ -108,7 +106,6 @@ BigWorld.ItemEditor = CLASS({
 										let loadingBar = SkyDesktop.LoadingBar('lime');
 										
 										BigWorld.ItemModel.remove(nowItemId, () => {
-											isRemoved = true;
 											close();
 										});
 									});
@@ -262,10 +259,6 @@ BigWorld.ItemEditor = CLASS({
 						flt : 'left',
 						marginTop : 10
 					},
-					
-					sectionMap : nowItemData.sectionMap,
-					
-					elementData : nowItemData,
 					
 					changeDirection : (direction) => {
 						partsEditor.changeDirection(direction);
@@ -474,7 +467,9 @@ BigWorld.ItemEditor = CLASS({
 			
 			// 초기화
 			selectedKind = undefined;
+			selectedState = undefined;
 			rootKind.removeAllItems();
+			rootState.removeAllItems();
 			editorWrapper.empty();
 			
 			// 아이템 데이터를 불러옵니다.
@@ -531,14 +526,6 @@ BigWorld.ItemEditor = CLASS({
 					});
 				});
 			});
-		});
-		
-		// 새로고침 막기
-		window.addEventListener('beforeunload', (e) => {
-			if (isRemoved !== true) {
-				e.returnValue = null;
-				return null;
-			}
 		});
 		
 		// 틀 어긋난 부분 수정

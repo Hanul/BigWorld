@@ -207,6 +207,17 @@ BigWorld.TileModel = OBJECT({
 			}
 		};
 		
+		let initSectionMap = [];
+		REPEAT(CONFIG.BigWorld.tileSectionLevel, () => {
+			let initSections = [];
+			REPEAT(CONFIG.BigWorld.tileSectionLevel, () => {
+				initSections.push({
+					z : 0
+				});
+			});
+			initSectionMap.push(initSections);
+		});
+		
 		return {
 			name : 'Tile',
 			initData : {
@@ -219,7 +230,7 @@ BigWorld.TileModel = OBJECT({
 				
 				states : {
 					center : {
-						sectionMap : [],
+						sectionMap : initSectionMap,
 						parts : []
 					}
 				}

@@ -42,8 +42,6 @@ BigWorld.TileEditor = CLASS(() => {
 			let sectionEditor;
 			let tilePreview;
 			
-			let isRemoved;
-			
 			let wrapper = TABLE({
 				style : {
 					position : 'absolute',
@@ -126,7 +124,6 @@ BigWorld.TileEditor = CLASS(() => {
 											let loadingBar = SkyDesktop.LoadingBar('lime');
 											
 											BigWorld.TileModel.remove(nowTileId, () => {
-												isRemoved = true;
 												close();
 											});
 										});
@@ -222,7 +219,7 @@ BigWorld.TileEditor = CLASS(() => {
 								c : editorWrapper = DIV({
 									style : {
 										padding : 10,
-										width : 860
+										width : 888
 									}
 								})
 							})]
@@ -294,14 +291,13 @@ BigWorld.TileEditor = CLASS(() => {
 							marginTop : 10
 						},
 						
-						sectionMap : nowTileData.states[nowState] === undefined ? BigWorld.Tile.getInitSectionMap() : nowTileData.states[nowState].sectionMap,
-						
-						elementData : {
-							leftSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
-							upSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
-							rightSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
-							downSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1
+						sectionLevels : {
+							left : CONFIG.BigWorld.tileSectionLevel - 1,
+							up : CONFIG.BigWorld.tileSectionLevel - 1,
+							right : CONFIG.BigWorld.tileSectionLevel - 1,
+							down : CONFIG.BigWorld.tileSectionLevel - 1
 						},
+						sectionMap : nowTileData.states[nowState] === undefined ? BigWorld.Tile.getInitSectionMap() : nowTileData.states[nowState].sectionMap,
 						
 						save : saveTile,
 						refresh : (previewScreen, direction) => {
@@ -824,14 +820,6 @@ BigWorld.TileEditor = CLASS(() => {
 					rootKind.getItem(0).tap();
 					rootState.getItem('center').tap();
 				});
-			});
-			
-			// 새로고침 막기
-			window.addEventListener('beforeunload', (e) => {
-				if (isRemoved !== true) {
-					e.returnValue = null;
-					return null;
-				}
 			});
 			
 			// 틀 어긋난 부분 수정

@@ -29,8 +29,8 @@ BigWorld.TilePreview = CLASS({
 				backgroundColor : '#666',
 				color : '#fff'
 			},
-			width : 400,
-			height : 400,
+			width : 414,
+			height : 414,
 			y : y
 		}));
 		

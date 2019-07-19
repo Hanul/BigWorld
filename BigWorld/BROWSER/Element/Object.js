@@ -4,17 +4,25 @@ BigWorld.Object = CLASS({
 		return SkyEngine.Node;
 	},
 	
+	params : () => {
+		return {
+			isY2ZIndex : true
+		};
+	},
+	
 	init : (inner, self, params) => {
 		//REQUIRED: params
 		//REQUIRED: params.objectData
 		//REQUIRED: params.kind
 		//REQUIRED: params.state
 		//REQUIRED: params.direction
+		//OPTIONAL: params.items
 		
 		let objectData = params.objectData;
 		let kind = params.kind;
 		let state = params.state;
 		let direction = params.direction;
+		let items = params.items;
 		
 		// 오브젝트 새로고침
 		let refresh = RAR(() => {
@@ -25,22 +33,33 @@ BigWorld.Object = CLASS({
 				
 				EACH(stateInfo.parts, (partInfo, partIndex) => {
 					
-					let frameImageIds = partInfo.frames[kind];
-					if (frameImageIds !== undefined) {
+					let partDirectionInfo = partInfo[direction];
+					if (partDirectionInfo !== undefined) {
 						
-						let frameImageId = frameImageIds[direction + 'ImageId'];
+						let frameImageId = partDirectionInfo.frames[kind];
 						if (frameImageId !== undefined) {
 							
 							SkyEngine.Sprite({
 								src : BigWorld.RF(frameImageId),
-								fps : partInfo.fps,
-								frameCount : partInfo.frameCount,
-								zIndex : partInfo.zIndex,
-								x : partInfo.x,
-								y : partInfo.y
+								fps : partDirectionInfo.fps,
+								frameCount : partDirectionInfo.frameCount,
+								zIndex : partDirectionInfo.zIndex,
+								x : partDirectionInfo.x,
+								y : partDirectionInfo.y
 							}).appendTo(self);
 						}
 					}
+				});
+			}
+			
+			if (items !== undefined) {
+				EACH(items, (item) => {
+					
+					item.draw({
+						object : self,
+						state : state,
+						direction : direction
+					});
 				});
 			}
 		});

@@ -6,23 +6,17 @@ BigWorld.SectionEditor = CLASS({
 	
 	init : (inner, self, params) => {
 		//REQUIRED: params
+		//REQUIRED: params.mode
 		//REQUIRED: params.sectionMap
 		//REQUIRED: params.elementData
 		//OPITONAL: params.y
-		//OPITONAL: params.isTileMode
 		//REQUIRED: params.save
 		//REQUIRED: params.changeDirection
 		//REQUIRED: params.refresh
 		
+		let mode = params.mode;
 		let sectionMap = params.sectionMap;
 		let elementData = params.elementData;
-		
-		let y = params.y;
-		let isTileMode = params.isTileMode;
-		
-		if (y === undefined) {
-			y = 0;
-		}
 		
 		let saveHandler = params.save;
 		let changeDirectionHandler = params.changeDirection;
@@ -33,6 +27,8 @@ BigWorld.SectionEditor = CLASS({
 		let direction = 'down';
 		
 		let previewScreen;
+		
+		let y = mode === 'tile' ? 0 : 100;
 		
 		// 프리뷰 스크린 생성
 		self.append(previewScreen = SkyEngine.SubScreen({
@@ -95,91 +91,97 @@ BigWorld.SectionEditor = CLASS({
 			
 			refreshHandler(previewScreen, direction);
 			
-			previewScreen.append(sectionMapPreview = BigWorld.SectionMapPreview({
+			if (mode !== 'item') {
 				
-				sectionMap : sectionMap,
-				
-				leftSectionLevel : elementData.leftSectionLevel,
-				upSectionLevel : elementData.upSectionLevel,
-				rightSectionLevel : elementData.rightSectionLevel,
-				downSectionLevel : elementData.downSectionLevel,
-				
-				direction : direction,
-				isEditMode : true,
-				selectSection : (sectionCol, sectionRow) => {
+				previewScreen.append(sectionMapPreview = BigWorld.SectionMapPreview({
 					
-					let section = sectionMap[sectionRow][sectionCol];
+					sectionMap : sectionMap,
 					
-					// Control을 누르고 있으면 트리거
-					if (isControlMode === true) {
-						
-						if (section.isTrigger === true) {
-							delete section.isTrigger;
-						} else {
-							section.isTrigger = true;
-						}
-						
-						delete section.isBlock;
-					}
+					leftSectionLevel : elementData.leftSectionLevel,
+					upSectionLevel : elementData.upSectionLevel,
+					rightSectionLevel : elementData.rightSectionLevel,
+					downSectionLevel : elementData.downSectionLevel,
 					
-					// 블록
-					else {
+					direction : direction,
+					isEditMode : true,
+					selectSection : (sectionCol, sectionRow) => {
 						
-						if (section.isTrigger !== true) {
+						let section = sectionMap[sectionRow][sectionCol];
+						
+						// Control을 누르고 있으면 트리거
+						if (isControlMode === true) {
 							
-							if (section.isBlock === true) {
-								delete section.isBlock;
+							if (section.isTrigger === true) {
+								delete section.isTrigger;
 							} else {
-								section.isBlock = true;
+								section.isTrigger = true;
 							}
+							
+							delete section.isBlock;
 						}
 						
-						delete section.isTrigger;
+						// 블록
+						else {
+							
+							if (section.isTrigger !== true) {
+								
+								if (section.isBlock === true) {
+									delete section.isBlock;
+								} else {
+									section.isBlock = true;
+								}
+							}
+							
+							delete section.isTrigger;
+						}
+						
+						sectionMapPreview.refresh();
+						
+						saveHandler();
 					}
-					
-					sectionMapPreview.refresh();
-					
-					saveHandler();
+				}));
+				
+				if (sectionEditorStore.get('isToShowSection') !== true) {
+					sectionMapPreview.hide();
+				}
+			}
+		});
+		
+		if (mode !== 'item') {
+			
+			self.addStyle({
+				position : 'relative'
+			});
+			
+			self.append(UUI.FULL_CHECKBOX({
+				style : {
+					position : 'absolute',
+					left : 10,
+					top : 7,
+					fontSize : 12
+				},
+				label : '섹션 보기',
+				value : sectionEditorStore.get('isToShowSection'),
+				on : {
+					change : (e, input) => {
+						
+						if (input.getValue() === true) {
+							sectionMapPreview.show();
+						} else {
+							sectionMapPreview.hide();
+						}
+						
+						sectionEditorStore.save({
+							name : 'isToShowSection',
+							value : input.getValue()
+						});
+					}
 				}
 			}));
-			
-			if (sectionEditorStore.get('isToShowSection') !== true) {
-				sectionMapPreview.hide();
-			}
-		});
-		
-		self.addStyle({
-			position : 'relative'
-		});
-		
-		self.append(UUI.FULL_CHECKBOX({
-			style : {
-				position : 'absolute',
-				left : 10,
-				top : 7,
-				fontSize : 12
-			},
-			label : '섹션 보기',
-			value : sectionEditorStore.get('isToShowSection'),
-			on : {
-				change : (e, input) => {
-					
-					if (input.getValue() === true) {
-						sectionMapPreview.show();
-					} else {
-						sectionMapPreview.hide();
-					}
-					
-					sectionEditorStore.save({
-						name : 'isToShowSection',
-						value : input.getValue()
-					});
-				}
-			}
-		}));
+		}
 		
 		// 회전 컨트롤러
-		if (isTileMode !== true) {
+		if (mode !== 'tile') {
 			
 			self.append(DIV({
 				style : {
@@ -188,7 +190,8 @@ BigWorld.SectionEditor = CLASS({
 				},
 				c : [
 				
-				DIV({
+				// 섹션 크기 늘리기
+				mode === 'object' ? DIV({
 					style : {
 						backgroundColor : '#ccc',
 						color : '#000',
@@ -301,9 +304,10 @@ BigWorld.SectionEditor = CLASS({
 							}
 						}
 					}), CLEAR_BOTH()]
-				}),
+				}) : undefined,
 				
-				DIV({
+				// 섹션 크기 줄이기
+				mode === 'object' ? DIV({
 					style : {
 						marginTop : 10,
 						backgroundColor : '#ccc',
@@ -409,11 +413,12 @@ BigWorld.SectionEditor = CLASS({
 							}
 						}
 					}), CLEAR_BOTH()]
-				}),
+				}) : undefined,
 				
+				// 회전시키기
 				DIV({
 					style : {
-						marginTop : 10,
+						marginTop : mode === 'object' ? 10 : 0,
 						backgroundColor : '#ccc',
 						color : '#000',
 						padding : 10

@@ -221,7 +221,8 @@ BigWorld.TileEditor = CLASS(() => {
 								size : 70,
 								c : editorWrapper = DIV({
 									style : {
-										padding : 10
+										padding : 10,
+										width : 860
 									}
 								})
 							})]
@@ -286,6 +287,7 @@ BigWorld.TileEditor = CLASS(() => {
 					
 					// 섹션 편집
 					editorWrapper.append(sectionEditor = BigWorld.SectionEditor({
+						mode : 'tile',
 						
 						style : {
 							flt : 'left',
@@ -300,8 +302,6 @@ BigWorld.TileEditor = CLASS(() => {
 							rightSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1,
 							downSectionLevel : CONFIG.BigWorld.tileSectionLevel - 1
 						},
-						
-						isTileMode : true,
 						
 						save : saveTile,
 						refresh : (previewScreen, direction) => {

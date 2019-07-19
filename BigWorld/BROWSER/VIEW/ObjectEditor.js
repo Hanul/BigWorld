@@ -102,7 +102,7 @@ BigWorld.ObjectEditor = CLASS({
 									BigWorld.ValidPrompt({
 										title : '상태 추가',
 										inputName : 'id',
-										placeholder : '상태 ID',
+										placeholder : '상태 ID (추후 변경 불가)',
 										inputName2 : 'name.ko',
 										placeholder2 : '상태 이름',
 										errorMsgs : {
@@ -125,19 +125,25 @@ BigWorld.ObjectEditor = CLASS({
 											});
 										} else {
 											
-											let stateInfo = {
-												name : {
-													ko : stateName
-												}
-											};
-											
-											nowObjectData.states[stateId] = stateInfo;
-											
-											saveObject();
-											
-											addState(stateId, stateInfo);
-											
-											removePrompt();
+											SkyDesktop.Confirm({
+												msg : '상태는 추가 후 삭제가 불가능합니다. 또한 상태 ID는 추후 변경이 불가능합니다. 계속하시겠습니까?'
+											}, () => {
+												
+												let stateInfo = {
+													name : {
+														ko : stateName
+													},
+													parts : []
+												};
+												
+												nowObjectData.states[stateId] = stateInfo;
+												
+												saveObject();
+												
+												addState(stateId, stateInfo);
+												
+												removePrompt();
+											});
 										}
 									});
 								}
@@ -275,8 +281,7 @@ BigWorld.ObjectEditor = CLASS({
 				// 변경된 오브젝트 데이터 저장
 				BigWorld.ObjectModel.update(nowObjectData, {
 					
-					notValid : (d) => {
-						console.log(d);
+					notValid : () => {
 						loadingBar.done();
 						
 						SkyDesktop.Alert({
@@ -310,6 +315,7 @@ BigWorld.ObjectEditor = CLASS({
 				
 				// 섹션 편집
 				editorWrapper.append(sectionEditor = BigWorld.SectionEditor({
+					mode : 'object',
 					
 					style : {
 						flt : 'left',
@@ -524,7 +530,7 @@ BigWorld.ObjectEditor = CLASS({
 					style : {
 						cursor : 'pointer'
 					},
-					title : MSG(stateInfo.name),
+					title : MSG(stateInfo.name) + ' (' + stateId + ')',
 					on : {
 						tap : () => {
 							
@@ -554,10 +560,9 @@ BigWorld.ObjectEditor = CLASS({
 											
 											BigWorld.ValidPrompt({
 												title : '상태 수정',
-												inputName : 'id',
-												placeholder : '상태 ID',
-												inputName2 : 'name.ko',
-												placeholder2 : '상태 이름',
+												inputName : 'name.ko',
+												placeholder : '상태 이름',
+												value : stateInfo.name.ko,
 												errorMsgs : {
 													'name.ko' : {
 														size : (validParams) => {
@@ -566,13 +571,9 @@ BigWorld.ObjectEditor = CLASS({
 													}
 												},
 												okButtonTitle : '수정'
-											}, (stateId, stateName, showErrors, removePrompt) => {
+											}, (stateName, showErrors, removePrompt) => {
 												
-												if (stateId.trim() === '') {
-													SkyDesktop.Alert({
-														msg : '상태 ID를 입력해주세요.'
-													});
-												} else if (stateName.trim() === '') {
+												if (stateName.trim() === '') {
 													SkyDesktop.Alert({
 														msg : '상태 이름을 입력해주세요.'
 													});
@@ -584,7 +585,7 @@ BigWorld.ObjectEditor = CLASS({
 													
 													saveObject();
 													
-													state.setTitle(MSG(stateInfo.name));
+													state.setTitle(MSG(stateInfo.name) + ' (' + stateId + ')');
 													
 													removePrompt();
 												}
@@ -660,13 +661,13 @@ BigWorld.ObjectEditor = CLASS({
 					addKind(i, kindInfo);
 				});
 				
+				// 맨 처음에는 첫 종류를 열기
+				rootKind.getItem(0).tap();
+				
 				// 상태들 생성
 				EACH(objectData.states, (stateInfo, stateId) => {
 					addState(stateId, stateInfo);
 				});
-				
-				// 맨 처음에는 첫 종류를 열기
-				rootKind.getItem(0).tap();
 				
 				// 첫 상태를 열기
 				EACH(objectData.states, (stateInfo, stateId) => {

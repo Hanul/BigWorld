@@ -88,6 +88,7 @@ BigWorld.ValidPrompt = METHOD({
 					value : value
 				}), inputName2 !== undefined ? input2 = INPUT({
 					style : {
+						marginTop : 10,
 						width : 222,
 						padding : 8,
 						border : '1px solid #999',

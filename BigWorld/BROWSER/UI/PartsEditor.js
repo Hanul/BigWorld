@@ -9,11 +9,13 @@ BigWorld.PartsEditor = CLASS({
 		//REQUIRED: params.stateInfos
 		//REQUIRED: params.state
 		//REQUIRED: params.kind
+		//OPTIONAL: params.direction
 		//REQUIRED: params.save
 		
 		let stateInfos = params.stateInfos;
 		let state = params.state;
 		let kind = params.kind;
+		let direction = params.direction;
 		
 		let saveHandler = params.save;
 		
@@ -44,16 +46,28 @@ BigWorld.PartsEditor = CLASS({
 							};
 						}
 						
-						let partInfo = {
-							name : {
-								ko : '파트 ' + stateInfo.parts.length
-							},
-							zIndex : 0,
-							frameCount : 1,
-							x : 0,
-							y : 0,
-							frames : []
-						};
+						let partInfo;
+						
+						if (direction === undefined) {
+							partInfo = {
+								name : {
+									ko : '파트 ' + stateInfo.parts.length
+								},
+								zIndex : 0,
+								frameCount : 1,
+								x : 0,
+								y : 0,
+								frames : []
+							};
+						}
+						
+						else {
+							partInfo = {
+								name : {
+									ko : '파트 ' + stateInfo.parts.length
+								}
+							};
+						}
 						
 						stateInfo.parts.push(partInfo);
 						
@@ -190,7 +204,7 @@ BigWorld.PartsEditor = CLASS({
 					});
 					
 					// 모든 파트가 제거되면 상태도 제거
-					if (stateInfos[state].parts.length === 0) {
+					if (stateInfos[state].name === undefined && stateInfos[state].parts.length === 0) {
 						delete stateInfos[state];
 					}
 					

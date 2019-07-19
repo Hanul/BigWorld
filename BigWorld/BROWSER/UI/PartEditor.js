@@ -23,8 +23,17 @@ BigWorld.PartEditor = CLASS({
 		let isChangeToSave;
 		
 		let form;
+		let nameInput;
 		let xInput, yInput;
 		let imagePreviewWrapper;
+		
+		let initPartDirectionInfo = {
+			zIndex : 0,
+			frameCount : 1,
+			x : 0,
+			y : 0,
+			frames : []
+		};
 		
 		self.append(TABLE({
 			c : TR({
@@ -42,7 +51,7 @@ BigWorld.PartEditor = CLASS({
 							width : 230
 						},
 						c : [
-						UUI.FULL_INPUT({
+						nameInput = UUI.FULL_INPUT({
 							style : {
 								flt : 'left',
 								width : 100
@@ -272,23 +281,37 @@ BigWorld.PartEditor = CLASS({
 								let data = form.getData();
 								
 								partInfo.name = data.name;
-								partInfo.zIndex = INTEGER(data.zIndex);
-								partInfo.frameCount = INTEGER(data.frameCount);
-								partInfo.fps = data.fps === '' ? TO_DELETE : INTEGER(data.fps);
-								partInfo.x = INTEGER(data.x);
-								partInfo.y = INTEGER(data.y);
 								
+								// 방향이 존재하지 않는 경우 (타일)
 								if (direction === undefined) {
-									partInfo.frames[kind] = imageId;
+									partInfo.zIndex = INTEGER(data.zIndex);
+									partInfo.frameCount = INTEGER(data.frameCount);
+									partInfo.fps = data.fps === '' ? TO_DELETE : INTEGER(data.fps);
+									partInfo.x = INTEGER(data.x);
+									partInfo.y = INTEGER(data.y);
+									
+									if (imageId !== undefined) {
+										partInfo.frames[kind] = imageId;
+									}
 								}
 								
 								else {
 									
-									if (partInfo.frames[kind] === undefined) {
-										partInfo.frames[kind] = {};
+									if (partInfo[direction] === undefined) {
+										partInfo[direction] = {
+											frames : []
+										};
 									}
 									
-									partInfo.frames[kind][direction + 'ImageId'] = imageId;
+									partInfo[direction].zIndex = INTEGER(data.zIndex);
+									partInfo[direction].frameCount = INTEGER(data.frameCount);
+									partInfo[direction].fps = data.fps === '' ? TO_DELETE : INTEGER(data.fps);
+									partInfo[direction].x = INTEGER(data.x);
+									partInfo[direction].y = INTEGER(data.y);
+									
+									if (imageId !== undefined) {
+										partInfo[direction].frames[kind] = imageId;
+									}
 								}
 								
 								saveHandler();
@@ -306,7 +329,16 @@ BigWorld.PartEditor = CLASS({
 			})
 		}));
 		
-		form.setData(partInfo);
+		form.setData(
+		
+		// 방향이 존재하지 않는 경우 (타일)
+		direction === undefined ? partInfo : (
+			partInfo[direction] === undefined ? initPartDirectionInfo : partInfo[direction]
+		));
+		
+		if (direction !== undefined) {
+			nameInput.setValue(partInfo.name.ko);
+		}
 		
 		let setImageId = (_imageId) => {
 			imageId = _imageId;
@@ -321,15 +353,15 @@ BigWorld.PartEditor = CLASS({
 			}));
 		};
 		
-		if (partInfo.frames[kind] !== undefined) {
-			
-			if (direction === undefined) {
+		// 방향이 존재하지 않는 경우 (타일)
+		if (direction === undefined) {
+			if (partInfo.frames[kind] !== undefined) {
 				setImageId(partInfo.frames[kind]);
 			}
-			
-			else if (partInfo.frames[kind][direction + 'ImageId'] !== undefined) {
-				setImageId(partInfo.frames[kind][direction + 'ImageId']);
-			}
+		}
+		
+		else if (partInfo[direction] !== undefined && partInfo[direction].frames[kind] !== undefined) {
+			setImageId(partInfo[direction].frames[kind]);
 		}
 		
 		isChangeToSave = true;
@@ -338,8 +370,21 @@ BigWorld.PartEditor = CLASS({
 		let moveLeft1Pixel = self.moveLeft1Pixel = () => {
 			isChangeToSave = false;
 			
-			partInfo.x -= 1;
-			xInput.setValue(partInfo.x);
+			// 방향이 존재하지 않는 경우 (타일)
+			if (direction !== undefined) {
+				partInfo.x -= 1;
+				xInput.setValue(partInfo.x);
+			}
+			
+			else {
+				
+				if (partInfo[direction] === undefined) {
+					partInfo[direction] = initPartDirectionInfo;
+				}
+				
+				partInfo[direction].x -= 1;
+				xInput.setValue(partInfo[direction].x);
+			}
 			
 			isChangeToSave = true;
 		};
@@ -348,8 +393,21 @@ BigWorld.PartEditor = CLASS({
 		let moveRight1Pixel = self.moveRight1Pixel = () => {
 			isChangeToSave = false;
 			
-			partInfo.x += 1;
-			xInput.setValue(partInfo.x);
+			// 방향이 존재하지 않는 경우 (타일)
+			if (direction !== undefined) {
+				partInfo.x += 1;
+				xInput.setValue(partInfo.x);
+			}
+			
+			else {
+				
+				if (partInfo[direction] === undefined) {
+					partInfo[direction] = initPartDirectionInfo;
+				}
+				
+				partInfo[direction].x += 1;
+				xInput.setValue(partInfo[direction].x);
+			}
 			
 			isChangeToSave = true;
 		};
@@ -358,8 +416,21 @@ BigWorld.PartEditor = CLASS({
 		let moveUp1Pixel = self.moveUp1Pixel = () => {
 			isChangeToSave = false;
 			
-			partInfo.y -= 1;
-			yInput.setValue(partInfo.y);
+			// 방향이 존재하지 않는 경우 (타일)
+			if (direction !== undefined) {
+				partInfo.y -= 1;
+				yInput.setValue(partInfo.y);
+			}
+			
+			else {
+				
+				if (partInfo[direction] === undefined) {
+					partInfo[direction] = initPartDirectionInfo;
+				}
+				
+				partInfo[direction].y -= 1;
+				yInput.setValue(partInfo[direction].y);
+			}
 			
 			isChangeToSave = true;
 		};
@@ -368,8 +439,21 @@ BigWorld.PartEditor = CLASS({
 		let moveDown1Pixel = self.moveDown1Pixel = () => {
 			isChangeToSave = false;
 			
-			partInfo.y += 1;
-			yInput.setValue(partInfo.y);
+			// 방향이 존재하지 않는 경우 (타일)
+			if (direction !== undefined) {
+				partInfo.y += 1;
+				yInput.setValue(partInfo.y);
+			}
+			
+			else {
+				
+				if (partInfo[direction] === undefined) {
+					partInfo[direction] = initPartDirectionInfo;
+				}
+				
+				partInfo[direction].y += 1;
+				yInput.setValue(partInfo[direction].y);
+			}
 			
 			isChangeToSave = true;
 		};

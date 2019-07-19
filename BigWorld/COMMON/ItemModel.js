@@ -5,6 +5,44 @@ BigWorld.ItemModel = OBJECT({
 	},
 	
 	params : () => {
+		
+		let partDirectionValidDataSet = {
+			
+			// 파트의 표기 순서
+			zIndex : {
+				notEmpty : true,
+				integer : true
+			},
+			
+			frameCount : {
+				notEmpty : true,
+				integer : true
+			},
+			
+			fps : {
+				integer : true
+			},
+			
+			x : {
+				notEmpty : true,
+				integer : true
+			},
+			
+			y : {
+				notEmpty : true,
+				integer : true
+			},
+			
+			// 종류별 프레임 이미지들
+			frames : {
+				notEmpty : true,
+				
+				array : true,
+				element : {
+					id : true
+				}
+			}
+		};
 
 		let validDataSet = {
 			
@@ -132,55 +170,21 @@ BigWorld.ItemModel = OBJECT({
 										}
 									},
 									
-									// 파트의 표기 순서
-									zIndex : {
-										notEmpty : true,
-										integer : true
+									down : {
+										data : true,
+										detail : partDirectionValidDataSet
 									},
-									
-									frameCount : {
-										notEmpty : true,
-										integer : true
+									left : {
+										data : true,
+										detail : partDirectionValidDataSet
 									},
-									
-									fps : {
-										integer : true
+									up : {
+										data : true,
+										detail : partDirectionValidDataSet
 									},
-									
-									x : {
-										notEmpty : true,
-										integer : true
-									},
-									
-									y : {
-										notEmpty : true,
-										integer : true
-									},
-									
-									// 종류별 프레임 이미지들
-									frames : {
-										notEmpty : true,
-										
-										array : true,
-										element : {
-											data : true,
-											detail : {
-												
-												// 방향별 이미지들
-												downImageId : {
-													id : true
-												},
-												leftImageId : {
-													id : true
-												},
-												upImageId : {
-													id : true
-												},
-												rightImageId : {
-													id : true
-												}
-											}
-										}
+									right : {
+										data : true,
+										detail : partDirectionValidDataSet
 									}
 								}
 							}
@@ -192,6 +196,16 @@ BigWorld.ItemModel = OBJECT({
 		
 		return {
 			name : 'Item',
+			initData : {
+				
+				kinds : [{
+					name : {
+						en : 'Kind 1'
+					}
+				}],
+				
+				states : {}
+			},
 			methodConfig : {
 				create : {
 					valid : VALID(validDataSet)

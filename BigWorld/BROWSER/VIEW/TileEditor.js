@@ -59,6 +59,62 @@ BigWorld.TileEditor = CLASS(() => {
 						c : SkyDesktop.Toolbar({
 							buttons : [
 							
+							// 정보 수정 버튼
+							SkyDesktop.ToolbarButton({
+								icon : IMG({
+									src : BigWorld.R('tileeditor/menu/edit.png')
+								}),
+								title : '정보 수정',
+								on : {
+									tap : () => {
+										
+										BigWorld.ValidPrompt({
+											title : '타일 정보 변경',
+											inputName : 'name',
+											placeholder : '타일 이름',
+											value : nowTileData.name,
+											inputName2 : 'minimapColor',
+											placeholder2 : '미니맵에서 표기할 색상',
+											value2 : nowTileData.minimapColor,
+											errorMsgs : {
+												name : {
+													size : (validParams) => {
+														return '최대 ' + validParams.max + '글자입니다.';
+													}
+												},
+												minimapColor : {
+													size : (size) => {
+														return '색상은 ' + size + '글자입니다.';
+													}
+												}
+											},
+											okButtonTitle : '변경 완료'
+										}, (tileName, minimapColor, showErrors, removePrompt) => {
+											
+											if (tileName.trim() === '') {
+												SkyDesktop.Alert({
+													msg : '변경할 타일 이름을 입력해주세요.'
+												});
+											} else if (minimapColor.trim() === '') {
+												SkyDesktop.Alert({
+													msg : '색상을 입력해주세요.'
+												});
+											} else {
+												
+												nowTileData.name = tileName;
+												nowTileData.minimapColor = minimapColor;
+												
+												saveTile();
+												
+												removePrompt();
+												
+												openEditor();
+											}
+										});
+									}
+								}
+							}),
+							
 							// 종류 추가 버튼
 							SkyDesktop.ToolbarButton({
 								icon : IMG({
@@ -279,7 +335,7 @@ BigWorld.TileEditor = CLASS(() => {
 				if (nowKind !== undefined && nowState !== undefined) {
 					
 					editorWrapper.append(H3({
-						c : '선택된 종류: ' + MSG(nowTileData.kinds[nowKind].name) + ' / 선택된 상태: ' + selectedState.getTitle()
+						c : nowTileData.name + ' / 선택된 종류: ' + MSG(nowTileData.kinds[nowKind].name) + ' / 선택된 상태: ' + selectedState.getTitle()
 					}));
 					
 					// 섹션 편집

@@ -41,6 +41,70 @@ BigWorld.ItemEditor = CLASS({
 					c : SkyDesktop.Toolbar({
 						buttons : [
 						
+						// 대상 오브젝트 버튼
+						SkyDesktop.ToolbarButton({
+							icon : IMG({
+								src : BigWorld.R('itemeditor/menu/object.png')
+							}),
+							title : '대상 오브젝트',
+							on : {
+								tap : () => {
+									BigWorld.GO_NEW_WIN('object/' + nowItemData.objectId);
+								}
+							}
+						}),
+						
+						// 정보 수정 버튼
+						SkyDesktop.ToolbarButton({
+							icon : IMG({
+								src : BigWorld.R('itemeditor/menu/edit.png')
+							}),
+							title : '정보 수정',
+							on : {
+								tap : () => {
+									
+									BigWorld.ValidPrompt({
+										title : '아이템 정보 변경',
+										inputName : 'objectPart',
+										placeholder : '오브젝트 파트',
+										value : nowItemData.objectPart,
+										inputName2 : 'name.ko',
+										placeholder2 : '아이템 이름',
+										value2 : nowItemData.name.ko,
+										errorMsgs : {
+											'name.ko' : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											}
+										},
+										okButtonTitle : '변경 완료'
+									}, (objectPart, itemName, showErrors, removePrompt) => {
+										
+										if (objectPart.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '오브젝트 파트를 입력해주세요.'
+											});
+										} else if (itemName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '변경할 아이템 이름을 입력해주세요.'
+											});
+										} else {
+											
+											nowItemData.objectPart = objectPart;
+											nowItemData.name.ko = itemName;
+											
+											saveItem();
+											
+											removePrompt();
+											
+											openEditor();
+										}
+									});
+								}
+							}
+						}),
+						
 						// 종류 추가 버튼
 						SkyDesktop.ToolbarButton({
 							icon : IMG({
@@ -248,7 +312,7 @@ BigWorld.ItemEditor = CLASS({
 			if (nowKind !== undefined && nowState !== undefined) {
 				
 				editorWrapper.append(H3({
-					c : '선택된 종류: ' + MSG(nowItemData.kinds[nowKind].name) + ' / 선택된 상태: ' + MSG(nowObjectData.states[nowState].name)
+					c : MSG(nowItemData.name) + ' / 선택된 종류: ' + MSG(nowItemData.kinds[nowKind].name) + ' / 선택된 상태: ' + MSG(nowObjectData.states[nowState].name)
 				}));
 				
 				// 섹션 편집

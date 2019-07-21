@@ -14,28 +14,8 @@ BigWorld.TileModel = OBJECT({
 			
 			name : {
 				notEmpty : true,
-				data : true,
-				detail : {
-					en : {
-						size : {
-							max : 255
-						}
-					},
-					ko : {
-						size : {
-							max : 255
-						}
-					},
-					ja : {
-						size : {
-							max : 255
-						}
-					},
-					'zh-TW' : {
-						size : {
-							max : 255
-						}
-					}
+				size : {
+					max : 255
 				}
 			},
 			

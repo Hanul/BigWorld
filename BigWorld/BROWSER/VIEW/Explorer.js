@@ -206,7 +206,7 @@ BigWorld.Explorer = CLASS({
 		};
 		
 		// 특정 요소의 컨텍스트 메뉴를 엽니다.
-		let openElementContextMenu = (e, moveElementHandler, changeNameHandler, removeElementHandler) => {
+		let openElementContextMenu = (e, moveElementHandler, editHandler, removeElementHandler) => {
 			
 			let contextMenu = SkyDesktop.ContextMenu({
 				e : e,
@@ -226,13 +226,13 @@ BigWorld.Explorer = CLASS({
 				}),
 				
 				SkyDesktop.ContextMenuItem({
-					title : '이름 변경',
+					title : '정보 수정',
 					icon : IMG({
-						src : BigWorld.R('explorer/contextmenu/changename.png')
+						src : BigWorld.R('explorer/contextmenu/edit.png')
 					}),
 					on : {
 						tap : () => {
-							changeNameHandler();
+							editHandler();
 							contextMenu.remove();
 						}
 					}
@@ -267,7 +267,7 @@ BigWorld.Explorer = CLASS({
 				});
 			},
 			
-			// changeNameHandler
+			// editHandler
 			() => {
 				
 				BigWorld.ValidPrompt({
@@ -437,19 +437,31 @@ BigWorld.Explorer = CLASS({
 										title : '타일 생성',
 										inputName : 'name.ko',
 										placeholder : '타일 이름',
+										inputName2 : 'minimapColor',
+										placeholder2 : '미니맵에서 표기할 색상',
+										value2 : '#000000',
 										errorMsgs : {
 											'name.ko' : {
 												size : (validParams) => {
 													return '최대 ' + validParams.max + '글자입니다.';
 												}
+											},
+											minimapColor : {
+												size : (size) => {
+													return '색상은 ' + size + '글자입니다.';
+												}
 											}
 										},
 										okButtonTitle : '생성'
-									}, (tileName, showErrors, removePrompt) => {
+									}, (tileName, minimapColor, showErrors, removePrompt) => {
 										
 										if (tileName.trim() === '') {
 											SkyDesktop.Alert({
 												msg : '생성할 타일 이름을 입력해주세요.'
+											});
+										} else if (minimapColor.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '색상을 입력해주세요.'
 											});
 										} else {
 											
@@ -458,7 +470,8 @@ BigWorld.Explorer = CLASS({
 												folderId : nowFolderId,
 												name : {
 													ko : tileName
-												}
+												},
+												minimapColor : minimapColor
 											}, {
 												notValid : showErrors,
 												success : removePrompt
@@ -855,7 +868,7 @@ BigWorld.Explorer = CLASS({
 											});
 										},
 										
-										// changeNameHandler
+										// editHandler
 										() => {
 											
 											BigWorld.ValidPrompt({
@@ -952,7 +965,7 @@ BigWorld.Explorer = CLASS({
 							let element;
 							elementList.append(element = BigWorld.ExplorerElement({
 								type : 'tile',
-								name : MSG(tileData.name),
+								name : tileData.name,
 								on : {
 									
 									tap : () => {
@@ -965,7 +978,7 @@ BigWorld.Explorer = CLASS({
 										draggingElementInfo = {
 											type : 'tile',
 											id : tileData.id,
-											name : MSG(tileData.name),
+											name : tileData.name,
 											startLeft : e.getLeft(),
 											startTop : e.getTop()
 										};
@@ -983,27 +996,39 @@ BigWorld.Explorer = CLASS({
 											});
 										},
 										
-										// changeNameHandler
+										// editHandler
 										() => {
 											
 											BigWorld.ValidPrompt({
-												title : '타일 이름 변경',
-												inputName : 'name.ko',
+												title : '타일 정보 변경',
+												inputName : 'name',
 												placeholder : '타일 이름',
-												value : tileData.name.ko,
+												value : tileData.name,
+												inputName2 : 'minimapColor',
+												placeholder2 : '미니맵에서 표기할 색상',
+												value2 : tileData.minimapColor,
 												errorMsgs : {
-													'name.ko' : {
+													name : {
 														size : (validParams) => {
 															return '최대 ' + validParams.max + '글자입니다.';
+														}
+													},
+													minimapColor : {
+														size : (size) => {
+															return '색상은 ' + size + '글자입니다.';
 														}
 													}
 												},
 												okButtonTitle : '변경 완료'
-											}, (tileName, showErrors, removePrompt) => {
+											}, (tileName, minimapColor, showErrors, removePrompt) => {
 												
 												if (tileName.trim() === '') {
 													SkyDesktop.Alert({
 														msg : '변경할 타일 이름을 입력해주세요.'
+													});
+												} else if (minimapColor.trim() === '') {
+													SkyDesktop.Alert({
+														msg : '색상을 입력해주세요.'
 													});
 												} else {
 													
@@ -1012,7 +1037,8 @@ BigWorld.Explorer = CLASS({
 														id : tileData.id,
 														name : {
 															ko : tileName
-														}
+														},
+														minimapColor : minimapColor
 													}, {
 														notValid : showErrors,
 														success : removePrompt
@@ -1050,7 +1076,7 @@ BigWorld.Explorer = CLASS({
 								
 								// 그게 아니라면 이름만 바꿉니다.
 								else {
-									element.changeName(MSG(newTileData.name));
+									element.changeName(newTileData.name);
 								}
 							});
 							
@@ -1111,7 +1137,7 @@ BigWorld.Explorer = CLASS({
 											});
 										},
 										
-										// changeNameHandler
+										// editHandler
 										() => {
 											
 											BigWorld.ValidPrompt({
@@ -1239,14 +1265,17 @@ BigWorld.Explorer = CLASS({
 											});
 										},
 										
-										// changeNameHandler
+										// editHandler
 										() => {
 											
 											BigWorld.ValidPrompt({
-												title : '아이템 이름 변경',
-												inputName : 'name.ko',
-												placeholder : '아이템 이름',
-												value : itemData.name.ko,
+												title : '아이템 정보 변경',
+												inputName : 'objectPart',
+												placeholder : '오브젝트 파트',
+												value : itemData.objectPart,
+												inputName2 : 'name.ko',
+												placeholder2 : '아이템 이름',
+												value2 : itemData.name.ko,
 												errorMsgs : {
 													'name.ko' : {
 														size : (validParams) => {
@@ -1255,9 +1284,13 @@ BigWorld.Explorer = CLASS({
 													}
 												},
 												okButtonTitle : '변경 완료'
-											}, (itemName, showErrors, removePrompt) => {
+											}, (objectPart, itemName, showErrors, removePrompt) => {
 												
-												if (itemName.trim() === '') {
+												if (objectPart.trim() === '') {
+													SkyDesktop.Alert({
+														msg : '오브젝트 파트를 입력해주세요.'
+													});
+												} else if (itemName.trim() === '') {
 													SkyDesktop.Alert({
 														msg : '변경할 아이템 이름을 입력해주세요.'
 													});
@@ -1266,6 +1299,7 @@ BigWorld.Explorer = CLASS({
 													// 아이템 이름을 변경합니다.
 													BigWorld.ItemModel.update({
 														id : itemData.id,
+														objectPart : objectPart,
 														name : {
 															ko : itemName
 														}

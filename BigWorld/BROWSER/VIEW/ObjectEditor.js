@@ -40,6 +40,49 @@ BigWorld.ObjectEditor = CLASS({
 					c : SkyDesktop.Toolbar({
 						buttons : [
 						
+						// 정보 수정 버튼
+						SkyDesktop.ToolbarButton({
+							icon : IMG({
+								src : BigWorld.R('objecteditor/menu/edit.png')
+							}),
+							title : '정보 수정',
+							on : {
+								tap : () => {
+									
+									BigWorld.ValidPrompt({
+										title : '오브젝트 이름 변경',
+										inputName : 'name.ko',
+										placeholder : '오브젝트 이름',
+										value : nowObjectData.name.ko,
+										errorMsgs : {
+											'name.ko' : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											}
+										},
+										okButtonTitle : '변경 완료'
+									}, (objectName, showErrors, removePrompt) => {
+										
+										if (objectName.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '변경할 오브젝트 이름을 입력해주세요.'
+											});
+										} else {
+											
+											nowObjectData.name.ko = objectName;
+											
+											saveObject();
+											
+											removePrompt();
+											
+											openEditor();
+										}
+									});
+								}
+							}
+						}),
+						
 						// 종류 추가 버튼
 						SkyDesktop.ToolbarButton({
 							icon : IMG({
@@ -307,7 +350,7 @@ BigWorld.ObjectEditor = CLASS({
 			if (nowKind !== undefined && nowState !== undefined) {
 				
 				editorWrapper.append(H3({
-					c : '선택된 종류: ' + MSG(nowObjectData.kinds[nowKind].name) + ' / 선택된 상태: ' + MSG(nowObjectData.states[nowState].name)
+					c : MSG(nowObjectData.name) + ' / 선택된 종류: ' + MSG(nowObjectData.kinds[nowKind].name) + ' / 선택된 상태: ' + MSG(nowObjectData.states[nowState].name)
 				}));
 				
 				// 섹션 편집

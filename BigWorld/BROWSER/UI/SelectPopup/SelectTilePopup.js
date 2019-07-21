@@ -36,12 +36,12 @@ BigWorld.SelectTilePopup = CLASS({
 							icon : IMG({
 								src : BigWorld.R('explorer/menu/tile.png')
 							}),
-							title : MSG(tileData.name),
+							title : tileData.name,
 							on : {
 								
 								// 타일을 선택합니다.
 								tap : () => {
-									inner.selectElement(tile, tileData.id, MSG(tileData.name));
+									inner.selectElement(tile, tileData.id, tileData.name);
 								}
 							}
 						})

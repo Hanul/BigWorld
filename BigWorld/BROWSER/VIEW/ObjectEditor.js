@@ -591,40 +591,6 @@ BigWorld.ObjectEditor = CLASS({
 											contextMenu.remove();
 										}
 									}
-								}), COUNT_PROPERTIES(nowObjectData.states) <= 1 ? undefined : SkyDesktop.ContextMenuItem({
-									title : '상태 삭제',
-									icon : IMG({
-										src : BigWorld.R('objecteditor/menu/remove.png')
-									}),
-									on : {
-										tap : () => {
-											
-											SkyDesktop.Confirm({
-												msg : '정말 상태를 삭제하시겠습니까?'
-											}, () => {
-												
-												delete nowObjectData.states[stateId];
-												
-												saveObject();
-												
-												rootState.removeItem(stateId);
-												
-												if (nowState === stateId) {
-													
-													// 첫 상태 검색
-													EACH(objectData.states, (stateInfo, _stateId) => {
-														
-														stateId = _stateId;
-														openEditor();
-														
-														return false;
-													});
-												}
-											});
-											
-											contextMenu.remove();
-										}
-									}
 								})]
 							});
 							

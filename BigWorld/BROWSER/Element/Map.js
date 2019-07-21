@@ -1,7 +1,7 @@
 BigWorld.Map = CLASS(() => {
 	
 	const BASE_MIN_SCALE = 0.3;
-	const BASE_MAX_SCALE = 10;
+	const BASE_MAX_SCALE = 9.99;
 	
 	return {
 		
@@ -17,6 +17,7 @@ BigWorld.Map = CLASS(() => {
 			//OPTIONAL: params.minScale
 			//OPTIONAL: params.maxScale
 			//OPTIONAL: params.isToShowGrid
+			//OPTIONAL: params.changeScale
 			
 			let mapData = params.mapData;
 			let isMovable = params.isMovable;
@@ -24,6 +25,7 @@ BigWorld.Map = CLASS(() => {
 			let minScale = params.minScale;
 			let maxScale = params.maxScale;
 			let isToShowGrid = params.isToShowGrid;
+			let changeScaleHandler = params.changeScale;
 			
 			if (minScale === undefined) {
 				minScale = BASE_MIN_SCALE;
@@ -152,6 +154,10 @@ BigWorld.Map = CLASS(() => {
 						scale = maxScale;
 					}
 					origin(scale);
+					
+					if (changeScaleHandler !== undefined) {
+						changeScaleHandler(scale);
+					}
 				};
 			});
 			

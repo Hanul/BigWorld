@@ -3,6 +3,7 @@ BigWorld.ValidPrompt = METHOD({
 	run : (params, callback) => {
 		//REQUIRED: params
 		//OPTIONAL: params.title
+		//OPTIONAL: params.isToSelectObject
 		//OPTIONAL: params.inputName
 		//OPTIONAL: params.placeholder
 		//OPTIONAL: params.value
@@ -11,7 +12,6 @@ BigWorld.ValidPrompt = METHOD({
 		//OPTIONAL: params.value2
 		//OPTIONAL: params.errorMsgs
 		//OPTIONAL: params.okButtonTitle
-		//OPTIONAL: params.isToSelectObject
 		//REQUIRED: callback
 		
 		let title = params.title;
@@ -102,11 +102,19 @@ BigWorld.ValidPrompt = METHOD({
 		}, () => {
 			
 			if (isToSelectObject === true) {
-				callback(selectedObjectId, input.getValue(), form.showErrors, confirm.remove);
-			} else if (input2 !== undefined) {
-				callback(input.getValue(), input2.getValue(), form.showErrors, confirm.remove);
-			} else {
-				callback(input.getValue(), form.showErrors, confirm.remove);
+				if (input2 !== undefined) {
+					callback(selectedObjectId, input.getValue(), input2.getValue(), form.showErrors, confirm.remove);
+				} else {
+					callback(selectedObjectId, input.getValue(), form.showErrors, confirm.remove);
+				}
+			}
+			
+			else {
+				if (input2 !== undefined) {
+					callback(input.getValue(), input2.getValue(), form.showErrors, confirm.remove);
+				} else {
+					callback(input.getValue(), form.showErrors, confirm.remove);
+				}
 			}
 			
 			return false;

@@ -1,24 +1,4 @@
-BigWorld.StageEditor = CLASS({
-	
-	preset : () => {
-		return VIEW;
-	},
-	
-	init : (inner, self) => {
-		
-		TITLE('BigWorld Stage Editor');
-		
-		// 타일의 크기
-		let tileWidth = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
-		let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
-		
-		// 배경 색 지정
-		let background = SkyEngine.Rect({
-			width : WIN_WIDTH(),
-			height : WIN_HEIGHT(),
-			color : '#333'
-		}).appendTo(SkyEngine.Screen);
-		
+
 		let resizeEvent = EVENT('resize', () => {
 			background.setWidth(WIN_WIDTH());
 			background.setHeight(WIN_HEIGHT());

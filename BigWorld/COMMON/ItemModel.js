@@ -56,6 +56,14 @@ BigWorld.ItemModel = OBJECT({
 				id : true
 			},
 			
+			// 오브젝트의 어떤 부분에 부착이 될 지
+			objectPart : {
+				notEmpty : true,
+				size : {
+					max : 255
+				}
+			},
+			
 			name : {
 				notEmpty : true,
 				data : true,

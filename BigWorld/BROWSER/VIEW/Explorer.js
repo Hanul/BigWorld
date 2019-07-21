@@ -525,22 +525,33 @@ BigWorld.Explorer = CLASS({
 									
 									BigWorld.ValidPrompt({
 										title : '아이템 생성',
-										inputName : 'name.ko',
-										placeholder : '아이템 이름',
+										isToSelectObject : true,
+										inputName : 'objectPart',
+										placeholder : '오브젝트 파트',
+										inputName2 : 'name.ko',
+										placeholder2 : '아이템 이름',
 										errorMsgs : {
+											objectPart : {
+												size : (validParams) => {
+													return '최대 ' + validParams.max + '글자입니다.';
+												}
+											},
 											'name.ko' : {
 												size : (validParams) => {
 													return '최대 ' + validParams.max + '글자입니다.';
 												}
 											}
 										},
-										okButtonTitle : '생성',
-										isToSelectObject : true
-									}, (objectId, itemName, showErrors, removePrompt) => {
+										okButtonTitle : '생성'
+									}, (objectId, objectPart, itemName, showErrors, removePrompt) => {
 										
 										if (objectId === undefined) {
 											SkyDesktop.Alert({
 												msg : '아이템의 대상이 되는 오브젝트를 선택해주세요.'
+											});
+										} else if (objectPart.trim() === '') {
+											SkyDesktop.Alert({
+												msg : '오브젝트 파트를 입력해주세요.'
 											});
 										} else if (itemName.trim() === '') {
 											SkyDesktop.Alert({
@@ -552,6 +563,7 @@ BigWorld.Explorer = CLASS({
 											BigWorld.ItemModel.create({
 												folderId : nowFolderId,
 												objectId : objectId,
+												objectPart : objectPart,
 												name : {
 													ko : itemName
 												}

@@ -28,13 +28,8 @@ BigWorld.MapEditor = CLASS({
 				},
 				c : [
 				
-				namePanel = DIV(),
-				
 				DIV({
-					style : {
-						marginTop : 10
-					},
-					c : ['스케일: ', scaleInput = INPUT({
+					c : [namePanel = SPAN(), ' / 스케일: ', scaleInput = INPUT({
 						style : {
 							width : 30,
 							textAlign : 'right'

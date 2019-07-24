@@ -5,6 +5,14 @@ BigWorld.MapTileModel = OBJECT({
 	},
 	
 	params : () => {
+		
+		let kindMapDetails = {};
+		EACH(BigWorld.TILE_STATES, (tileState) => {
+			kindMapDetails[tileState] = {
+				notEmpty : true,
+				integer : true
+			};
+		});
 
 		let validDataSet = {
 			
@@ -18,9 +26,10 @@ BigWorld.MapTileModel = OBJECT({
 				id : true
 			},
 			
-			kind : {
+			kindMap : {
 				notEmpty : true,
-				integer : true
+				data : true,
+				details : kindMapDetails
 			},
 			
 			col : {

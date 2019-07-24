@@ -69,6 +69,16 @@ OVERRIDE(BigWorld.TileModel, (origin) => {
 							}
 						});
 					}
+					
+					// 맵에 부착된 모든 타일 제거
+					BigWorld.MapTileModel.find({
+						filter : {
+							tileId : originData.id
+						},
+						isFindAll : true
+					}, EACH((mapTileData) => {
+						BigWorld.MapTileModel.remove(mapTileData.id);
+					}));
 				}
 			});
 		}

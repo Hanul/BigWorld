@@ -19,6 +19,8 @@ BigWorld.Item = CLASS({
 			let state = params.state;
 			let direction = params.direction;
 			
+			let sprites = [];
+			
 			if (state !== undefined && direction !== undefined) {
 				
 				let stateInfo = itemData.states[state];
@@ -32,19 +34,21 @@ BigWorld.Item = CLASS({
 							let frameImageId = partDirectionInfo.frames[kind];
 							if (frameImageId !== undefined) {
 								
-								SkyEngine.Sprite({
+								sprites.push(SkyEngine.Sprite({
 									src : BigWorld.RF(frameImageId),
 									fps : partDirectionInfo.fps,
 									frameCount : partDirectionInfo.frameCount,
 									zIndex : partDirectionInfo.zIndex,
 									x : partDirectionInfo.x,
 									y : partDirectionInfo.y
-								}).appendTo(object);
+								}).appendTo(object));
 							}
 						}
 					});
 				}
 			}
+			
+			return sprites;
 		};
 	}
 });

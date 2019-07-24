@@ -437,31 +437,19 @@ BigWorld.Explorer = CLASS({
 										title : '타일 생성',
 										inputName : 'name.ko',
 										placeholder : '타일 이름',
-										inputName2 : 'minimapColor',
-										placeholder2 : '미니맵에서 표기할 색상',
-										value2 : '#000000',
 										errorMsgs : {
 											'name.ko' : {
 												size : (validParams) => {
 													return '최대 ' + validParams.max + '글자입니다.';
 												}
-											},
-											minimapColor : {
-												size : (size) => {
-													return '색상은 ' + size + '글자입니다.';
-												}
 											}
 										},
 										okButtonTitle : '생성'
-									}, (tileName, minimapColor, showErrors, removePrompt) => {
+									}, (tileName, showErrors, removePrompt) => {
 										
 										if (tileName.trim() === '') {
 											SkyDesktop.Alert({
 												msg : '생성할 타일 이름을 입력해주세요.'
-											});
-										} else if (minimapColor.trim() === '') {
-											SkyDesktop.Alert({
-												msg : '색상을 입력해주세요.'
 											});
 										} else {
 											
@@ -470,8 +458,7 @@ BigWorld.Explorer = CLASS({
 												folderId : nowFolderId,
 												name : {
 													ko : tileName
-												},
-												minimapColor : minimapColor
+												}
 											}, {
 												notValid : showErrors,
 												success : removePrompt
@@ -802,7 +789,7 @@ BigWorld.Explorer = CLASS({
 								// 다른 폴더로 이전된 경우
 								if (newFolderData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
 									exit();
-									elementList.removeItem(subFolderData.id);
+									element.remove();
 								}
 								
 								// 그게 아니라면 이름만 바꿉니다.
@@ -813,7 +800,7 @@ BigWorld.Explorer = CLASS({
 							
 							// 폴더가 삭제된 경우
 							addRemoveHandler(() => {
-								elementList.removeItem(subFolderData.id);
+								element.remove();
 							});
 						},
 						success : next
@@ -930,7 +917,7 @@ BigWorld.Explorer = CLASS({
 								// 다른 폴더로 이전된 경우
 								if (newMapData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
 									exit();
-									elementList.removeItem(mapData.id);
+									element.remove();
 								}
 								
 								// 그게 아니라면 이름만 바꿉니다.
@@ -941,7 +928,7 @@ BigWorld.Explorer = CLASS({
 							
 							// 맵이 삭제된 경우
 							addRemoveHandler(() => {
-								elementList.removeItem(mapData.id);
+								element.remove();
 							});
 						},
 						success : next
@@ -1004,31 +991,19 @@ BigWorld.Explorer = CLASS({
 												inputName : 'name',
 												placeholder : '타일 이름',
 												value : tileData.name,
-												inputName2 : 'minimapColor',
-												placeholder2 : '미니맵에서 표기할 색상',
-												value2 : tileData.minimapColor,
 												errorMsgs : {
 													name : {
 														size : (validParams) => {
 															return '최대 ' + validParams.max + '글자입니다.';
 														}
-													},
-													minimapColor : {
-														size : (size) => {
-															return '색상은 ' + size + '글자입니다.';
-														}
 													}
 												},
 												okButtonTitle : '변경 완료'
-											}, (tileName, minimapColor, showErrors, removePrompt) => {
+											}, (tileName, showErrors, removePrompt) => {
 												
 												if (tileName.trim() === '') {
 													SkyDesktop.Alert({
 														msg : '변경할 타일 이름을 입력해주세요.'
-													});
-												} else if (minimapColor.trim() === '') {
-													SkyDesktop.Alert({
-														msg : '색상을 입력해주세요.'
 													});
 												} else {
 													
@@ -1037,8 +1012,7 @@ BigWorld.Explorer = CLASS({
 														id : tileData.id,
 														name : {
 															ko : tileName
-														},
-														minimapColor : minimapColor
+														}
 													}, {
 														notValid : showErrors,
 														success : removePrompt
@@ -1071,7 +1045,7 @@ BigWorld.Explorer = CLASS({
 								// 다른 폴더로 이전된 경우
 								if (newTileData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
 									exit();
-									elementList.removeItem(tileData.id);
+									element.remove();
 								}
 								
 								// 그게 아니라면 이름만 바꿉니다.
@@ -1082,7 +1056,7 @@ BigWorld.Explorer = CLASS({
 							
 							// 타일이 삭제된 경우
 							addRemoveHandler(() => {
-								elementList.removeItem(tileData.id);
+								element.remove();
 							});
 						},
 						success : next
@@ -1199,7 +1173,7 @@ BigWorld.Explorer = CLASS({
 								// 다른 폴더로 이전된 경우
 								if (newObjectData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
 									exit();
-									elementList.removeItem(objectData.id);
+									element.remove();
 								}
 								
 								// 그게 아니라면 이름만 바꿉니다.
@@ -1210,7 +1184,7 @@ BigWorld.Explorer = CLASS({
 							
 							// 오브젝트가 삭제된 경우
 							addRemoveHandler(() => {
-								elementList.removeItem(objectData.id);
+								element.remove();
 							});
 						},
 						success : next
@@ -1335,7 +1309,7 @@ BigWorld.Explorer = CLASS({
 								// 다른 폴더로 이전된 경우
 								if (newItemData.folderId !== (nowFolderId === TO_DELETE ? undefined : nowFolderId)) {
 									exit();
-									elementList.removeItem(itemData.id);
+									element.remove();
 								}
 								
 								// 그게 아니라면 이름만 바꿉니다.
@@ -1346,7 +1320,7 @@ BigWorld.Explorer = CLASS({
 							
 							// 아이템이 삭제된 경우
 							addRemoveHandler(() => {
-								elementList.removeItem(itemData.id);
+								element.remove();
 							});
 						},
 						success : next

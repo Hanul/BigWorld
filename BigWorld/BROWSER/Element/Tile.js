@@ -19,6 +19,30 @@ BigWorld.Tile = CLASS((cls) => {
 		return initSectionMap;
 	};
 	
+	let getTileWidth = cls.getTileWidth = (x, y) => {
+		return tileWidth;
+	};
+	
+	let getTileHeight = cls.getTileHeight = (x, y) => {
+		return tileHeight;
+	};
+	
+	let getTileCol = cls.getTileCol = (x, y) => {
+		return Math.round(x / tileWidth);
+	};
+	
+	let getTileRow = cls.getTileRow = (x, y) => {
+		return Math.round(y / tileWidth);
+	};
+	
+	let getTileX = cls.getTileX = (col, row) => {
+		return col * tileWidth;
+	};
+	
+	let getTileY = cls.getTileY = (col, row) => {
+		return row * tileHeight;
+	};
+	
 	return {
 		
 		preset : () => {

@@ -69,6 +69,32 @@ OVERRIDE(BigWorld.ItemModel, (origin) => {
 							}
 						});
 					}
+					
+					// 맵에 부착된 모든 오브젝트의 아이템 제거
+					BigWorld.MapObjectModel.find({
+						filter : {
+							items : {
+							    $elemMatch : {
+							        id : originData.id
+							    }
+							}
+						},
+						isFindAll : true
+					}, EACH((mapObjectData) => {
+						
+						EACH(mapObjectData.items, (itemInfo) => {
+							
+							if (itemInfo.id === originData.id) {
+								
+								REMOVE({
+									array : mapObjectData.items,
+									value : itemInfo
+								});
+							}
+						});
+						
+						BigWorld.MapObjectModel.update(mapObjectData);
+					}));
 				}
 			});
 		}

@@ -23,12 +23,17 @@ BigWorld.Object = CLASS({
 		let kind = params.kind;
 		let state = params.state;
 		let direction = params.direction;
-		let items = params.items;
 		let isReverse = params.isReverse;
+		
+		let sprites = [];
+		let items = {};
 		
 		// 오브젝트 새로고침
 		let refresh = RAR(() => {
-			self.empty();
+			
+			EACH(sprites, (sprite) => {
+				sprite.remove();
+			});
 			
 			let stateInfo = objectData.states[state];
 			if (stateInfo !== undefined) {
@@ -41,29 +46,30 @@ BigWorld.Object = CLASS({
 						let frameImageId = partDirectionInfo.frames[kind];
 						if (frameImageId !== undefined) {
 							
-							SkyEngine.Sprite({
+							sprites.push(SkyEngine.Sprite({
 								src : BigWorld.RF(frameImageId),
 								fps : partDirectionInfo.fps,
 								frameCount : partDirectionInfo.frameCount,
 								zIndex : partDirectionInfo.zIndex,
 								x : partDirectionInfo.x,
 								y : partDirectionInfo.y
-							}).appendTo(self);
+							}).appendTo(self));
 						}
 					}
 				});
 			}
 			
-			if (items !== undefined) {
-				EACH(items, (item) => {
-					
-					item.draw({
+			EACH(items, (item) => {
+				
+				EXTEND({
+					origin : sprites,
+					extend : item.draw({
 						object : self,
 						state : state,
 						direction : direction
-					});
+					})
 				});
-			}
+			});
 		});
 		
 		if (isReverse === true) {
@@ -73,6 +79,19 @@ BigWorld.Object = CLASS({
 		let reverse = self.reverse = () => {
 			isReverse = isReverse !== true;
 			self.flipX();
+		};
+		
+		let attachItem = self.attachItem = (params) => {
+			//REQUIRED: params
+			//REQUIRED: params.id
+			//REQUIRED: params.item
+			
+			let id = params.id;
+			let item = params.item;
+			
+			items[id] = item;
+			
+			refresh();
 		};
 	}
 });

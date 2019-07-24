@@ -78,6 +78,16 @@ OVERRIDE(BigWorld.ObjectModel, (origin) => {
 					}, EACH((itemData) => {
 						BigWorld.ItemModel.remove(itemData.id);
 					}));
+					
+					// 맵에 부착된 모든 오브젝트 제거
+					BigWorld.MapObjectModel.find({
+						filter : {
+							objectId : originData.id
+						},
+						isFindAll : true
+					}, EACH((mapObjectData) => {
+						BigWorld.MapObjectModel.remove(mapObjectData.id);
+					}));
 				}
 			});
 		}

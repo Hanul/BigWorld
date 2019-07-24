@@ -332,16 +332,21 @@ BigWorld.ItemEditor = CLASS({
 					
 					refresh : (previewScreen, direction) => {
 						
-						previewScreen.append(BigWorld.Object({
+						let object;
+						previewScreen.append(object = BigWorld.Object({
 							objectData : nowObjectData,
 							kind : 0,
 							state : nowState,
-							direction : direction,
-							items : [BigWorld.Item({
+							direction : direction
+						}));
+						
+						object.attachItem({
+							id : nowItemData.id,
+							item : BigWorld.Item({
 								itemData : nowItemData,
 								kind : nowKind
-							})]
-						}));
+							})
+						});
 					}
 				}));
 				

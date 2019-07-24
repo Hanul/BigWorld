@@ -19,11 +19,6 @@ BigWorld.TileModel = OBJECT({
 				}
 			},
 			
-			// 미니맵에서 표기될 색상
-			minimapColor : {
-				size : 7
-			},
-			
 			kinds : {
 				notEmpty : true,
 				

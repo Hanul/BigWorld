@@ -34,6 +34,7 @@ BigWorld.Object = CLASS({
 			EACH(sprites, (sprite) => {
 				sprite.remove();
 			});
+			sprites = [];
 			
 			let stateInfo = objectData.states[state];
 			if (stateInfo !== undefined) {

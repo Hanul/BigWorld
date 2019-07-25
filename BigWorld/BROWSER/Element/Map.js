@@ -20,8 +20,7 @@ BigWorld.Map = CLASS(() => {
 			//OPTIONAL: params.changeScale
 			//OPTIONAL: params.movePosition
 			//OPTIONAL: params.pickPosition
-			//OPTIONAL: params.pickSectionPosition
-			//OPTIONAL: params.pickTilePosition
+			//OPTIONAL: params.contextmenu
 			
 			let mapData = params.mapData;
 			
@@ -36,8 +35,7 @@ BigWorld.Map = CLASS(() => {
 			let movePositionsHandler = params.movePosition;
 			
 			let pickPositionHandler = params.pickPosition;
-			let pickSectionPositionHandler = params.pickSectionPosition;
-			let pickTilePositionHandler = params.pickTilePosition;
+			let contextmenuHandler = params.contextmenu;
 			
 			if (minScale === undefined) {
 				minScale = BASE_MIN_SCALE;
@@ -89,8 +87,148 @@ BigWorld.Map = CLASS(() => {
 				}).appendTo(self);
 			}
 			
-			// 타일 데이터를 초기화합니다.
-			let initTileData = (tileId, callback) => {
+			let tileWrapper = SkyEngine.Node({
+				zIndex : -999998
+			}).appendTo(self);
+			
+			let getTileId = (col, row) => {
+				let mapTileId = zoneMapTileIds[col + ',' + row];
+				if (mapTileId !== undefined) {
+					return mapTileDataSet[mapTileId].tileId;
+				}
+			};
+			
+			let getTile = (col, row) => {
+				let mapTileId = zoneMapTileIds[col + ',' + row];
+				if (mapTileId !== undefined) {
+					return tiles[mapTileId];
+				}
+			};
+			
+			let setTileIdToAround = (tileId, col, row) => {
+				
+				let aroundTile;
+				
+				// 주변 타일들에 정보 주입
+				aroundTile = getTile(col - 1, row);
+				if (aroundTile !== undefined) {
+					aroundTile.setRightTileId(tileId);
+				}
+				
+				aroundTile = getTile(col - 1, row - 1);
+				if (aroundTile !== undefined) {
+					aroundTile.setRightBottomTileId(tileId);
+				}
+				
+				aroundTile = getTile(col, row - 1);
+				if (aroundTile !== undefined) {
+					aroundTile.setBottomTileId(tileId);
+				}
+				
+				aroundTile = getTile(col + 1, row - 1);
+				if (aroundTile !== undefined) {
+					aroundTile.setLeftBottomTileId(tileId);
+				}
+				
+				aroundTile = getTile(col + 1, row);
+				if (aroundTile !== undefined) {
+					aroundTile.setLeftTileId(tileId);
+				}
+				
+				aroundTile = getTile(col + 1, row + 1);
+				if (aroundTile !== undefined) {
+					aroundTile.setLeftTopTileId(tileId);
+				}
+				
+				aroundTile = getTile(col, row + 1);
+				if (aroundTile !== undefined) {
+					aroundTile.setTopTileId(tileId);
+				}
+				
+				aroundTile = getTile(col - 1, row + 1);
+				if (aroundTile !== undefined) {
+					aroundTile.setRightTopTileId(tileId);
+				}
+			};
+			
+			// 타일을 생성합니다.
+			let createTile = (mapTileData, tileData) => {
+				
+				let col = mapTileData.col;
+				let row = mapTileData.row;
+				
+				let tile = BigWorld.Tile({
+					
+					col : col,
+					row : row,
+					tileData : tileData,
+					kindMap : mapTileData.kindMap,
+					
+					leftTileId : getTileId(col - 1, row),
+					leftTopTileId : getTileId(col - 1, row - 1),
+					topTileId : getTileId(col, row - 1),
+					rightTopTileId : getTileId(col + 1, row - 1),
+					rightTileId : getTileId(col + 1, row),
+					rightBottomTileId : getTileId(col + 1, row + 1),
+					bottomTileId : getTileId(col, row + 1),
+					leftBottomTileId : getTileId(col - 1, row + 1)
+					
+				}).appendTo(tileWrapper);
+				
+				tile.draw();
+				
+				tiles[mapTileData.id] = tile;
+				
+				setTileIdToAround(tileData.id, col, row);
+			};
+			
+			// 타일을 제거합니다.
+			let removeTile = (mapTileId, col, row) => {
+				
+				if (tiles[mapTileId] !== undefined) {
+					tiles[mapTileId].remove();
+					delete tiles[mapTileId];
+				}
+				
+				setTileIdToAround(undefined, col, row);
+			};
+			
+			// 오브젝트를 생성합니다.
+			let createObject = (mapObjectData, objectData) => {
+				
+				let object = BigWorld.Object({
+					objectData : objectData,
+					kind : mapObjectData.kind,
+					state : mapObjectData.state,
+					direction : mapObjectData.direction,
+					x : mapObjectData.x,
+					y : mapObjectData.y,
+					isReverse : mapObjectData.isReverse
+				}).appendTo(self);
+				
+				objects[mapObjectData.id] = object;
+			};
+			
+			// 오브젝트를 제거합니다.
+			let removeObject = (mapObjectId) => {
+				if (objects[mapObjectId] !== undefined) {
+					objects[mapObjectId].remove();
+					delete objects[mapObjectId];
+				}
+			};
+			
+			// 아이템을 생성합니다.
+			let createItem = (mapObjectId, itemData, kind) => {
+				//TODO:
+			};
+			
+			// 아이템을 제거합니다.
+			let removeItem = (mapObjectId, itemId) => {
+				//TODO:
+			};
+			
+			// 타일 데이터를 불러옵니다..
+			let loadTileData = (tileId, callback) => {
 				
 				if (tileCounts[tileId] === undefined) {
 					tileCounts[tileId] = 0;
@@ -152,8 +290,8 @@ BigWorld.Map = CLASS(() => {
 				}
 			};
 			
-			// 오브젝트 데이터를 초기화합니다.
-			let initObjectData = (objectId, callback) => {
+			// 오브젝트 데이터를 불러옵니다..
+			let loadObjectData = (objectId, callback) => {
 				
 				if (objectCounts[objectId] === undefined) {
 					objectCounts[objectId] = 0;
@@ -215,8 +353,8 @@ BigWorld.Map = CLASS(() => {
 				}
 			};
 			
-			// 아이템 데이터를 초기화합니다.
-			let initItemData = (itemId, callback) => {
+			// 아이템 데이터를 불러옵니다..
+			let loadItemData = (itemId, callback) => {
 				
 				if (itemCounts[itemId] === undefined) {
 					itemCounts[itemId] = 0;
@@ -294,10 +432,7 @@ BigWorld.Map = CLASS(() => {
 				delete mapTileRooms[mapTileId];
 				
 				// 타일 제거
-				if (tiles[mapTileId] !== undefined) {
-					tiles[mapTileId].remove();
-					delete tiles[mapTileId];
-				}
+				removeTile(mapTileId, mapTileData.col, mapTileData.row);
 			};
 			
 			// 맵 오브젝트 데이터를 제거합니다.
@@ -313,7 +448,7 @@ BigWorld.Map = CLASS(() => {
 				
 				removeObjectData(mapObjectData.objectId);
 				
-				EACH(mapObjectData.items, (itemInfo) => {
+				mapObjectData.items.forEach((itemInfo) => {
 					removeItemData(itemInfo.id);
 				});
 				
@@ -323,10 +458,7 @@ BigWorld.Map = CLASS(() => {
 				delete mapObjectRooms[mapObjectId];
 				
 				// 오브젝트 제거
-				if (objects[mapObjectId] !== undefined) {
-					objects[mapObjectId].remove();
-					delete objects[mapObjectId];
-				}
+				removeObject(mapObjectId);
 			};
 			
 			// 타일을 놓습니다.
@@ -336,8 +468,11 @@ BigWorld.Map = CLASS(() => {
 				if (zoneRooms[zoneKey] !== undefined) {
 					zoneMapTileIds[zoneKey] = mapTileData.id;
 					
-					initTileData(mapTileData.tileId, (tileData) => {
-						console.log(tileData);
+					// 타일 데이터를 불러옵니다.
+					loadTileData(mapTileData.tileId, (tileData) => {
+						
+						// 타일을 생성합니다.
+						createTile(mapTileData, tileData);
 					});
 					
 					let mapTileRoom = BigWorld.ROOM('MapTile/' + mapTileData.id);
@@ -346,9 +481,18 @@ BigWorld.Map = CLASS(() => {
 						
 						// 다른 타일이 놓이는 경우
 						if (newMapTileData.tileId !== mapTileData.tileId) {
+							
+							// 기존 타일 데이터를 제거합니다.
 							removeTileData(mapTileData.tileId);
-							initTileData(newMapTileData.tileId, (tileData) => {
-								console.log(tileData);
+							
+							// 새 타일 데이터를 불러옵니다.
+							loadTileData(newMapTileData.tileId, (tileData) => {
+								
+								// 기존 타일을 제거합니다.
+								removeTile(mapTileData.id, mapTileData.col, mapTileData.row);
+								
+								// 새 타일을 생성합니다.
+								createTile(newMapTileData, tileData);
 							});
 						}
 						
@@ -372,13 +516,20 @@ BigWorld.Map = CLASS(() => {
 				if (zoneRooms[zoneKey] !== undefined) {
 					zoneMapObjectIdMap[zoneKey].push(mapObjectData.id);
 					
-					initObjectData(mapObjectData.objectId, (objectData) => {
-						console.log(objectData);
+					// 오브젝트 데이터를 불러옵니다.
+					loadObjectData(mapObjectData.objectId, (objectData) => {
+						
+						// 오브젝트를 생성합니다.
+						createObject(mapObjectData, objectData);
 					});
 					
-					EACH(mapObjectData.items, (itemInfo) => {
-						initItemData(itemInfo.id, (itemData) => {
-							console.log(itemData);
+					mapObjectData.items.forEach((itemInfo) => {
+						
+						// 아이템 데이터를 불러옵니다.
+						loadItemData(itemInfo.id, (itemData) => {
+							
+							// 아이템을 생성합니다.
+							createItem(mapObjectData.id, itemData, itemInfo.kind);
 						});
 					});
 					
@@ -388,18 +539,27 @@ BigWorld.Map = CLASS(() => {
 						
 						// 다른 오브젝트가 놓이는 경우
 						if (newMapObjectData.objectId !== mapObjectData.objectId) {
+							
+							// 기존 오브젝트 데이터를 제거합니다.
 							removeObjectData(mapObjectData.objectId);
-							initObjectData(newMapObjectData.objectId, (objectData) => {
-								console.log(objectData);
+							
+							// 새 오브젝트 데이터를 불러옵니다.
+							loadObjectData(newMapObjectData.objectId, (objectData) => {
+								
+								// 기존 오브젝트를 제거합니다.
+								removeObject(mapObjectData.id);
+								
+								// 새 오브젝트를 생성합니다.
+								createObject(newMapObjectData, objectData);
 							});
 						}
 						
 						// 빠진 아이템 체크
-						EACH(mapObjectData.items, (itemInfo) => {
+						mapObjectData.items.forEach((itemInfo) => {
 							
 							let isRemoved = true;
 							
-							EACH(newMapObjectData.items, (newItemInfo) => {
+							newMapObjectData.items.forEach((newItemInfo) => {
 								if (itemInfo.id === newItemInfo.id) {
 									isRemoved = false;
 									return false;
@@ -407,16 +567,21 @@ BigWorld.Map = CLASS(() => {
 							});
 							
 							if (isRemoved === true) {
+								
+								// 기존 아이템 데이터를 제거합니다.
 								removeItemData(itemInfo.id);
+								
+								// 기존 아이템을 제거합니다.
+								removeItem(mapObjectData.id, itemData.id);
 							}
 						});
 						
 						// 새로 추가된 아이템 체크
-						EACH(newMapObjectData.items, (itemInfo) => {
+						newMapObjectData.items.forEach((itemInfo) => {
 							
 							let isNew = true;
 							
-							EACH(mapObjectData.items, (oldItemInfo) => {
+							mapObjectData.items.forEach((oldItemInfo) => {
 								if (itemInfo.id === oldItemInfo.id) {
 									isNew = false;
 									return false;
@@ -424,8 +589,12 @@ BigWorld.Map = CLASS(() => {
 							});
 							
 							if (isNew === true) {
-								initItemData(itemInfo.id, (itemData) => {
-									console.log(itemData);
+								
+								// 새 아이템 데이터를 불러옵니다.
+								loadItemData(itemInfo.id, (itemData) => {
+									
+									// 새 아이템을 생성합니다.
+									createItem(newMapObjectData.id, itemData, itemInfo.kind);
 								});
 							}
 						});
@@ -455,7 +624,7 @@ BigWorld.Map = CLASS(() => {
 				}
 				
 				// 존에 존재하는 모든 오브젝트를 제거합니다.
-				EACH(zoneMapObjectIdMap[zoneKey], removeMapObjectData);
+				zoneMapObjectIdMap[zoneKey].forEach(removeMapObjectData);
 				
 				delete zoneRooms[zoneKey];
 				delete zoneMapTileIds[zoneKey];
@@ -481,8 +650,8 @@ BigWorld.Map = CLASS(() => {
 				let tilePositions = {};
 				
 				// 타일 범위를 파악합니다.
-				for (let row = startTileRow; row <= endTileRow; row += 1) {
-					for (let col = startTileCol; col <= endTileCol; col += 1) {
+				for (let col = startTileCol; col <= endTileCol; col += 1) {
+					for (let row = startTileRow; row <= endTileRow; row += 1) {
 						tilePositions[col + ',' + row] = {
 							col : col,
 							row : row
@@ -578,8 +747,8 @@ BigWorld.Map = CLASS(() => {
 						gridWrapper.empty();
 						
 						// 타일의 범위를 파악합니다.
-						for (let row = startTileRow; row <= endTileRow; row += 1) {
-							for (let col = startTileCol; col <= endTileCol; col += 1) {
+						for (let col = startTileCol; col <= endTileCol; col += 1) {
+							for (let row = startTileRow; row <= endTileRow; row += 1) {
 								
 								SkyEngine.Rect({
 									x : col * tileWidth,
@@ -593,7 +762,7 @@ BigWorld.Map = CLASS(() => {
 						}
 						
 						// 가운데 점과 선을 그립니다.
-						EACH([SkyEngine.Rect({
+						[SkyEngine.Rect({
 							width : 3 / self.getScaleX(),
 							height : 3 / self.getScaleX(),
 							color : '#000FFF'
@@ -605,10 +774,69 @@ BigWorld.Map = CLASS(() => {
 							startY : -200,
 							endY : 200,
 							border : (1 / self.getScaleX()) + 'px solid #000FFF'
-						})], gridWrapper.append);
+						})].forEach(gridWrapper.append);
 					});
 				}
 			});
+			
+			// 맵 타일 ID를 찾습니다.
+			let findMapTileId = self.findMapTileId = (params) => {
+				//REQUIRED: params
+				//REQUIRED: params.col
+				//REQUIRED: params.row
+				
+				let col = params.col;
+				let row = params.row;
+				
+				return zoneMapTileIds[col + ',' + row];
+			};
+			
+			// 맵 오브젝트 ID를 찾습니다.
+			let findMapObjectId = self.findMapObjectId = (params) => {
+				//REQUIRED: params
+				//REQUIRED: params.x
+				//REQUIRED: params.y
+				
+				let x = params.x;
+				let y = params.y;
+				
+				let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
+				let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
+				
+				let maxZIndex = -999999;
+				let resultMapObjectId;
+				
+				// 위 아래 2타일을 검사합니다.
+				for (let col = tileCol - 2; col <= tileCol + 2; col += 1) {
+					for (let row = tileRow - 2; row <= tileRow + 2; row += 1) {
+						
+						let mapObjectIds = zoneMapObjectIdMap[col + ',' + row];
+						if (mapObjectIds !== undefined) {
+							
+							mapObjectIds.forEach((mapObjectId) => {
+								
+								let object = objects[mapObjectId];
+								let touchArea = objectDataSet[mapObjectDataSet[mapObjectId].objectId].touchArea;
+								
+								if (
+									x >= object.getX() + touchArea.x - touchArea.width / 2 &&
+									x <= object.getX() + touchArea.x + touchArea.width / 2 &&
+									y >= object.getY() + touchArea.y - touchArea.height / 2 &&
+									y <= object.getY() + touchArea.y + touchArea.height / 2
+								) {
+									
+									if (maxZIndex < object.getZIndex()) {
+										maxZIndex = object.getZIndex();
+										resultMapObjectId = mapObjectId;
+									}
+								}
+							});
+						}
+					}
+				}
+				
+				return resultMapObjectId;
+			};
 			
 			let setScale;
 			OVERRIDE(self.setScale, (origin) => {
@@ -719,34 +947,44 @@ BigWorld.Map = CLASS(() => {
 					
 					touchstart : (e) => {
 						
-						let startLeft = e.getLeft();
-						let startTop = e.getTop();
+						if (pickPositionHandler !== undefined) {
+							
+							let startLeft = e.getLeft();
+							let startTop = e.getTop();
+							
+							let touchendEvent = EVENT_ONCE('touchend', (e) => {
+								if (Math.sqrt(Math.pow(e.getLeft() - startLeft, 2) + Math.pow(e.getTop() - startTop, 2)) < 5) {
+									
+									let x = (e.getLeft() - WIN_WIDTH() / 2 - self.getX()) / self.getScaleX();
+									let y = (e.getTop() - WIN_HEIGHT() / 2 - self.getY()) / self.getScaleY();
+									
+									let sectionCol = Math.round(x / CONFIG.BigWorld.sectionWidth);
+									let sectionRow = Math.round(y / CONFIG.BigWorld.sectionHeight);
+									
+									let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
+									let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
+									
+									pickPositionHandler(x, y, sectionCol, sectionRow, tileCol, tileRow);
+								}
+							});
+						}
+					},
+					
+					contextmenu : (e) => {
 						
-						let touchendEvent = EVENT_ONCE('touchend', (e) => {
-							if (Math.sqrt(Math.pow(e.getLeft() - startLeft, 2) + Math.pow(e.getTop() - startTop, 2)) < 5) {
-								
-								let x = (e.getLeft() - WIN_WIDTH() / 2 - self.getX()) / self.getScaleX();
-								let y = (e.getTop() - WIN_HEIGHT() / 2 - self.getY()) / self.getScaleY();
-								
-								let sectionCol = Math.round(x / CONFIG.BigWorld.sectionWidth);
-								let sectionRow = Math.round(y / CONFIG.BigWorld.sectionHeight);
-								
-								let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
-								let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
-								
-								if (pickPositionHandler !== undefined) {
-									pickPositionHandler(x, y);
-								}
-								
-								if (pickSectionPositionHandler !== undefined) {
-									pickSectionPositionHandler(sectionCol, sectionRow);
-								}
-								
-								if (pickTilePositionHandler !== undefined) {
-									pickTilePositionHandler(tileCol, tileRow);
-								}
-							}
-						});
+						if (contextmenuHandler !== undefined) {
+							
+							let x = (e.getLeft() - WIN_WIDTH() / 2 - self.getX()) / self.getScaleX();
+							let y = (e.getTop() - WIN_HEIGHT() / 2 - self.getY()) / self.getScaleY();
+							
+							let sectionCol = Math.round(x / CONFIG.BigWorld.sectionWidth);
+							let sectionRow = Math.round(y / CONFIG.BigWorld.sectionHeight);
+							
+							let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
+							let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
+							
+							contextmenuHandler(e, x, y, sectionCol, sectionRow, tileCol, tileRow);
+						}
 					}
 				}
 			}).appendTo(BODY);

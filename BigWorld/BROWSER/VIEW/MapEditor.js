@@ -21,6 +21,7 @@ BigWorld.MapEditor = CLASS({
 		let nowState;
 		let nowDirection = 'down';
 		
+		let brushSize = mapEditorStore.get('brushSize') === undefined ? 1 : mapEditorStore.get('brushSize');
 		let reverseType = mapEditorStore.get('reverseType');
 		
 		let map;
@@ -116,19 +117,6 @@ BigWorld.MapEditor = CLASS({
 					style : {
 						marginTop : 10
 					}
-				}),
-				
-				SkyDesktop.Button({
-					style : {
-						marginTop : 10,
-						padding : '5px 10px'
-					},
-					title : '선택 해제',
-					on : {
-						tap : () => {
-							deselect();
-						}
-					}
 				})]
 			})]
 		}).appendTo(BODY);
@@ -156,10 +144,10 @@ BigWorld.MapEditor = CLASS({
 			
 			nowTileId = tileId;
 			
+			let nowTileData;
+			
 			let previewScreen;
 			let rootKind;
-			
-			let brushSize = mapEditorStore.get(nowMapId + '.brushSize') == undefined ? 1 : mapEditorStore.get(nowMapId + '.brushSize');
 			
 			let createCursorNode = () => {
 				
@@ -216,7 +204,7 @@ BigWorld.MapEditor = CLASS({
 								}
 								
 								mapEditorStore.save({
-									name : nowMapId + '.brushSize',
+									name : 'brushSize',
 									value : brushSize
 								});
 								
@@ -272,15 +260,72 @@ BigWorld.MapEditor = CLASS({
 					on : {
 						tap : () => {
 							
-							BigWorld.ValidPrompt({
-								title : '기본 타일 설정',
-								inputName : 'colRange',
-								placeholder : 'Column 범위',
-								inputName2 : 'rowRange',
-								placeholder2 : 'Row 범위'
-							}, (colRange, rowRange, showErrors, removePrompt) => {
-								//TODO:
-							});
+							if (nowTileData !== undefined) {
+								
+								SkyDesktop.Confirm({
+									msg : '정말 기본 타일을 지정하시겠습니까? 기존에 놓아둔 모든 타일이 교체되며, 돌이킬 수 없습니다.'
+								}, () => {
+										
+									BigWorld.ValidPrompt({
+										title : '기본 타일 설정',
+										inputName : 'colRange',
+										placeholder : 'Column 범위',
+										inputName2 : 'rowRange',
+										placeholder2 : 'Row 범위'
+									}, (colRange, rowRange, showErrors, removePrompt) => {
+										
+										let ranges = [];
+										
+										for (let col = -Math.floor((colRange - 1) / 2); col <= Math.floor(colRange / 2); col += 1) {
+											for (let row = -Math.floor((rowRange - 1) / 2); row <= Math.floor(rowRange / 2); row += 1) {
+												ranges.push({
+													col : col,
+													row : row
+												});
+											}
+										}
+										
+										NEXT(ranges, [
+										(range, next) => {
+											
+											let kindMap = {};
+											
+											EACH(BigWorld.TILE_STATES, (state) => {
+												
+												let stateInfo = nowTileData.states[state];
+												if (stateInfo !== undefined) {
+													
+													kindMap[state] = [];
+													
+													EACH(stateInfo.parts, (partInfo, partIndex) => {
+														kindMap[state][partIndex] = nowKind === undefined ? RANDOM(partInfo.frames.length) : nowKind;
+													});
+												}
+											});
+											
+											// 타일 놓기
+											BigWorld.MapTileModel.put({
+												mapId : nowMapId,
+												tileId : nowTileId,
+												kindMap : kindMap,
+												col : range.col,
+												row : range.row
+											}, () => {
+												//TODO:
+												next();
+											});
+										},
+										
+										() => {
+											return () => {
+												//TODO:
+											};
+										}]);
+										
+										removePrompt();
+									});
+								});
+							}
 						}
 					}
 				})]
@@ -291,6 +336,7 @@ BigWorld.MapEditor = CLASS({
 			
 			// 타일 정보를 불러옵니다.
 			BigWorld.TileModel.get(tileId, (tileData) => {
+				nowTileData = tileData;
 				
 				let refreshPreview = RAR(() => {
 					previewScreen.empty();
@@ -310,12 +356,12 @@ BigWorld.MapEditor = CLASS({
 						}
 					});
 					
-					previewScreen.append(BigWorld.Tile({
+					BigWorld.Tile({
 						col : 0,
 						row : 0,
 						tileData : tileData,
 						kindMap : kindMap
-					}));
+					}).appendTo(previewScreen).draw();
 					
 					// 커서를 따라다니는 노드 생성
 					createCursorNode();
@@ -392,6 +438,8 @@ BigWorld.MapEditor = CLASS({
 			let rootState;
 			let itemTree;
 			
+			let refreshPreview;
+			
 			objectPanel.append(DIV({
 				c : [
 				H2({
@@ -457,6 +505,10 @@ BigWorld.MapEditor = CLASS({
 							});
 							
 							reverseType = input.getValue();
+							
+							if (refreshPreview !== undefined) {
+								refreshPreview();
+							}
 						}
 					}
 				}),
@@ -558,7 +610,7 @@ BigWorld.MapEditor = CLASS({
 			// 오브젝트 정보를 불러옵니다.
 			BigWorld.ObjectModel.get(objectId, (objectData) => {
 				
-				let refreshPreview = RAR(() => {
+				refreshPreview = RAR(() => {
 					previewScreen.empty();
 					
 					let object;
@@ -603,16 +655,10 @@ BigWorld.MapEditor = CLASS({
 							});
 						});
 						
-						cursorObject.append(SkyEngine.Rect({
-							
-							x : objectData.touchArea.x,
-							y : objectData.touchArea.y,
-							zIndex : 999999,
-							
-							width : objectData.touchArea.width,
-							height : objectData.touchArea.height,
-							
-							border : '5px solid #00FF00'
+						// 충돌 영역 드로잉
+						cursorObject.append(BigWorld.SectionMapPreview({
+							sectionMap : objectData.sectionMap,
+							sectionLevels : objectData.sectionLevels
 						}));
 						
 						map.setCursorNode({
@@ -918,60 +964,6 @@ BigWorld.MapEditor = CLASS({
 			BigWorld.MapModel.get(nowMapId, (mapData) => {
 				nowMapData = mapData;
 				
-				let putObject = (x, y) => {
-					
-					// 선택된 오브젝트가 있다면
-					if (nowObjectId !== undefined) {
-						
-						// 오브젝트 정보를 불러옵니다.
-						BigWorld.ObjectModel.get(nowObjectId, (objectData) => {
-							
-							let isReverse;
-							
-							if (reverseType === 'reverse') {
-								isReverse = true;
-							} else if (reverseType === 'random') {
-								isReverse = RANDOM(2) === 0 ? true : undefined;
-							}
-							
-							let items = [];
-							
-							NEXT(nowItemInfos, [
-							(itemInfo, next, itemId) => {
-								
-								// 아이템 정보를 불러옵니다.
-								BigWorld.ItemModel.get(itemId, (itemData) => {
-									
-									items.push({
-										id : itemId,
-										kind : itemInfo.kind === undefined ? RANDOM(itemData.kinds.length) : itemInfo.kind
-									});
-									
-									next();
-								});
-							},
-							
-							() => {
-								return () => {
-									
-									// 타일 생성
-									BigWorld.MapObjectModel.create({
-										mapId : nowMapId,
-										objectId : nowObjectId,
-										kind : nowKind === undefined ? RANDOM(objectData.kinds.length) : nowKind,
-										state : nowState,
-										items : items,
-										direction : nowDirection,
-										x : INTEGER(x),
-										y : INTEGER(y),
-										isReverse : isReverse
-									});
-								};
-							}]);
-						});
-					}
-				};
-				
 				map = BigWorld.Map({
 					
 					mapData : mapData,
@@ -999,19 +991,7 @@ BigWorld.MapEditor = CLASS({
 						});
 					},
 					
-					pickPosition : (x, y) => {
-						if (mapEditorStore.get('isCursorNodeMoveTypeSection') !== true) {
-							putObject(x, y);
-						}
-					},
-					
-					pickSectionPosition : (sectionCol, sectionRow) => {
-						if (mapEditorStore.get('isCursorNodeMoveTypeSection') === true) {
-							putObject(sectionCol * CONFIG.BigWorld.sectionWidth, sectionRow * CONFIG.BigWorld.sectionHeight);
-						}
-					},
-					
-					pickTilePosition : (tileCol, tileRow) => {
+					pickPosition : (x, y, sectionCol, sectionRow, tileCol, tileRow) => {
 						
 						// 선택된 타일이 있다면
 						if (nowTileId !== undefined) {
@@ -1034,16 +1014,140 @@ BigWorld.MapEditor = CLASS({
 									}
 								});
 								
-								// 타일 생성
-								BigWorld.MapTileModel.create({
-									mapId : nowMapId,
-									tileId : nowTileId,
-									kindMap : kindMap,
-									col : tileCol,
-									row : tileRow
-								});
+								for (let col = tileCol - Math.floor((brushSize - 1) / 2); col <= tileCol + Math.floor(brushSize / 2); col += 1) {
+									for (let row = tileRow - Math.floor((brushSize - 1) / 2); row <= tileRow + Math.floor(brushSize / 2); row += 1) {
+										
+										// 타일 놓기
+										BigWorld.MapTileModel.put({
+											mapId : nowMapId,
+											tileId : nowTileId,
+											kindMap : kindMap,
+											col : col,
+											row : row
+										});
+									}
+								}
 							});
 						}
+						
+						// 선택된 오브젝트가 있다면
+						else if (nowObjectId !== undefined) {
+							
+							if (mapEditorStore.get('isCursorNodeMoveTypeSection') === true) {
+								x = sectionCol * CONFIG.BigWorld.sectionWidth;
+								y = sectionRow * CONFIG.BigWorld.sectionHeight;
+							}
+							
+							// 오브젝트 정보를 불러옵니다.
+							BigWorld.ObjectModel.get(nowObjectId, (objectData) => {
+								
+								let isReverse;
+								
+								if (reverseType === 'reverse') {
+									isReverse = true;
+								} else if (reverseType === 'random') {
+									isReverse = RANDOM(2) === 0 ? true : undefined;
+								}
+								
+								let items = [];
+								
+								NEXT(nowItemInfos, [
+								(itemInfo, next, itemId) => {
+									
+									// 아이템 정보를 불러옵니다.
+									BigWorld.ItemModel.get(itemId, (itemData) => {
+										
+										items.push({
+											id : itemId,
+											kind : itemInfo.kind === undefined ? RANDOM(itemData.kinds.length) : itemInfo.kind
+										});
+										
+										next();
+									});
+								},
+								
+								() => {
+									return () => {
+										
+										// 타일 생성
+										BigWorld.MapObjectModel.create({
+											mapId : nowMapId,
+											objectId : nowObjectId,
+											kind : nowKind === undefined ? RANDOM(objectData.kinds.length) : nowKind,
+											state : nowState,
+											items : items,
+											direction : nowDirection,
+											x : INTEGER(x),
+											y : INTEGER(y),
+											isReverse : isReverse
+										});
+									};
+								}]);
+							});
+						}
+					},
+					
+					contextmenu : (e, x, y, sectionCol, sectionRow, tileCol, tileRow) => {
+						
+						let mapTileId = map.findMapTileId({
+							col : tileCol,
+							row : tileRow
+						});
+						
+						let mapObjectId = map.findMapObjectId({
+							x : x,
+							y : y
+						});
+						
+						// 맵 오브젝트 수정
+						if (mapObjectId !== undefined) {
+							
+							let contextMenu = SkyDesktop.ContextMenu({
+								e : e,
+								c : [
+								
+								SkyDesktop.ContextMenuItem({
+									title : '오브젝트 제거',
+									icon : IMG({
+										src : BigWorld.R('mapeditor/remove.png')
+									}),
+									on : {
+										tap : () => {
+											
+											BigWorld.MapObjectModel.remove(mapObjectId);
+											
+											contextMenu.remove();
+										}
+									}
+								})]
+							});
+						}
+						
+						// 맵 타일 수정
+						else if (mapTileId !== undefined) {
+							
+							let contextMenu = SkyDesktop.ContextMenu({
+								e : e,
+								c : [
+								
+								SkyDesktop.ContextMenuItem({
+									title : '타일 제거',
+									icon : IMG({
+										src : BigWorld.R('mapeditor/remove.png')
+									}),
+									on : {
+										tap : () => {
+											
+											BigWorld.MapTileModel.remove(mapTileId);
+											
+											contextMenu.remove();
+										}
+									}
+								})]
+							});
+						}
+						
+						e.stop();
 					}
 					
 				}).appendTo(SkyEngine.Screen);
@@ -1055,11 +1159,19 @@ BigWorld.MapEditor = CLASS({
 			});
 		});
 		
+		let keydownEvent = EVENT('keydown', (e) => {
+			if (e.getKey() === 'Escape') {
+				deselect();
+			}
+		});
+		
 		inner.on('close', () => {
 			
 			if (map !== undefined) {
 				map.remove();
 			}
+			
+			keydownEvent.remove();
 			
 			wrapper.remove();
 		});

@@ -95,6 +95,7 @@ BigWorld.SectionEditor = CLASS({
 			if (mode !== 'item') {
 				
 				previewScreen.append(sectionMapPreview = BigWorld.SectionMapPreview({
+					zIndex : 999999,
 					
 					sectionMap : sectionMap,
 					sectionLevels : sectionLevels,

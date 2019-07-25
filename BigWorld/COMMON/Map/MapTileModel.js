@@ -47,7 +47,8 @@ BigWorld.MapTileModel = OBJECT({
 			name : 'MapTile',
 			methodConfig : {
 				create : {
-					valid : VALID(validDataSet)
+					valid : VALID(validDataSet),
+					role : 'System'
 				},
 				update : {
 					valid : VALID(validDataSet)

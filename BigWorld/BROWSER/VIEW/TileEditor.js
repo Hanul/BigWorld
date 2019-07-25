@@ -375,32 +375,32 @@ BigWorld.TileEditor = CLASS({
 							}
 						});
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 0,
 							row : 0,
 							tileData : nowTileData,
 							kindMap : kindMap
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : 0,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : -1,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : -2,
 							tileData : nowTileData,
@@ -408,18 +408,18 @@ BigWorld.TileEditor = CLASS({
 							topTileId : nowTileData.id,
 							rightTopTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : -3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							rightTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -2,
 							row : -3,
 							tileData : nowTileData,
@@ -427,36 +427,36 @@ BigWorld.TileEditor = CLASS({
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id,
 							leftBottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -1,
 							row : -3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 0,
 							row : -3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 1,
 							row : -3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 2,
 							row : -3,
 							tileData : nowTileData,
@@ -464,18 +464,18 @@ BigWorld.TileEditor = CLASS({
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id,
 							rightBottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : -3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : -2,
 							tileData : nowTileData,
@@ -483,36 +483,36 @@ BigWorld.TileEditor = CLASS({
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id,
 							leftTopTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : -1,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : 0,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : 1,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : 2,
 							tileData : nowTileData,
@@ -520,18 +520,18 @@ BigWorld.TileEditor = CLASS({
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id,
 							leftBottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 3,
 							row : 3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							leftTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 2,
 							row : 3,
 							tileData : nowTileData,
@@ -539,36 +539,36 @@ BigWorld.TileEditor = CLASS({
 							leftTileId : nowTileData.id,
 							rightTopTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 1,
 							row : 3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : 0,
 							row : 3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -1,
 							row : 3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							leftTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -2,
 							row : 3,
 							tileData : nowTileData,
@@ -576,18 +576,18 @@ BigWorld.TileEditor = CLASS({
 							leftTileId : nowTileData.id,
 							leftTopTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : 3,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							rightTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : 2,
 							tileData : nowTileData,
@@ -595,16 +595,16 @@ BigWorld.TileEditor = CLASS({
 							topTileId : nowTileData.id,
 							rightBottomTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 						
-						previewScreen.append(BigWorld.Tile({
+						BigWorld.Tile({
 							col : -3,
 							row : 1,
 							tileData : nowTileData,
 							kindMap : kindMap,
 							topTileId : nowTileData.id,
 							bottomTileId : nowTileData.id
-						}));
+						}).appendTo(previewScreen).draw();
 					}
 				}));
 				

@@ -18,8 +18,13 @@ BOOT({
 	},
 	
 	BROWSER_CONFIG : {
+		
 		SkyDesktop : {
 			theme : 'dark'
+		},
+		
+		SkyEngine : {
+			isDebugMode : true
 		}
 	},
 	

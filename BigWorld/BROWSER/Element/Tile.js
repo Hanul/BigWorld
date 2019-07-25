@@ -84,6 +84,8 @@ BigWorld.Tile = CLASS((cls) => {
 			
 			let drawState = (state, x, y) => {
 				
+				let sprites = [];
+				
 				let stateInfo = tileData.states[state];
 				if (stateInfo !== undefined) {
 					
@@ -92,24 +94,40 @@ BigWorld.Tile = CLASS((cls) => {
 						let frameImageId = partInfo.frames[kindMap[state][partIndex]];
 						if (frameImageId !== undefined) {
 							
-							SkyEngine.Sprite({
+							sprites.push(SkyEngine.Sprite({
 								src : BigWorld.RF(frameImageId),
 								fps : partInfo.fps,
 								frameCount : partInfo.frameCount,
 								zIndex : partInfo.zIndex,
-								x : partInfo.x + x,
-								y : partInfo.y + y
-							}).appendTo(self);
+								x : self.getX() + partInfo.x + x,
+								y : self.getY() + partInfo.y + y
+							}).appendTo(self.getParent()));
 						}
 					});
 				}
+				
+				return sprites;
 			};
 			
-			// 타일 새로고침
-			let refresh = RAR(() => {
-				self.empty();
-				
-				drawState('center', 0, 0);
+			let centerSprites = [];
+			let leftSprites = [];
+			let leftTopSprites = [];
+			let topSprites = [];
+			let rightTopSprites = [];
+			let rightSprites = [];
+			let rightBottomSprites = [];
+			let bottomSprites = [];
+			let leftBottomSprites = [];
+			
+			let clearSprites = (sprites) => {
+				sprites.forEach((sprite) => {
+					sprite.remove();
+				});
+			};
+			
+			// 왼쪽 그리기
+			let drawLeft = () => {
+				clearSprites(leftSprites);
 				
 				// 왼쪽의 타일이 다른 경우
 				if (leftTileId !== tileData.id) {
@@ -117,27 +135,46 @@ BigWorld.Tile = CLASS((cls) => {
 					// 왼쪽 위와 아래가 같은 타일인 경우
 					if (leftTopTileId === tileData.id && leftBottomTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', -tileWidth, 0);
+						leftSprites = drawState('center', -tileWidth, 0);
 					}
 					
 					// 왼쪽 위가 같은 타일인 경우
 					else if (leftTopTileId === tileData.id) {
-						drawState('fillRightTop', -tileWidth, 0);
+						leftSprites = drawState('fillRightTop', -tileWidth, 0);
 					}
 					
 					// 왼쪽 아래가 같은 타일인 경우
 					else if (leftBottomTileId === tileData.id) {
-						drawState('fillRightBottom', -tileWidth, 0);
+						leftSprites = drawState('fillRightBottom', -tileWidth, 0);
 					}
 					
 					else {
-						drawState('left', -tileWidth, 0);
+						leftSprites = drawState('left', -tileWidth, 0);
 					}
 				}
 				
-				if (leftTileId !== tileData.id && leftTopTileId !== tileData.id && topTileId !== tileData.id) {
-					drawState('leftTop', -tileWidth, -tileHeight);
+				else {
+					leftSprites = [];
 				}
+			};
+			
+			// 왼쪽 위 그리기
+			let drawLeftTop = () => {
+				clearSprites(leftTopSprites);
+				
+				// 왼쪽 위
+				if (leftTileId !== tileData.id && leftTopTileId !== tileData.id && topTileId !== tileData.id) {
+					leftTopSprites = drawState('leftTop', -tileWidth, -tileHeight);
+				}
+				
+				else {
+					leftTopSprites = [];
+				}
+			};
+			
+			// 위쪽 그리기
+			let drawTop = () => {
+				clearSprites(topSprites);
 				
 				// 위 타일이 다른 경우
 				if (topTileId !== tileData.id) {
@@ -145,27 +182,47 @@ BigWorld.Tile = CLASS((cls) => {
 					// 위 왼쪽과 위 오른쪽이 같은 타일인 경우
 					if (leftTopTileId === tileData.id && rightTopTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', 0, -tileHeight);
+						topSprites = drawState('center', 0, -tileHeight);
 					}
 					
 					// 위 왼쪽이 같은 타일인 경우
 					else if (leftTopTileId === tileData.id) {
-						drawState('fillLeftBottom', 0, -tileHeight);
+						topSprites = drawState('fillLeftBottom', 0, -tileHeight);
 					}
 					
 					// 위 오른쪽이 같은 타일인 경우
 					else if (rightTopTileId === tileData.id) {
 						// 이미 존재합니다.
+						topSprites = [];
 					}
 					
 					else {
-						drawState('top', 0, -tileHeight);
+						topSprites = drawState('top', 0, -tileHeight);
 					}
 				}
 				
-				if (topTileId !== tileData.id && rightTopTileId !== tileData.id && rightTileId !== tileData.id) {
-					drawState('rightTop', tileWidth, -tileHeight);
+				else {
+					topSprites = [];
 				}
+			};
+			
+			// 오른쪽 위 그리기
+			let drawRightTop = () => {
+				clearSprites(rightTopSprites);
+				
+				// 오른쪽 위
+				if (topTileId !== tileData.id && rightTopTileId !== tileData.id && rightTileId !== tileData.id) {
+					rightTopSprites = drawState('rightTop', tileWidth, -tileHeight);
+				}
+				
+				else {
+					rightTopSprites = [];
+				}
+			};
+			
+			// 오른쪽 그리기
+			let drawRight = () => {
+				clearSprites(rightSprites);
 				
 				// 오른쪽의 타일이 다른 경우
 				if (rightTileId !== tileData.id) {
@@ -173,27 +230,47 @@ BigWorld.Tile = CLASS((cls) => {
 					// 오른쪽 위와 아래가 같은 타일인 경우
 					if (rightTopTileId === tileData.id && rightBottomTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', tileWidth, 0);
+						rightSprites = drawState('center', tileWidth, 0);
 					}
 					
 					// 오른쪽 위와 같은 타일인 경우
 					else if (rightTopTileId === tileData.id) {
-						drawState('fillLeftTop', tileWidth, 0);
+						rightSprites = drawState('fillLeftTop', tileWidth, 0);
 					}
 					
 					// 오른쪽 아래가 같은 타일인 경우
 					else if (rightBottomTileId === tileData.id) {
 						// 이미 존재합니다.
+						rightSprites = [];
 					}
 					
 					else {
-						drawState('right', tileWidth, 0);
+						rightSprites = drawState('right', tileWidth, 0);
 					}
 				}
 				
-				if (rightTileId !== tileData.id && rightBottomTileId !== tileData.id && bottomTileId !== tileData.id) {
-					drawState('rightBottom', tileWidth, tileHeight);
+				else {
+					rightSprites = [];
 				}
+			};
+			
+			// 오른쪽 아래 그리기
+			let drawRightBottom = () => {
+				clearSprites(rightBottomSprites);
+				
+				// 오른쪽 아래
+				if (rightTileId !== tileData.id && rightBottomTileId !== tileData.id && bottomTileId !== tileData.id) {
+					rightBottomSprites = drawState('rightBottom', tileWidth, tileHeight);
+				}
+				
+				else {
+					rightBottomSprites = [];
+				}
+			};
+			
+			// 아래 그리기
+			let drawBottom = () => {
+				clearSprites(bottomSprites);
 				
 				// 아래 타일이 다른 경우
 				if (bottomTileId !== tileData.id) {
@@ -201,28 +278,154 @@ BigWorld.Tile = CLASS((cls) => {
 					// 아래 왼쪽과 아래 오른쪽이 같은 타일인 경우
 					if (leftBottomTileId === tileData.id && rightBottomTileId === tileData.id) {
 						// 그냥 center를 그립니다.
-						drawState('center', 0, tileHeight);
+						bottomSprites = drawState('center', 0, tileHeight);
 					}
 					
 					// 아래 왼쪽이 같은 타일인 경우
 					else if (leftBottomTileId === tileData.id) {
 						// 이미 존재합니다.
+						bottomSprites = [];
 					}
 					
 					// 아래 오른쪽이 같은 타일인 경우
 					else if (rightBottomTileId === tileData.id) {
 						// 이미 존재합니다.
+						bottomSprites = [];
 					}
 					
 					else {
-						drawState('bottom', 0, tileHeight);
+						bottomSprites = drawState('bottom', 0, tileHeight);
 					}
 				}
 				
-				if (bottomTileId !== tileData.id && leftBottomTileId !== tileData.id && leftTileId !== tileData.id) {
-					drawState('leftBottom', -tileWidth, tileHeight);
+				else {
+					bottomSprites = [];
 				}
+			};
+			
+			// 왼쪽 아래 그리기
+			let drawLeftBottom = () => {
+				clearSprites(leftBottomSprites);
+				
+				// 왼쪽 아래
+				if (bottomTileId !== tileData.id && leftBottomTileId !== tileData.id && leftTileId !== tileData.id) {
+					leftBottomSprites = drawState('leftBottom', -tileWidth, tileHeight);
+				}
+				
+				else {
+					leftBottomSprites = [];
+				}
+			};
+			
+			// 타일 그리기
+			let draw = self.draw = () => {
+				clearSprites(centerSprites);
+				
+				// 가운데 그리기
+				centerSprites = drawState('center', 0, 0);
+				
+				// 주변 그리기
+				drawLeft();
+				drawLeftTop();
+				drawTop();
+				drawRightTop();
+				drawRight();
+				drawRightBottom();
+				drawBottom();
+				drawLeftBottom();
+			};
+			
+			self.on('remove', () => {
+				clearSprites(centerSprites);
+				clearSprites(leftSprites);
+				clearSprites(leftTopSprites);
+				clearSprites(topSprites);
+				clearSprites(rightTopSprites);
+				clearSprites(rightSprites);
+				clearSprites(rightBottomSprites);
+				clearSprites(bottomSprites);
+				clearSprites(leftBottomSprites);
 			});
+			
+			let setLeftTileId = self.setLeftTileId = (_leftTileId) => {
+				//REQUIRED: leftTileId
+				
+				leftTileId = _leftTileId;
+				
+				drawLeft();
+				drawLeftTop();
+				drawLeftBottom();
+			};
+			
+			let setLeftTopTileId = self.setLeftTopTileId = (_leftTopTileId) => {
+				//REQUIRED: leftTopTileId
+				
+				leftTopTileId = _leftTopTileId;
+				
+				drawLeft();
+				drawLeftTop();
+				drawTop();
+			};
+			
+			let setTopTileId = self.setTopTileId = (_topTileId) => {
+				//REQUIRED: topTileId
+				
+				topTileId = _topTileId;
+				
+				drawLeftTop();
+				drawTop();
+				drawRightTop();
+			};
+			
+			let setRightTopTileId = self.setRightTopTileId = (_rightTopTileId) => {
+				//REQUIRED: rightTopTileId
+				
+				rightTopTileId = _rightTopTileId;
+				
+				drawTop();
+				drawRightTop();
+				drawRight();
+			};
+			
+			let setRightTileId = self.setRightTileId = (_rightTileId) => {
+				//REQUIRED: rightTileId
+				
+				rightTileId = _rightTileId;
+				
+				drawRightTop();
+				drawRight();
+				drawRightBottom();
+			};
+			
+			let setRightBottomTileId = self.setRightBottomTileId = (_rightBottomTileId) => {
+				//REQUIRED: rightBottomTileId
+				
+				rightBottomTileId = _rightBottomTileId;
+				
+				drawRight();
+				drawRightBottom();
+				drawBottom();
+			};
+			
+			let setBottomTileId = self.setBottomTileId = (_bottomTileId) => {
+				//REQUIRED: bottomTileId
+				
+				bottomTileId = _bottomTileId;
+				
+				drawRightBottom();
+				drawBottom();
+				drawLeftBottom();
+			};
+			
+			let setLeftBottomTileId = self.setLeftBottomTileId = (_leftBottomTileId) => {
+				//REQUIRED: leftBottomTileId
+				
+				leftBottomTileId = _leftBottomTileId;
+				
+				drawBottom();
+				drawLeftBottom();
+				drawLeft();
+			};
 		}
 	};
 });

@@ -219,12 +219,32 @@ BigWorld.Map = CLASS(() => {
 			
 			// 아이템을 생성합니다.
 			let createItem = (mapObjectId, itemData, kind) => {
-				//TODO:
+				
+				// 오브젝트를 찾습니다.
+				let object = objects[mapObjectId];
+				if (object !== undefined) {
+					
+					// 아이템을 부착합니다.
+					object.attachItem({
+						id : itemData.id,
+						item : BigWorld.Item({
+							itemData : itemData,
+							kind : kind
+						})
+					});
+				}
 			};
 			
 			// 아이템을 제거합니다.
 			let removeItem = (mapObjectId, itemId) => {
-				//TODO:
+				
+				// 오브젝트를 찾습니다.
+				let object = objects[mapObjectId];
+				if (object !== undefined) {
+					
+					// 아이템을 제거합니다.
+					object.removeItem(itemData.id);
+				}
 			};
 			
 			// 타일 데이터를 불러옵니다..
@@ -250,6 +270,13 @@ BigWorld.Map = CLASS(() => {
 					
 					tileRoom.on('update', (tileData) => {
 						tileDataSet[tileId] = tileData;
+						
+						// 모든 타일을 변경합니다.
+						EACH(tiles, (tile) => {
+							if (tile.getId() === tileId) {
+								tile.setData(tileData);
+							}
+						});
 					});
 					
 					tileRoom.on('remove', () => {
@@ -313,6 +340,13 @@ BigWorld.Map = CLASS(() => {
 					
 					objectRoom.on('update', (objectData) => {
 						objectDataSet[objectId] = objectData;
+						
+						// 모든 오브젝트를 변경합니다.
+						EACH(objects, (object) => {
+							if (object.getId() === objectId) {
+								object.setData(objectData);
+							}
+						});
 					});
 					
 					objectRoom.on('remove', () => {
@@ -376,6 +410,20 @@ BigWorld.Map = CLASS(() => {
 					
 					itemRoom.on('update', (itemData) => {
 						itemDataSet[itemId] = itemData;
+						
+						// 모든 부착된 아이템을 변경합니다.
+						EACH(objects, (object) => {
+							if (object.getId() === itemData.objectId) {
+								
+								let item = object.getItem(itemData.id);
+								if (item !== undefined) {
+									
+									item.setData(itemData);
+									
+									object.refresh();
+								}
+							}
+						});
 					});
 					
 					itemRoom.on('remove', () => {
@@ -572,7 +620,7 @@ BigWorld.Map = CLASS(() => {
 								removeItemData(itemInfo.id);
 								
 								// 기존 아이템을 제거합니다.
-								removeItem(mapObjectData.id, itemData.id);
+								removeItem(mapObjectData.id, itemInfo.id);
 							}
 						});
 						
@@ -947,7 +995,7 @@ BigWorld.Map = CLASS(() => {
 					
 					touchstart : (e) => {
 						
-						if (pickPositionHandler !== undefined) {
+						if (e.getButtonIndex() === 0 && pickPositionHandler !== undefined) {
 							
 							let startLeft = e.getLeft();
 							let startTop = e.getTop();

@@ -29,7 +29,7 @@ BigWorld.Object = CLASS({
 		let items = {};
 		
 		// 오브젝트 새로고침
-		let refresh = RAR(() => {
+		let refresh = self.refresh = RAR(() => {
 			
 			EACH(sprites, (sprite) => {
 				sprite.remove();
@@ -77,6 +77,18 @@ BigWorld.Object = CLASS({
 			self.flipX();
 		}
 		
+		let getId = self.getId = () => {
+			return objectData.id;
+		};
+		
+		let setData = self.setData = (_objectData) => {
+			//REQUIRED: objectData
+			
+			objectData = _objectData;
+			
+			refresh();
+		};
+		
 		let reverse = self.reverse = () => {
 			isReverse = isReverse !== true;
 			self.flipX();
@@ -91,6 +103,20 @@ BigWorld.Object = CLASS({
 			let item = params.item;
 			
 			items[id] = item;
+			
+			refresh();
+		};
+		
+		let getItem = self.getItem = (itemId) => {
+			//REQUIRED: itemId
+			
+			return items[itemId];
+		};
+		
+		let removeItem = self.removeItem = (itemId) => {
+			//REQUIRED: itemId
+			
+			delete items[itemId];
 			
 			refresh();
 		};

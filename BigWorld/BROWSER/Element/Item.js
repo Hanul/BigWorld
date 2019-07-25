@@ -50,5 +50,11 @@ BigWorld.Item = CLASS({
 			
 			return sprites;
 		};
+		
+		let setData = self.setData = (_itemData) => {
+			//REQUIRED: itemData
+			
+			itemData = _itemData;
+		};
 	}
 });

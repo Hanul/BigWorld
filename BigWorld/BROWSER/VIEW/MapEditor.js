@@ -276,14 +276,29 @@ BigWorld.MapEditor = CLASS({
 										
 										let ranges = [];
 										
-										for (let col = -Math.floor((colRange - 1) / 2); col <= Math.floor(colRange / 2); col += 1) {
-											for (let row = -Math.floor((rowRange - 1) / 2); row <= Math.floor(rowRange / 2); row += 1) {
+										for (let row = -Math.floor((rowRange - 1) / 2); row <= Math.floor(rowRange / 2); row += 1) {
+											for (let col = -Math.floor((colRange - 1) / 2); col <= Math.floor(colRange / 2); col += 1) {
 												ranges.push({
 													col : col,
 													row : row
 												});
 											}
 										}
+										
+										let panel = UUI.PANEL({
+											style : {
+												zIndex : 999,
+												position : 'fixed',
+												right : 10,
+												bottom : 10,
+												backgroundColor : '#FFFFCC',
+												color : '#333',
+												borderRadius : 5
+											},
+											contentStyle : {
+												padding : '5px 10px'
+											}
+										}).appendTo(BODY);
 										
 										NEXT(ranges, [
 										(range, next) => {
@@ -311,14 +326,20 @@ BigWorld.MapEditor = CLASS({
 												col : range.col,
 												row : range.row
 											}, () => {
-												//TODO:
+												
+												panel.empty();
+												panel.append('Column: ' + range.col + ', Row: ' + range.row + ' 타일을 저장했습니다.');
+												
 												next();
 											});
 										},
 										
 										() => {
 											return () => {
-												//TODO:
+												
+												panel.remove();
+												
+												SkyDesktop.Noti('기본 타일 지정이 완료되었습니다.');
 											};
 										}]);
 										

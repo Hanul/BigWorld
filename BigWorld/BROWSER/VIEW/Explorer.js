@@ -435,10 +435,10 @@ BigWorld.Explorer = CLASS({
 									
 									BigWorld.ValidPrompt({
 										title : '타일 생성',
-										inputName : 'name.ko',
+										inputName : 'name',
 										placeholder : '타일 이름',
 										errorMsgs : {
-											'name.ko' : {
+											name : {
 												size : (validParams) => {
 													return '최대 ' + validParams.max + '글자입니다.';
 												}
@@ -456,9 +456,7 @@ BigWorld.Explorer = CLASS({
 											// 타일을 생성합니다.
 											BigWorld.TileModel.create({
 												folderId : nowFolderId,
-												name : {
-													ko : tileName
-												}
+												name : tileName
 											}, {
 												notValid : showErrors,
 												success : removePrompt
@@ -947,7 +945,7 @@ BigWorld.Explorer = CLASS({
 							createTime : 1
 						}
 					}, {
-						handler : (tileData, addUpdateHandler, addRemoveHandler) => {
+						handler : (tileData, addUpdateHandler, addRemoveHandler, exit) => {
 							
 							let element;
 							elementList.append(element = BigWorld.ExplorerElement({
@@ -1010,9 +1008,7 @@ BigWorld.Explorer = CLASS({
 													// 타일 이름을 변경합니다.
 													BigWorld.TileModel.update({
 														id : tileData.id,
-														name : {
-															ko : tileName
-														}
+														name : tileName
 													}, {
 														notValid : showErrors,
 														success : removePrompt
@@ -1075,7 +1071,7 @@ BigWorld.Explorer = CLASS({
 							createTime : 1
 						}
 					}, {
-						handler : (objectData, addUpdateHandler, addRemoveHandler) => {
+						handler : (objectData, addUpdateHandler, addRemoveHandler, exit) => {
 							
 							let element;
 							elementList.append(element = BigWorld.ExplorerElement({
@@ -1203,7 +1199,7 @@ BigWorld.Explorer = CLASS({
 							createTime : 1
 						}
 					}, {
-						handler : (itemData, addUpdateHandler, addRemoveHandler) => {
+						handler : (itemData, addUpdateHandler, addRemoveHandler, exit) => {
 							
 							let element;
 							elementList.append(element = BigWorld.ExplorerElement({

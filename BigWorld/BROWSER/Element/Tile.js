@@ -426,6 +426,18 @@ BigWorld.Tile = CLASS((cls) => {
 				drawLeftBottom();
 				drawLeft();
 			};
+			
+			let getId = self.getId = () => {
+				return tileData.id;
+			};
+			
+			let setData = self.setData = (_tileData) => {
+				//REQUIRED: tileData
+				
+				tileData = _tileData;
+				
+				draw();
+			};
 		}
 	};
 });

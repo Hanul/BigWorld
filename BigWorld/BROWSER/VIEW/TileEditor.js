@@ -317,10 +317,10 @@ BigWorld.TileEditor = CLASS({
 					},
 					
 					sectionLevels : {
-						left : CONFIG.BigWorld.tileSectionLevel - 1,
-						up : CONFIG.BigWorld.tileSectionLevel - 1,
-						right : CONFIG.BigWorld.tileSectionLevel - 1,
-						down : CONFIG.BigWorld.tileSectionLevel - 1
+						left : (CONFIG.BigWorld.tileSectionLevel - 1) / 2,
+						up : (CONFIG.BigWorld.tileSectionLevel - 1) / 2,
+						right : (CONFIG.BigWorld.tileSectionLevel - 1) / 2,
+						down : (CONFIG.BigWorld.tileSectionLevel - 1) / 2
 					},
 					sectionMap : nowTileData.states[nowState] === undefined ? BigWorld.Tile.getInitSectionMap() : nowTileData.states[nowState].sectionMap,
 					

@@ -679,7 +679,8 @@ BigWorld.MapEditor = CLASS({
 						// 충돌 영역 드로잉
 						cursorObject.append(BigWorld.SectionMapPreview({
 							sectionMap : objectData.sectionMap,
-							sectionLevels : objectData.sectionLevels
+							sectionLevels : objectData.sectionLevels,
+							direction : nowDirection
 						}));
 						
 						map.setCursorNode({

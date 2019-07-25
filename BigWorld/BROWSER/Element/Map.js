@@ -67,16 +67,19 @@ BigWorld.Map = CLASS(() => {
 			let tileRooms = {};
 			let tileCounts = {};
 			let tileCallbackMap = {};
+			let toLoadTileIds = [];
 			
 			let objectDataSet = {};
 			let objectRooms = {};
 			let objectCounts = {};
 			let objectCallbackMap = {};
+			let toLoadObjectIds = [];
 			
 			let itemDataSet = {};
 			let itemRooms = {};
 			let itemCounts = {};
 			let itemCallbackMap = {};
+			let toLoadItemIds = [];
 			
 			let gridWrapper;
 			let drawGridDelay;
@@ -248,23 +251,31 @@ BigWorld.Map = CLASS(() => {
 			};
 			
 			// 타일 데이터를 불러옵니다..
-			let loadTileData = (tileId, callback) => {
+			let loadTileData = (tileId, callback, isToNotLoad) => {
 				
 				if (tileCounts[tileId] === undefined) {
 					tileCounts[tileId] = 0;
 					
-					BigWorld.TileModel.get(tileId, (tileData) => {
-						if (tileCounts[tileId] !== undefined) {
-							tileDataSet[tileId] = tileData;
-							
-							// 저장된 콜백 함수를 실행합니다.
-							EACH(tileCallbackMap[tileId], (callback) => {
-								callback(tileData);
-							});
-							
-							delete tileCallbackMap[tileId];
-						}
-					});
+					// 나중에 로드함
+					if (isToNotLoad === true) {
+						toLoadTileIds.push(tileId);
+					}
+					
+					else {
+						
+						BigWorld.TileModel.get(tileId, (tileData) => {
+							if (tileCounts[tileId] !== undefined) {
+								tileDataSet[tileId] = tileData;
+								
+								// 저장된 콜백 함수를 실행합니다.
+								EACH(tileCallbackMap[tileId], (callback) => {
+									callback(tileData);
+								});
+								
+								delete tileCallbackMap[tileId];
+							}
+						});
+					}
 					
 					let tileRoom = BigWorld.ROOM('Tile/' + tileId);
 					
@@ -318,23 +329,31 @@ BigWorld.Map = CLASS(() => {
 			};
 			
 			// 오브젝트 데이터를 불러옵니다..
-			let loadObjectData = (objectId, callback) => {
+			let loadObjectData = (objectId, callback, isToNotLoad) => {
 				
 				if (objectCounts[objectId] === undefined) {
 					objectCounts[objectId] = 0;
 					
-					BigWorld.ObjectModel.get(objectId, (objectData) => {
-						if (objectCounts[objectId] !== undefined) {
-							objectDataSet[objectId] = objectData;
-							
-							// 저장된 콜백 함수를 실행합니다.
-							EACH(objectCallbackMap[objectId], (callback) => {
-								callback(objectData);
-							});
-							
-							delete objectCallbackMap[objectId];
-						}
-					});
+					// 나중에 로드함
+					if (isToNotLoad === true) {
+						toLoadObjectIds.push(objectId);
+					}
+					
+					else {
+						
+						BigWorld.ObjectModel.get(objectId, (objectData) => {
+							if (objectCounts[objectId] !== undefined) {
+								objectDataSet[objectId] = objectData;
+								
+								// 저장된 콜백 함수를 실행합니다.
+								EACH(objectCallbackMap[objectId], (callback) => {
+									callback(objectData);
+								});
+								
+								delete objectCallbackMap[objectId];
+							}
+						});
+					}
 					
 					let objectRoom = BigWorld.ROOM('Object/' + objectId);
 					
@@ -388,23 +407,31 @@ BigWorld.Map = CLASS(() => {
 			};
 			
 			// 아이템 데이터를 불러옵니다..
-			let loadItemData = (itemId, callback) => {
+			let loadItemData = (itemId, callback, isToNotLoad) => {
 				
 				if (itemCounts[itemId] === undefined) {
 					itemCounts[itemId] = 0;
 					
-					BigWorld.ItemModel.get(itemId, (itemData) => {
-						if (itemCounts[itemId] !== undefined) {
-							itemDataSet[itemId] = itemData;
-							
-							// 저장된 콜백 함수를 실행합니다.
-							EACH(itemCallbackMap[itemId], (callback) => {
-								callback(itemData);
-							});
-							
-							delete itemCallbackMap[itemId];
-						}
-					});
+					// 나중에 로드함
+					if (isToNotLoad === true) {
+						toLoadItemIds.push(itemId);
+					}
+					
+					else {
+						
+						BigWorld.ItemModel.get(itemId, (itemData) => {
+							if (itemCounts[itemId] !== undefined) {
+								itemDataSet[itemId] = itemData;
+								
+								// 저장된 콜백 함수를 실행합니다.
+								EACH(itemCallbackMap[itemId], (callback) => {
+									callback(itemData);
+								});
+								
+								delete itemCallbackMap[itemId];
+							}
+						});
+					}
 					
 					let itemRoom = BigWorld.ROOM('Item/' + itemId);
 					
@@ -521,7 +548,32 @@ BigWorld.Map = CLASS(() => {
 						
 						// 타일을 생성합니다.
 						createTile(mapTileData, tileData);
+						
+					}, true);
+					
+					// 타일 정보를 한번에 불러옵니다.
+					toLoadTileIds.forEach(() => {
+						
+						BigWorld.TileModel.find({
+							filter : {
+								id : {
+									$in : toLoadTileIds
+								}
+							}
+						}, EACH((tileData) => {
+							if (tileCounts[tileData.id] !== undefined) {
+								tileDataSet[tileData.id] = tileData;
+								
+								// 저장된 콜백 함수를 실행합니다.
+								EACH(tileCallbackMap[tileData.id], (callback) => {
+									callback(tileData);
+								});
+								
+								delete tileCallbackMap[tileData.id];
+							}
+						}));
 					});
+					toLoadTileIds = [];
 					
 					let mapTileRoom = BigWorld.ROOM('MapTile/' + mapTileData.id);
 					
@@ -569,7 +621,32 @@ BigWorld.Map = CLASS(() => {
 						
 						// 오브젝트를 생성합니다.
 						createObject(mapObjectData, objectData);
+						
+					}, true);
+					
+					// 오브젝트 정보를 한번에 불러옵니다.
+					toLoadObjectIds.forEach(() => {
+						
+						BigWorld.ObjectModel.find({
+							filter : {
+								id : {
+									$in : toLoadObjectIds
+								}
+							}
+						}, EACH((objectData) => {
+							if (objectCounts[objectData.id] !== undefined) {
+								objectDataSet[objectData.id] = objectData;
+								
+								// 저장된 콜백 함수를 실행합니다.
+								EACH(objectCallbackMap[objectData.id], (callback) => {
+									callback(objectData);
+								});
+								
+								delete objectCallbackMap[objectData.id];
+							}
+						}));
 					});
+					toLoadObjectIds = [];
 					
 					mapObjectData.items.forEach((itemInfo) => {
 						
@@ -578,8 +655,33 @@ BigWorld.Map = CLASS(() => {
 							
 							// 아이템을 생성합니다.
 							createItem(mapObjectData.id, itemData, itemInfo.kind);
-						});
+							
+						}, true);
 					});
+					
+					// 아이템 정보를 한번에 불러옵니다.
+					toLoadItemIds.forEach(() => {
+						
+						BigWorld.ItemModel.find({
+							filter : {
+								id : {
+									$in : toLoadItemIds
+								}
+							}
+						}, EACH((itemData) => {
+							if (itemCounts[itemData.id] !== undefined) {
+								itemDataSet[itemData.id] = itemData;
+								
+								// 저장된 콜백 함수를 실행합니다.
+								EACH(itemCallbackMap[itemData.id], (callback) => {
+									callback(itemData);
+								});
+								
+								delete itemCallbackMap[itemData.id];
+							}
+						}));
+					});
+					toLoadItemIds = [];
 					
 					let mapObjectRoom = BigWorld.ROOM('MapObject/' + mapObjectData.id);
 					

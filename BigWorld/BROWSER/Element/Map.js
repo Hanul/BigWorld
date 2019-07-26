@@ -552,7 +552,7 @@ BigWorld.Map = CLASS(() => {
 					}, true);
 					
 					// 타일 정보를 한번에 불러옵니다.
-					toLoadTileIds.forEach(() => {
+					if (toLoadTileIds.length > 0) {
 						
 						BigWorld.TileModel.find({
 							filter : {
@@ -572,7 +572,7 @@ BigWorld.Map = CLASS(() => {
 								delete tileCallbackMap[tileData.id];
 							}
 						}));
-					});
+					}
 					toLoadTileIds = [];
 					
 					let mapTileRoom = BigWorld.ROOM('MapTile/' + mapTileData.id);
@@ -625,7 +625,7 @@ BigWorld.Map = CLASS(() => {
 					}, true);
 					
 					// 오브젝트 정보를 한번에 불러옵니다.
-					toLoadObjectIds.forEach(() => {
+					if (toLoadObjectIds.length > 0) {
 						
 						BigWorld.ObjectModel.find({
 							filter : {
@@ -645,7 +645,7 @@ BigWorld.Map = CLASS(() => {
 								delete objectCallbackMap[objectData.id];
 							}
 						}));
-					});
+					}
 					toLoadObjectIds = [];
 					
 					mapObjectData.items.forEach((itemInfo) => {
@@ -660,7 +660,7 @@ BigWorld.Map = CLASS(() => {
 					});
 					
 					// 아이템 정보를 한번에 불러옵니다.
-					toLoadItemIds.forEach(() => {
+					if (toLoadItemIds.length > 0) {
 						
 						BigWorld.ItemModel.find({
 							filter : {
@@ -680,7 +680,7 @@ BigWorld.Map = CLASS(() => {
 								delete itemCallbackMap[itemData.id];
 							}
 						}));
-					});
+					}
 					toLoadItemIds = [];
 					
 					let mapObjectRoom = BigWorld.ROOM('MapObject/' + mapObjectData.id);

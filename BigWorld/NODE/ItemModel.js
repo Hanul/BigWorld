@@ -8,6 +8,11 @@ OVERRIDE(BigWorld.ItemModel, (origin) => {
 
 		init : (inner, self) => {
 			
+			// 성능 향상을 위해 인덱싱 생성
+			self.getDB().createIndex({
+				objectId : 1
+			});
+			
 			inner.on('create', {
 
 				after : (savedData) => {

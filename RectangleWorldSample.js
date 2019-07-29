@@ -11,9 +11,12 @@ BOOT({
 		
 		BigWorld : {
 			tileType : 'rectangle',
-			tileSectionLevel : 5,
+			/*tileSectionLevel : 5,
 			sectionWidth : 40,
-			sectionHeight : 40
+			sectionHeight : 40*/
+			tileSectionLevel : 1,
+			sectionWidth : 512,
+			sectionHeight : 512
 		}
 	},
 	
@@ -24,7 +27,7 @@ BOOT({
 		},
 		
 		SkyEngine : {
-			//isDebugMode : true
+			isDebugMode : true
 		}
 	},
 	

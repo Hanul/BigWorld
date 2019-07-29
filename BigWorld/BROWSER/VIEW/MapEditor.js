@@ -29,6 +29,8 @@ BigWorld.MapEditor = CLASS({
 		let menuPanel;
 		let namePanel;
 		let scaleInput;
+		let columnInput;
+		let rowInput;
 		
 		let tilePanel;
 		let objectPanel;
@@ -71,6 +73,46 @@ BigWorld.MapEditor = CLASS({
 							}
 						}
 					})]
+				}),
+				
+				DIV({
+					style : {
+						marginTop : 10
+					},
+					c : [DIV({
+						style : {
+							marginTop : 4,
+							flt : 'left'
+						},
+						c : ['Col: ', columnInput = INPUT({
+							style : {
+								width : 30,
+								textAlign : 'right'
+							}
+						}), ' Row: ', rowInput = INPUT({
+							style : {
+								width : 30,
+								textAlign : 'right'
+							}
+						})]
+					}), SkyDesktop.Button({
+						style : {
+							marginLeft : 10,
+							flt : 'left',
+							padding : '5px 10px'
+						},
+						title : '이동',
+						on : {
+							tap : () => {
+								if (map !== undefined) {
+									map.setPosition({
+										x : -columnInput.getValue() * BigWorld.Tile.getTileWidth() * map.getScaleX(),
+										y : -rowInput.getValue() * BigWorld.Tile.getTileHeight() * map.getScaleY()
+									});
+								}
+							}
+						}
+					}), CLEAR_BOTH()]
 				}),
 				
 				SkyDesktop.Button({
@@ -1185,6 +1227,23 @@ BigWorld.MapEditor = CLASS({
 			if (e.getKey() === 'Escape') {
 				deselect();
 			}
+			
+			// 그리드 숫자 보이기
+			if (e.getKey() === '`') {
+				if (map !== undefined) {
+					map.showGridNumber();
+				}
+			}
+		});
+		
+		let keyupEvent = EVENT('keyup', (e) => {
+			
+			// 그리드 숫자 숨기기
+			if (e.getKey() === '`') {
+				if (map !== undefined) {
+					map.hideGridNumber();
+				}
+			}
 		});
 		
 		inner.on('close', () => {
@@ -1194,6 +1253,7 @@ BigWorld.MapEditor = CLASS({
 			}
 			
 			keydownEvent.remove();
+			keyupEvent.remove();
 			
 			wrapper.remove();
 		});

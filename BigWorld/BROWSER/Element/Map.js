@@ -82,7 +82,9 @@ BigWorld.Map = CLASS(() => {
 			let toLoadItemIds = [];
 			
 			let gridWrapper;
+			let grids = [];
 			let drawGridDelay;
+			let isToShowGridNumber;
 			
 			if (isToShowGrid === true) {
 				gridWrapper = SkyEngine.Node({
@@ -895,19 +897,27 @@ BigWorld.Map = CLASS(() => {
 						drawGridDelay = undefined;
 						
 						gridWrapper.empty();
+						grids = [];
 						
 						// 타일의 범위를 파악합니다.
 						for (let col = startTileCol; col <= endTileCol; col += 1) {
 							for (let row = startTileRow; row <= endTileRow; row += 1) {
 								
-								SkyEngine.Rect({
+								let grid;
+								grids.push(grid = SkyEngine.Rect({
 									x : col * tileWidth,
 									y : row * tileHeight,
 									width : tileWidth,
 									height : tileHeight,
 									border : (1 / self.getScaleX()) + 'px solid #000666',
 									color : '#000333'
-								}).appendTo(gridWrapper)
+								}).appendTo(gridWrapper));
+								
+								if (isToShowGridNumber === true) {
+									grid.addDom(DIV({
+										c : 'Col: ' + col + ', Row: ' + row
+									}));
+								}
 							}
 						}
 						
@@ -1058,6 +1068,27 @@ BigWorld.Map = CLASS(() => {
 					cursorNode.remove();
 					cursorNode = undefined;
 				}
+			};
+			
+			let showGridNumber = self.showGridNumber = () => {
+				
+				isToShowGridNumber = true;
+				
+				EACH(grids, (grid) => {
+					
+					grid.addDom(DIV({
+						c : 'Col: ' + (grid.getX() / tileWidth) + ', Row: ' + (grid.getY() / tileHeight)
+					}));
+				});
+			};
+			
+			let hideGridNumber = self.hideGridNumber = () => {
+				
+				isToShowGridNumber = false;
+				
+				EACH(grids, (grid) => {
+					grid.removeAllDoms();
+				});
 			};
 			
 			let resizeEvent = EVENT('resize', loadElements);

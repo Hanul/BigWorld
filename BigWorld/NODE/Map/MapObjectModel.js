@@ -8,6 +8,13 @@ OVERRIDE(BigWorld.MapObjectModel, (origin) => {
 
 		init : (inner, self) => {
 			
+			// 성능 향상을 위해 인덱싱 생성
+			self.getDB().createIndex({
+				mapId : 1,
+				x : 1,
+				y : 1
+			});
+			
 			// 타일의 크기
 			let tileWidth = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
 			let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;

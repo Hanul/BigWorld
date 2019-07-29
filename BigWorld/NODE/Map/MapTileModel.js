@@ -8,6 +8,13 @@ OVERRIDE(BigWorld.MapTileModel, (origin) => {
 
 		init : (inner, self) => {
 			
+			// 성능 향상을 위해 인덱싱 생성
+			self.getDB().createIndex({
+				mapId : 1,
+				col : 1,
+				row : 1
+			});
+			
 			inner.on('create', {
 
 				after : (savedData) => {

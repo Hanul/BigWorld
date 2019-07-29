@@ -27,7 +27,7 @@ BOOT({
 		},
 		
 		SkyEngine : {
-			isDebugMode : true
+			//isDebugMode : true
 		}
 	},
 	

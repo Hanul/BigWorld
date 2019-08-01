@@ -51,6 +51,7 @@ BigWorld.Tile = CLASS((cls) => {
 		
 		init : (inner, self, params) => {
 			//REQUIRED: params
+			//OPTIONAL: params.alpha
 			//REQUIRED: params.col
 			//REQUIRED: params.row
 			//REQUIRED: params.tileData
@@ -64,6 +65,7 @@ BigWorld.Tile = CLASS((cls) => {
 			//OPTIONAL: params.bottomTileId
 			//OPTIONAL: params.leftBottomTileId
 			
+			let alpha = params.alpha;
 			let col = params.col;
 			let row = params.row;
 			
@@ -95,6 +97,7 @@ BigWorld.Tile = CLASS((cls) => {
 						if (frameImageId !== undefined) {
 							
 							sprites.push(SkyEngine.Sprite({
+								alpha : alpha,
 								src : BigWorld.RF(frameImageId),
 								fps : partInfo.fps,
 								frameCount : partInfo.frameCount,

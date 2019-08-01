@@ -98,7 +98,14 @@ BigWorld.Map = CLASS(() => {
 				zIndex : -999998
 			}).appendTo(self);
 			
-			let getTileId = (col, row) => {
+			let getTileWrapper = self.getTileWrapper = () => {
+				return tileWrapper;
+			};
+			
+			let getTileId = self.getTileId = (col, row) => {
+				//REQUIRED: col
+				//REQUIRED: row
+				
 				let mapTileId = zoneMapTileIds[col + ',' + row];
 				if (mapTileId !== undefined) {
 					return mapTileDataSet[mapTileId].tileId;
@@ -254,7 +261,7 @@ BigWorld.Map = CLASS(() => {
 				}
 			};
 			
-			// 타일 데이터를 불러옵니다..
+			// 타일 데이터를 불러옵니다.
 			let loadTileData = (tileId, callback, isToNotLoad) => {
 				
 				if (tileCounts[tileId] === undefined) {
@@ -332,7 +339,7 @@ BigWorld.Map = CLASS(() => {
 				}
 			};
 			
-			// 오브젝트 데이터를 불러옵니다..
+			// 오브젝트 데이터를 불러옵니다.
 			let loadObjectData = (objectId, callback, isToNotLoad) => {
 				
 				if (objectCounts[objectId] === undefined) {
@@ -410,7 +417,7 @@ BigWorld.Map = CLASS(() => {
 				}
 			};
 			
-			// 아이템 데이터를 불러옵니다..
+			// 아이템 데이터를 불러옵니다.
 			let loadItemData = (itemId, callback, isToNotLoad) => {
 				
 				if (itemCounts[itemId] === undefined) {
@@ -1065,10 +1072,6 @@ BigWorld.Map = CLASS(() => {
 				cursorNodeMoveType = moveType;
 			};
 			
-			let getCursorNode = self.getCursorNode = () => {
-				return cursorNode;
-			};
-			
 			let removeCursorNode = self.removeCursorNode = () => {
 				if (cursorNode !== undefined) {
 					cursorNode.remove();
@@ -1105,29 +1108,40 @@ BigWorld.Map = CLASS(() => {
 				isPlaceMode = false;
 			};
 			
-			let getObjectByPosition = self.getObjectByPosition = (position) => {
-				//REQUIRED: position
-				//REQUIRED: position.x
-				//REQUIRED: position.y
+			let getNearObject = self.getNearObject = (targetObject) => {
+				//REQUIRED: targetObject
 				
-				let x = position.x;
-				let y = position.y;
+				let centerCol = Math.round(targetObject.getX() / TILE_WIDTH);
+				let centerRow = Math.round(targetObject.getY() / TILE_HEIGHT);
 				
-				let mapObjectIds = zoneMapObjectIdMap[Math.round(x / TILE_WIDTH) + ',' + Math.round(y / TILE_HEIGHT)];
+				let minDistance = 999999;
+				let nearObject;
 				
-				let foundObject;
-				
-				EACH(mapObjectIds, (mapObjectId) => {
-					
-					let object = objects[mapObjectId];
-					
-					if (object.getX() === x || object.getY() === y) {
-						foundObject = object;
-						return false;
+				// 주변 2개의 타일까지 체크합니다.
+				for (let col = centerCol - 2; col <= centerCol + 2; col += 1) {
+					for (let row = centerRow - 2; row <= centerRow + 2; row += 1) {
+						
+						let mapObjectIds = zoneMapObjectIdMap[col + ',' + row];
+						
+						EACH(mapObjectIds, (mapObjectId) => {
+							
+							let object = objects[mapObjectId];
+							
+							// 거리 계산
+							if (object !== undefined) {
+								
+								let distance = Math.sqrt(Math.pow(targetObject.getX() - object.getX(), 2) + Math.pow(targetObject.getY() - object.getY(), 2));
+								
+								if (distance < minDistance) {
+									minDistance = distance;
+									nearObject = object;
+								}
+							}
+						});
 					}
-				});
+				}
 				
-				return foundObject;
+				return nearObject;
 			};
 			
 			let getCollidedObject = self.getCollidedObject = (targetObject) => {
@@ -1138,7 +1152,7 @@ BigWorld.Map = CLASS(() => {
 				
 				let collidedObject;
 				
-				// 충돌 체크는 주변 2개의 타일까지 체크합니다.
+				// 주변 2개의 타일까지 체크합니다.
 				for (let col = centerCol - 2; col <= centerCol + 2; col += 1) {
 					for (let row = centerRow - 2; row <= centerRow + 2; row += 1) {
 						
@@ -1149,7 +1163,7 @@ BigWorld.Map = CLASS(() => {
 							let object = objects[mapObjectId];
 							
 							// 충돌 체크
-							if (object.checkCollision(targetObject) === true) {
+							if (object !== undefined && object.checkCollision(targetObject) === true) {
 								collidedObject = object;
 								return false;
 							}

@@ -23,33 +23,36 @@ BigWorld.SectionCollider = CLASS({
 			EACH(sectionMap, (sections, sectionRow) => {
 				EACH(sections, (section, sectionCol) => {
 					
-					let x, y;
-					
-					if (direction === 'down') {
-						x = (sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
-						y = (sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
-					}
-					if (direction === 'left') {
-						x = -(sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
-						y = (sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
-					}
-					if (direction === 'up') {
-						x = -(sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
-						y = -(sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
-					}
-					if (direction === 'right') {
-						x = (sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
-						y = -(sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
-					}
-					
-					self.append(SkyEngine.Rect({
+					if (section.isBlock === true) {
 						
-						x : x,
-						y : y,
+						let x, y;
 						
-						width : CONFIG.BigWorld.sectionWidth,
-						height : CONFIG.BigWorld.sectionHeight
-					}));
+						if (direction === 'down') {
+							x = (sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
+							y = (sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
+						}
+						if (direction === 'left') {
+							x = -(sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
+							y = (sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
+						}
+						if (direction === 'up') {
+							x = -(sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
+							y = -(sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
+						}
+						if (direction === 'right') {
+							x = (sectionRow - sectionLevels.up) * CONFIG.BigWorld.sectionHeight;
+							y = -(sectionCol - sectionLevels.left) * CONFIG.BigWorld.sectionWidth;
+						}
+						
+						self.append(SkyEngine.Rect({
+							
+							x : x,
+							y : y,
+							
+							width : CONFIG.BigWorld.sectionWidth,
+							height : CONFIG.BigWorld.sectionHeight
+						}));
+					}
 				});
 			});
 		});

@@ -14,7 +14,9 @@ BigWorld.MapEditor = CLASS({
 		let nowMapData;
 		
 		let nowTileId;
+		let nowTileData;
 		let nowObjectId;
+		let nowObjectData;
 		let nowItemInfos = {};
 		
 		let nowKind;
@@ -25,12 +27,15 @@ BigWorld.MapEditor = CLASS({
 		let reverseType = mapEditorStore.get('reverseType');
 		
 		let map;
+		let tempTiles = [];
+		let tempObjects = [];
 		
 		let menuPanel;
 		let namePanel;
 		let scaleInput;
 		let columnInput;
 		let rowInput;
+		let minDistanceInput;
 		
 		let tilePanel;
 		let objectPanel;
@@ -42,7 +47,7 @@ BigWorld.MapEditor = CLASS({
 					top : 0,
 					height : '100%',
 					overflowY : 'auto',
-					backgroundColor : 'rgba(0, 0, 0, 0.8)'
+					backgroundColor : 'rgba(0, 0, 0, 0.6)'
 				},
 				contentStyle : {
 					width : 200,
@@ -169,7 +174,9 @@ BigWorld.MapEditor = CLASS({
 			objectPanel.empty();
 			
 			nowTileId = undefined;
+			nowTileData = undefined;
 			nowObjectId = undefined;
+			nowObjectData = undefined;
 			nowItemInfos = {};
 			
 			nowKind = undefined;
@@ -185,8 +192,6 @@ BigWorld.MapEditor = CLASS({
 			deselect();
 			
 			nowTileId = tileId;
-			
-			let nowTileData;
 			
 			let previewScreen;
 			let rootKind;
@@ -544,6 +549,30 @@ BigWorld.MapEditor = CLASS({
 					}
 				}),
 				
+				DIV({
+					style : {
+						marginTop : 10
+					},
+					c : ['최소 거리: ', minDistanceInput = INPUT({
+						style : {
+							width : 40,
+							textAlign : 'right'
+						},
+						value : mapEditorStore.get('minObjectDistance'),
+						on : {
+							keyup : (e, input) => {
+								
+								let minDistance = INTEGER(input.getValue());
+								
+								mapEditorStore.save({
+									name : 'minObjectDistance',
+									value : minDistance
+								});
+							}
+						}
+					}), ' px']
+				}),
+				
 				UUI.FULL_SELECT({
 					style : {
 						marginTop : 10,
@@ -672,6 +701,7 @@ BigWorld.MapEditor = CLASS({
 			
 			// 오브젝트 정보를 불러옵니다.
 			BigWorld.ObjectModel.get(objectId, (objectData) => {
+				nowObjectData = objectData;
 				
 				refreshPreview = RAR(() => {
 					previewScreen.empty();
@@ -1060,6 +1090,44 @@ BigWorld.MapEditor = CLASS({
 						// 선택된 타일이 있다면
 						if (nowTileId !== undefined) {
 							
+							let nowTempTiles = [];
+							
+							for (let col = tileCol - Math.floor((brushSize - 1) / 2); col <= tileCol + Math.floor(brushSize / 2); col += 1) {
+								for (let row = tileRow - Math.floor((brushSize - 1) / 2); row <= tileRow + Math.floor(brushSize / 2); row += 1) {
+									
+									let tempKindMap = {};
+									
+									EACH(BigWorld.TILE_STATES, (state) => {
+										
+										let stateInfo = nowTileData.states[state];
+										if (stateInfo !== undefined) {
+											
+											tempKindMap[state] = [];
+											
+											EACH(stateInfo.parts, (partInfo, partIndex) => {
+												tempKindMap[state][partIndex] = nowKind === undefined ? 0 : nowKind;
+											});
+										}
+									});
+									
+									// 임시 타일들 놓기
+									let tempTile = BigWorld.Tile({
+										alpha : 0.5,
+										
+										col : col,
+										row : row,
+										tileData : nowTileData,
+										kindMap : tempKindMap
+										
+									}).appendTo(map.getTileWrapper());
+									
+									tempTile.draw();
+									
+									tempTiles.push(tempTile);
+									nowTempTiles.push(tempTile);
+								}
+							}
+							
 							// 타일 정보를 불러옵니다.
 							BigWorld.TileModel.get(nowTileId, (tileData) => {
 								
@@ -1088,6 +1156,20 @@ BigWorld.MapEditor = CLASS({
 											kindMap : kindMap,
 											col : col,
 											row : row
+										}, () => {
+											
+											EACH(nowTempTiles, (tempTile) => {
+												
+												REMOVE({
+													array : tempTiles,
+													value : tempTile
+												});
+												
+												// 임시 타일을 제거합니다.
+												tempTile.remove();
+											});
+											
+											nowTempTiles = undefined;
 										});
 									}
 								}
@@ -1097,33 +1179,78 @@ BigWorld.MapEditor = CLASS({
 						// 선택된 오브젝트가 있다면
 						else if (nowObjectId !== undefined) {
 							
-							let cursorNode = map.getCursorNode();
+							let isReverse;
+							if (reverseType === 'reverse') {
+								isReverse = true;
+							} else if (reverseType === 'random') {
+								isReverse = RANDOM(2) === 0 ? true : undefined;
+							}
+							
+							let minObjectDistance = mapEditorStore.get('minObjectDistance');
+							if (minObjectDistance === undefined || minObjectDistance < 1) {
+								minObjectDistance = 1;
+							}
+							
+							let collisionTargetObject = BigWorld.Object({
+								alpha : 0,
+								objectData : nowObjectData,
+								kind : nowKind === undefined ? 0 : nowKind,
+								state : nowState,
+								direction : nowDirection,
+								x : x,
+								y : y,
+								isReverse : isReverse
+							}).appendTo(map);
+							
+							let tempCollidedObject;
+							EACH(tempObjects, (tempObject) => {
+								
+								if (
+								// 거리가 너무 가깝거나
+								Math.sqrt(Math.pow(collisionTargetObject.getX() - tempObject.getX(), 2) + Math.pow(collisionTargetObject.getY() - tempObject.getY(), 2)) < minObjectDistance ||
+								
+								// 충돌하거나
+								tempObject.checkCollision(collisionTargetObject) === true) {
+									
+									tempCollidedObject = tempObject;
+									return false;
+								}
+							});
+							
+							// 가까운 오브젝트 찾기
+							let nearObject = map.getNearObject(collisionTargetObject);
 							
 							if (
-							// 커서 노드와 같은 위치에 오브젝트가 있으면 안됩니다.
-							map.getObjectByPosition({
-								x : cursorNode.getX(),
-								y : cursorNode.getY()
-							}) === undefined &&
+							// 해당 위치에 충돌하는 임시 오브젝트가 있으면 안됩니다.
+							tempCollidedObject === undefined &&
 							
-							// 커서 노드와 충돌하는 오브젝트가 있으면 안됩니다.
-							map.getCollidedObject(cursorNode) === undefined) {
+							// 해당 위치와 거리가 너무 가까운 오브젝트가 있으면 안됩니다.
+							(nearObject === undefined || Math.sqrt(Math.pow(collisionTargetObject.getX() - nearObject.getX(), 2) + Math.pow(collisionTargetObject.getY() - nearObject.getY(), 2)) >= minObjectDistance) &&
+							
+							// 해당 위치에 충돌하는 오브젝트가 있으면 안됩니다.
+							map.getCollidedObject(collisionTargetObject) === undefined) {
 								
 								if (mapEditorStore.get('isCursorNodeMoveTypeSection') === true) {
 									x = sectionCol * CONFIG.BigWorld.sectionWidth;
 									y = sectionRow * CONFIG.BigWorld.sectionHeight;
 								}
 								
+								// 임시 오브젝트 놓기
+								let tempObject = BigWorld.Object({
+									alpha : 0.5,
+									objectData : nowObjectData,
+									kind : nowKind === undefined ? 0 : nowKind,
+									state : nowState,
+									direction : nowDirection,
+									x : x,
+									y : y,
+									isReverse : isReverse
+								}).appendTo(map);
+								
+								tempObjects.push(tempObject);
+								
 								// 오브젝트 정보를 불러옵니다.
 								BigWorld.ObjectModel.get(nowObjectId, (objectData) => {
-									
-									let isReverse;
-									
-									if (reverseType === 'reverse') {
-										isReverse = true;
-									} else if (reverseType === 'random') {
-										isReverse = RANDOM(2) === 0 ? true : undefined;
-									}
 									
 									let items = [];
 									
@@ -1145,7 +1272,7 @@ BigWorld.MapEditor = CLASS({
 									() => {
 										return () => {
 											
-											// 타일 생성
+											// 오브젝트 생성
 											BigWorld.MapObjectModel.create({
 												mapId : nowMapId,
 												objectId : nowObjectId,
@@ -1156,11 +1283,25 @@ BigWorld.MapEditor = CLASS({
 												x : x,
 												y : y,
 												isReverse : isReverse
+											}, () => {
+												
+												DELAY(0.5, () => {
+													
+													REMOVE({
+														array : tempObjects,
+														value : tempObject
+													});
+													
+													// 임시 오브젝트를 제거합니다.
+													tempObject.remove();
+												});
 											});
 										};
 									}]);
 								});
 							}
+							
+							collisionTargetObject.remove();
 						}
 					},
 					

@@ -1224,8 +1224,15 @@ BigWorld.MapEditor = CLASS({
 		});
 		
 		let keydownEvent = EVENT('keydown', (e) => {
+			
 			if (e.getKey() === 'Escape') {
 				deselect();
+			}
+			
+			if (e.getKey() === 'Control') {
+				if (map !== undefined) {
+					map.turnOnPlaceMode();
+				}
 			}
 			
 			// 그리드 숫자 보이기
@@ -1237,6 +1244,12 @@ BigWorld.MapEditor = CLASS({
 		});
 		
 		let keyupEvent = EVENT('keyup', (e) => {
+			
+			if (e.getKey() === 'Control') {
+				if (map !== undefined) {
+					map.turnOffPlaceMode();
+				}
+			}
 			
 			// 그리드 숫자 숨기기
 			if (e.getKey() === '`') {

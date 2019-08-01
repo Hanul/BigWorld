@@ -1,7 +1,13 @@
 BigWorld.Map = CLASS(() => {
 	
-	const BASE_MIN_SCALE = 0.3;
-	const BASE_MAX_SCALE = 9.99;
+	// 타일의 크기
+	const TILE_WIDTH = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
+	const TILE_HEIGHT = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
+	const HALF_TILE_WIDTH = TILE_WIDTH / 2;
+	const HALF_TILE_HEIGHT = TILE_HEIGHT / 2;
+	
+	const BASE_MIN_SCALE = 50 / TILE_WIDTH;
+	const BASE_MAX_SCALE = 512 / TILE_WIDTH;
 	
 	return {
 		
@@ -44,11 +50,7 @@ BigWorld.Map = CLASS(() => {
 				maxScale = BASE_MAX_SCALE;
 			}
 			
-			// 타일의 크기
-			let tileWidth = CONFIG.BigWorld.sectionWidth * CONFIG.BigWorld.tileSectionLevel;
-			let tileHeight = CONFIG.BigWorld.sectionHeight * CONFIG.BigWorld.tileSectionLevel;
-			let halfTileWidth = tileWidth / 2;
-			let halfTileHeight = tileHeight / 2;
+			let isPlaceMode;
 			
 			let zoneRooms = {};
 			let zoneMapTileIds = {};
@@ -517,7 +519,7 @@ BigWorld.Map = CLASS(() => {
 				
 				let mapObjectData = mapObjectDataSet[mapObjectId];
 				
-				let zoneKey = Math.round(mapObjectData.x / tileWidth) + ',' + Math.round(mapObjectData.y / tileHeight);
+				let zoneKey = Math.round(mapObjectData.x / TILE_WIDTH) + ',' + Math.round(mapObjectData.y / TILE_HEIGHT);
 				REMOVE({
 					array : zoneMapObjectIdMap[zoneKey],
 					value : mapObjectId
@@ -614,7 +616,7 @@ BigWorld.Map = CLASS(() => {
 			// 오브젝트를 놓습니다.
 			let putObject = (mapObjectData) => {
 				
-				let zoneKey = Math.round(mapObjectData.x / tileWidth) + ',' + Math.round(mapObjectData.y / tileHeight);
+				let zoneKey = Math.round(mapObjectData.x / TILE_WIDTH) + ',' + Math.round(mapObjectData.y / TILE_HEIGHT);
 				if (zoneRooms[zoneKey] !== undefined) {
 					zoneMapObjectIdMap[zoneKey].push(mapObjectData.id);
 					
@@ -856,12 +858,12 @@ BigWorld.Map = CLASS(() => {
 					toLoadObjectFilters.push({
 						mapId : mapData.id,
 						x : {
-							$gt : tileX - halfTileWidth,
-							$lte : tileX + halfTileWidth
+							$gt : tileX - HALF_TILE_WIDTH,
+							$lte : tileX + HALF_TILE_WIDTH
 						},
 						y : {
-							$gt : tileY - halfTileHeight,
-							$lte : tileY + halfTileHeight
+							$gt : tileY - HALF_TILE_HEIGHT,
+							$lte : tileY + HALF_TILE_HEIGHT
 						}
 					});
 				});
@@ -905,10 +907,10 @@ BigWorld.Map = CLASS(() => {
 								
 								let grid;
 								grids.push(grid = SkyEngine.Rect({
-									x : col * tileWidth,
-									y : row * tileHeight,
-									width : tileWidth,
-									height : tileHeight,
+									x : col * TILE_WIDTH,
+									y : row * TILE_HEIGHT,
+									width : TILE_WIDTH,
+									height : TILE_HEIGHT,
 									border : (1 / self.getScaleX()) + 'px solid #000666',
 									color : '#000333'
 								}).appendTo(gridWrapper));
@@ -960,8 +962,8 @@ BigWorld.Map = CLASS(() => {
 				let x = params.x;
 				let y = params.y;
 				
-				let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
-				let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
+				let tileCol = Math.round(x / TILE_WIDTH);
+				let tileRow = Math.round(y / TILE_HEIGHT);
 				
 				let maxZIndex = -999999;
 				let resultMapObjectId;
@@ -1077,7 +1079,7 @@ BigWorld.Map = CLASS(() => {
 				EACH(grids, (grid) => {
 					
 					grid.addDom(DIV({
-						c : 'Col: ' + (grid.getX() / tileWidth) + ', Row: ' + (grid.getY() / tileHeight)
+						c : 'Col: ' + (grid.getX() / TILE_WIDTH) + ', Row: ' + (grid.getY() / TILE_HEIGHT)
 					}));
 				});
 			};
@@ -1089,6 +1091,14 @@ BigWorld.Map = CLASS(() => {
 				EACH(grids, (grid) => {
 					grid.removeAllDoms();
 				});
+			};
+			
+			let turnOnPlaceMode = self.turnOnPlaceMode = () => {
+				isPlaceMode = true;
+			};
+			
+			let turnOffPlaceMode = self.turnOffPlaceMode = () => {
+				isPlaceMode = false;
 			};
 			
 			let resizeEvent = EVENT('resize', loadElements);
@@ -1112,8 +1122,8 @@ BigWorld.Map = CLASS(() => {
 							let y = (e.getTop() - WIN_HEIGHT() / 2 - self.getY()) / self.getScaleY();
 							
 							if (cursorNodeMoveType === 'tile') {
-								x = Math.round(x / BigWorld.Tile.getTileWidth()) * BigWorld.Tile.getTileWidth();
-								y = Math.round(y / BigWorld.Tile.getTileHeight()) * BigWorld.Tile.getTileHeight();
+								x = Math.round(x / TILE_WIDTH) * TILE_WIDTH;
+								y = Math.round(y / TILE_HEIGHT) * TILE_HEIGHT;
 							} else if (cursorNodeMoveType === 'section') {
 								x = Math.round(x / CONFIG.BigWorld.sectionWidth) * CONFIG.BigWorld.sectionWidth;
 								y = Math.round(y / CONFIG.BigWorld.sectionHeight) * CONFIG.BigWorld.sectionHeight;
@@ -1130,11 +1140,10 @@ BigWorld.Map = CLASS(() => {
 						
 						if (e.getButtonIndex() === 0 && pickPositionHandler !== undefined) {
 							
-							let startLeft = e.getLeft();
-							let startTop = e.getTop();
-							
-							let touchendEvent = EVENT_ONCE('touchend', (e) => {
-								if (Math.sqrt(Math.pow(e.getLeft() - startLeft, 2) + Math.pow(e.getTop() - startTop, 2)) < 5) {
+							// 배치 모드인 경우
+							if (isPlaceMode === true) {
+								
+								let pickPosition = (e) => {
 									
 									let x = (e.getLeft() - WIN_WIDTH() / 2 - self.getX()) / self.getScaleX();
 									let y = (e.getTop() - WIN_HEIGHT() / 2 - self.getY()) / self.getScaleY();
@@ -1142,12 +1151,44 @@ BigWorld.Map = CLASS(() => {
 									let sectionCol = Math.round(x / CONFIG.BigWorld.sectionWidth);
 									let sectionRow = Math.round(y / CONFIG.BigWorld.sectionHeight);
 									
-									let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
-									let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
+									let tileCol = Math.round(x / TILE_WIDTH);
+									let tileRow = Math.round(y / TILE_HEIGHT);
 									
 									pickPositionHandler(x, y, sectionCol, sectionRow, tileCol, tileRow);
-								}
-							});
+								};
+								
+								pickPosition(e);
+								
+								let touchmoveEvent = EVENT('touchmove', pickPosition);
+								
+								let touchendEvent = EVENT_ONCE('touchend', (e) => {
+									touchmoveEvent.remove();
+								});
+							}
+							
+							else {
+								
+								let startLeft = e.getLeft();
+								let startTop = e.getTop();
+								
+								let touchendEvent = EVENT_ONCE('touchend', (e) => {
+									if (Math.sqrt(Math.pow(e.getLeft() - startLeft, 2) + Math.pow(e.getTop() - startTop, 2)) < 5) {
+										
+										let x = (e.getLeft() - WIN_WIDTH() / 2 - self.getX()) / self.getScaleX();
+										let y = (e.getTop() - WIN_HEIGHT() / 2 - self.getY()) / self.getScaleY();
+										
+										let sectionCol = Math.round(x / CONFIG.BigWorld.sectionWidth);
+										let sectionRow = Math.round(y / CONFIG.BigWorld.sectionHeight);
+										
+										let tileCol = Math.round(x / TILE_WIDTH);
+										let tileRow = Math.round(y / TILE_HEIGHT);
+										
+										pickPositionHandler(x, y, sectionCol, sectionRow, tileCol, tileRow);
+									}
+								});
+							}
+							
+							e.stop();
 						}
 					},
 					
@@ -1161,8 +1202,8 @@ BigWorld.Map = CLASS(() => {
 							let sectionCol = Math.round(x / CONFIG.BigWorld.sectionWidth);
 							let sectionRow = Math.round(y / CONFIG.BigWorld.sectionHeight);
 							
-							let tileCol = Math.round(x / BigWorld.Tile.getTileWidth());
-							let tileRow = Math.round(y / BigWorld.Tile.getTileHeight());
+							let tileCol = Math.round(x / TILE_WIDTH);
+							let tileRow = Math.round(y / TILE_HEIGHT);
 							
 							contextmenuHandler(e, x, y, sectionCol, sectionRow, tileCol, tileRow);
 						}
@@ -1203,24 +1244,27 @@ BigWorld.Map = CLASS(() => {
 					node : controller
 				}, (e) => {
 					
-					let startLeft = e.getLeft();
-					let startTop = e.getTop();
-					
-					let originX = self.getX();
-					let originY = self.getY();
-					
-					let mousemoveEventLow = EVENT_LOW('mousemove', (e) => {
+					if (isPlaceMode !== true) {
 						
-						setPosition({
-							x : originX + e.getLeft() - startLeft,
-							y : originY + e.getTop() - startTop
+						let startLeft = e.getLeft();
+						let startTop = e.getTop();
+						
+						let originX = self.getX();
+						let originY = self.getY();
+						
+						let mousemoveEventLow = EVENT_LOW('mousemove', (e) => {
+							
+							setPosition({
+								x : originX + e.getLeft() - startLeft,
+								y : originY + e.getTop() - startTop
+							});
 						});
-					});
-					
-					let mouseupEventLow = EVENT_LOW('mouseup', () => {
-						mousemoveEventLow.remove();
-						mouseupEventLow.remove();
-					});
+						
+						let mouseupEventLow = EVENT_LOW('mouseup', () => {
+							mousemoveEventLow.remove();
+							mouseupEventLow.remove();
+						});
+					}
 				});
 			}
 			
@@ -1270,7 +1314,7 @@ BigWorld.Map = CLASS(() => {
 					lastZoomScale = zoomScale;
 				}
 				
-				else if (isMovable === true && lastZoomScale === undefined) {
+				else if (isMovable === true && isPlaceMode !== true && lastZoomScale === undefined) {
 					
 					let left = e.getLeft();
 					let top = e.getTop();

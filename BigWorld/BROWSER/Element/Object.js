@@ -73,6 +73,13 @@ BigWorld.Object = CLASS({
 			});
 		});
 		
+		let sectionCollider;
+		self.addCollider(sectionCollider = BigWorld.SectionCollider({
+			sectionLevels : objectData.sectionLevels,
+			sectionMap : objectData.sectionMap,
+			direction : direction
+		}));
+		
 		if (isReverse === true) {
 			self.flipX();
 		}
@@ -87,6 +94,7 @@ BigWorld.Object = CLASS({
 			objectData = _objectData;
 			
 			refresh();
+			sectionCollider.refresh();
 		};
 		
 		let reverse = self.reverse = () => {

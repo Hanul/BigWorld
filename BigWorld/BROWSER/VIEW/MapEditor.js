@@ -42,7 +42,7 @@ BigWorld.MapEditor = CLASS({
 					top : 0,
 					height : '100%',
 					overflowY : 'auto',
-					backgroundColor : 'rgba(0, 0, 0, 0.3)'
+					backgroundColor : 'rgba(0, 0, 0, 0.8)'
 				},
 				contentStyle : {
 					width : 200,
@@ -1097,57 +1097,70 @@ BigWorld.MapEditor = CLASS({
 						// 선택된 오브젝트가 있다면
 						else if (nowObjectId !== undefined) {
 							
-							if (mapEditorStore.get('isCursorNodeMoveTypeSection') === true) {
-								x = sectionCol * CONFIG.BigWorld.sectionWidth;
-								y = sectionRow * CONFIG.BigWorld.sectionHeight;
-							}
+							let cursorNode = map.getCursorNode();
 							
-							// 오브젝트 정보를 불러옵니다.
-							BigWorld.ObjectModel.get(nowObjectId, (objectData) => {
+							if (
+							// 커서 노드와 같은 위치에 오브젝트가 있으면 안됩니다.
+							map.getObjectByPosition({
+								x : cursorNode.getX(),
+								y : cursorNode.getY()
+							}) === undefined &&
+							
+							// 커서 노드와 충돌하는 오브젝트가 있으면 안됩니다.
+							map.getCollidedObject(cursorNode) === undefined) {
 								
-								let isReverse;
-								
-								if (reverseType === 'reverse') {
-									isReverse = true;
-								} else if (reverseType === 'random') {
-									isReverse = RANDOM(2) === 0 ? true : undefined;
+								if (mapEditorStore.get('isCursorNodeMoveTypeSection') === true) {
+									x = sectionCol * CONFIG.BigWorld.sectionWidth;
+									y = sectionRow * CONFIG.BigWorld.sectionHeight;
 								}
 								
-								let items = [];
-								
-								NEXT(nowItemInfos, [
-								(itemInfo, next, itemId) => {
+								// 오브젝트 정보를 불러옵니다.
+								BigWorld.ObjectModel.get(nowObjectId, (objectData) => {
 									
-									// 아이템 정보를 불러옵니다.
-									BigWorld.ItemModel.get(itemId, (itemData) => {
+									let isReverse;
+									
+									if (reverseType === 'reverse') {
+										isReverse = true;
+									} else if (reverseType === 'random') {
+										isReverse = RANDOM(2) === 0 ? true : undefined;
+									}
+									
+									let items = [];
+									
+									NEXT(nowItemInfos, [
+									(itemInfo, next, itemId) => {
 										
-										items.push({
-											id : itemId,
-											kind : itemInfo.kind === undefined ? RANDOM(itemData.kinds.length) : itemInfo.kind
+										// 아이템 정보를 불러옵니다.
+										BigWorld.ItemModel.get(itemId, (itemData) => {
+											
+											items.push({
+												id : itemId,
+												kind : itemInfo.kind === undefined ? RANDOM(itemData.kinds.length) : itemInfo.kind
+											});
+											
+											next();
 										});
-										
-										next();
-									});
-								},
-								
-								() => {
-									return () => {
-										
-										// 타일 생성
-										BigWorld.MapObjectModel.create({
-											mapId : nowMapId,
-											objectId : nowObjectId,
-											kind : nowKind === undefined ? RANDOM(objectData.kinds.length) : nowKind,
-											state : nowState,
-											items : items,
-											direction : nowDirection,
-											x : INTEGER(x),
-											y : INTEGER(y),
-											isReverse : isReverse
-										});
-									};
-								}]);
-							});
+									},
+									
+									() => {
+										return () => {
+											
+											// 타일 생성
+											BigWorld.MapObjectModel.create({
+												mapId : nowMapId,
+												objectId : nowObjectId,
+												kind : nowKind === undefined ? RANDOM(objectData.kinds.length) : nowKind,
+												state : nowState,
+												items : items,
+												direction : nowDirection,
+												x : x,
+												y : y,
+												isReverse : isReverse
+											});
+										};
+									}]);
+								});
+							}
 						}
 					},
 					

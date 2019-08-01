@@ -1065,6 +1065,10 @@ BigWorld.Map = CLASS(() => {
 				cursorNodeMoveType = moveType;
 			};
 			
+			let getCursorNode = self.getCursorNode = () => {
+				return cursorNode;
+			};
+			
 			let removeCursorNode = self.removeCursorNode = () => {
 				if (cursorNode !== undefined) {
 					cursorNode.remove();
@@ -1101,6 +1105,61 @@ BigWorld.Map = CLASS(() => {
 				isPlaceMode = false;
 			};
 			
+			let getObjectByPosition = self.getObjectByPosition = (position) => {
+				//REQUIRED: position
+				//REQUIRED: position.x
+				//REQUIRED: position.y
+				
+				let x = position.x;
+				let y = position.y;
+				
+				let mapObjectIds = zoneMapObjectIdMap[Math.round(x / TILE_WIDTH) + ',' + Math.round(y / TILE_HEIGHT)];
+				
+				let foundObject;
+				
+				EACH(mapObjectIds, (mapObjectId) => {
+					
+					let object = objects[mapObjectId];
+					
+					if (object.getX() === x || object.getY() === y) {
+						foundObject = object;
+						return false;
+					}
+				});
+				
+				return foundObject;
+			};
+			
+			let getCollidedObject = self.getCollidedObject = (targetObject) => {
+				//REQUIRED: targetObject
+				
+				let centerCol = Math.round(targetObject.getX() / TILE_WIDTH);
+				let centerRow = Math.round(targetObject.getY() / TILE_HEIGHT);
+				
+				let collidedObject;
+				
+				// 충돌 체크는 주변 2개의 타일까지 체크합니다.
+				for (let col = centerCol - 2; col <= centerCol + 2; col += 1) {
+					for (let row = centerRow - 2; row <= centerRow + 2; row += 1) {
+						
+						let mapObjectIds = zoneMapObjectIdMap[col + ',' + row];
+						
+						EACH(mapObjectIds, (mapObjectId) => {
+							
+							let object = objects[mapObjectId];
+							
+							// 충돌 체크
+							if (object.checkCollision(targetObject) === true) {
+								collidedObject = object;
+								return false;
+							}
+						});
+					}
+				}
+				
+				return collidedObject;
+			};
+			
 			let resizeEvent = EVENT('resize', loadElements);
 			
 			let controller = DIV({
@@ -1130,8 +1189,8 @@ BigWorld.Map = CLASS(() => {
 							}
 							
 							cursorNode.setPosition({
-								x : x,
-								y : y
+								x : INTEGER(x),
+								y : INTEGER(y)
 							});
 						}
 					},
@@ -1154,7 +1213,7 @@ BigWorld.Map = CLASS(() => {
 									let tileCol = Math.round(x / TILE_WIDTH);
 									let tileRow = Math.round(y / TILE_HEIGHT);
 									
-									pickPositionHandler(x, y, sectionCol, sectionRow, tileCol, tileRow);
+									pickPositionHandler(INTEGER(x), INTEGER(y), sectionCol, sectionRow, tileCol, tileRow);
 								};
 								
 								pickPosition(e);
@@ -1183,7 +1242,7 @@ BigWorld.Map = CLASS(() => {
 										let tileCol = Math.round(x / TILE_WIDTH);
 										let tileRow = Math.round(y / TILE_HEIGHT);
 										
-										pickPositionHandler(x, y, sectionCol, sectionRow, tileCol, tileRow);
+										pickPositionHandler(INTEGER(x), INTEGER(y), sectionCol, sectionRow, tileCol, tileRow);
 									}
 								});
 							}
@@ -1205,7 +1264,7 @@ BigWorld.Map = CLASS(() => {
 							let tileCol = Math.round(x / TILE_WIDTH);
 							let tileRow = Math.round(y / TILE_HEIGHT);
 							
-							contextmenuHandler(e, x, y, sectionCol, sectionRow, tileCol, tileRow);
+							contextmenuHandler(e, INTEGER(x), INTEGER(y), sectionCol, sectionRow, tileCol, tileRow);
 						}
 					}
 				}

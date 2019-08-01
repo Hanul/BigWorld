@@ -36,6 +36,7 @@ BigWorld.MapEditor = CLASS({
 		let columnInput;
 		let rowInput;
 		let minDistanceInput;
+		let maxDistanceInput;
 		
 		let tilePanel;
 		let objectPanel;
@@ -567,6 +568,30 @@ BigWorld.MapEditor = CLASS({
 								mapEditorStore.save({
 									name : 'minObjectDistance',
 									value : minDistance
+								});
+							}
+						}
+					}), ' px']
+				}),
+				
+				DIV({
+					style : {
+						marginTop : 5
+					},
+					c : ['최대 거리: ', maxDistanceInput = INPUT({
+						style : {
+							width : 40,
+							textAlign : 'right'
+						},
+						value : mapEditorStore.get('maxObjectDistance'),
+						on : {
+							keyup : (e, input) => {
+								
+								let maxDistance = INTEGER(input.getValue());
+								
+								mapEditorStore.save({
+									name : 'maxObjectDistance',
+									value : maxDistance
 								});
 							}
 						}
@@ -1191,6 +1216,16 @@ BigWorld.MapEditor = CLASS({
 								minObjectDistance = 1;
 							}
 							
+							let maxObjectDistance = mapEditorStore.get('maxObjectDistance');
+							if (maxObjectDistance === undefined || maxObjectDistance < minObjectDistance) {
+								maxObjectDistance = minObjectDistance;
+							}
+							
+							let distance = RANDOM({
+								min : minObjectDistance,
+								max : maxObjectDistance
+							});
+							
 							let collisionTargetObject = BigWorld.Object({
 								alpha : 0,
 								objectData : nowObjectData,
@@ -1207,7 +1242,7 @@ BigWorld.MapEditor = CLASS({
 								
 								if (
 								// 거리가 너무 가깝거나
-								Math.sqrt(Math.pow(collisionTargetObject.getX() - tempObject.getX(), 2) + Math.pow(collisionTargetObject.getY() - tempObject.getY(), 2)) < minObjectDistance ||
+								Math.sqrt(Math.pow(collisionTargetObject.getX() - tempObject.getX(), 2) + Math.pow(collisionTargetObject.getY() - tempObject.getY(), 2)) < distance ||
 								
 								// 충돌하거나
 								tempObject.checkCollision(collisionTargetObject) === true) {
@@ -1225,7 +1260,7 @@ BigWorld.MapEditor = CLASS({
 							tempCollidedObject === undefined &&
 							
 							// 해당 위치와 거리가 너무 가까운 오브젝트가 있으면 안됩니다.
-							(nearObject === undefined || Math.sqrt(Math.pow(collisionTargetObject.getX() - nearObject.getX(), 2) + Math.pow(collisionTargetObject.getY() - nearObject.getY(), 2)) >= minObjectDistance) &&
+							(nearObject === undefined || Math.sqrt(Math.pow(collisionTargetObject.getX() - nearObject.getX(), 2) + Math.pow(collisionTargetObject.getY() - nearObject.getY(), 2)) >= distance) &&
 							
 							// 해당 위치에 충돌하는 오브젝트가 있으면 안됩니다.
 							map.getCollidedObject(collisionTargetObject) === undefined) {

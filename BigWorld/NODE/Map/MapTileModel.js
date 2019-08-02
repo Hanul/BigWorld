@@ -24,6 +24,29 @@ OVERRIDE(BigWorld.MapTileModel, (origin) => {
 						methodName : 'putTile',
 						data : savedData
 					});
+					
+					// 중복된 오래된 타일이 존재하는 경우 삭제합니다.
+					self.find({
+						filter : {
+							id : {
+								$ne : savedData.id
+							},
+							mapId : savedData.mapId,
+							col : savedData.col,
+							row : savedData.row,
+							createTime : {
+								$lte : savedData.createTime
+							}
+						}
+					}, (existedMapTileDataSet) => {
+						
+						if (existedMapTileDataSet.length > 0) {
+							
+							EACH(existedMapTileDataSet, (existedMapTileData) => {
+								self.remove(existedMapTileData.id);
+							});
+						}
+					});
 				}
 			});
 			

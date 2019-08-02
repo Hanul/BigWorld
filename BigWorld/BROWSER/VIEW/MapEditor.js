@@ -201,18 +201,66 @@ BigWorld.MapEditor = CLASS({
 				
 				if (map !== undefined) {
 					
+					let cursorNode;
 					map.setCursorNode({
-						node : SkyEngine.Rect({
+						node : cursorNode = SkyEngine.Node({
 							x : -999999,
-							y : -999999,
-							centerX : brushSize % 2 === 0 ? -BigWorld.Tile.getTileWidth() / 2 : 0,
-							centerY : brushSize % 2 === 0 ? -BigWorld.Tile.getTileHeight() / 2 : 0,
-							width : BigWorld.Tile.getTileWidth() * brushSize,
-							height : BigWorld.Tile.getTileHeight() * brushSize,
-							border : '5px solid #FF0000'
+							y : -999999
 						}),
 						moveType : 'tile'
 					});
+					
+					// 왼쪽 위
+					for (let i = 0; i < brushSize; i += 1) {
+						for (let j = brushSize - i - 1; j < brushSize; j += 1) {
+							cursorNode.append(SkyEngine.Rect({
+								x : (j - brushSize + 1) * BigWorld.Tile.getTileWidth(),
+								y : (i - brushSize + 1) * BigWorld.Tile.getTileHeight(),
+								width : BigWorld.Tile.getTileWidth(),
+								height : BigWorld.Tile.getTileHeight(),
+								border : (1 / map.getScaleX()) + 'px solid #FF0000'
+							}));
+						}
+					}
+					
+					// 오른쪽 위
+					for (let i = 0; i < brushSize - 1; i += 1) {
+						for (let j = 0; j <= i; j += 1) {
+							cursorNode.append(SkyEngine.Rect({
+								x : (j + 1) * BigWorld.Tile.getTileWidth(),
+								y : (i - brushSize + 2) * BigWorld.Tile.getTileHeight(),
+								width : BigWorld.Tile.getTileWidth(),
+								height : BigWorld.Tile.getTileHeight(),
+								border : (1 / map.getScaleX()) + 'px solid #FF0000'
+							}));
+						}
+					}
+					
+					// 오른쪽 아래
+					for (let i = 0; i < brushSize - 1; i += 1) {
+						for (let j = 0; j < brushSize - i - 1; j += 1) {
+							cursorNode.append(SkyEngine.Rect({
+								x : j * BigWorld.Tile.getTileWidth(),
+								y : (i + 1) * BigWorld.Tile.getTileHeight(),
+								width : BigWorld.Tile.getTileWidth(),
+								height : BigWorld.Tile.getTileHeight(),
+								border : (1 / map.getScaleX()) + 'px solid #FF0000'
+							}));
+						}
+					}
+					
+					// 왼쪽 아래
+					for (let i = 0; i < brushSize - 1; i += 1) {
+						for (let j = 0; j < brushSize - i - 2; j += 1) {
+							cursorNode.append(SkyEngine.Rect({
+								x : (-j - 1) * BigWorld.Tile.getTileWidth(),
+								y : (i + 1) * BigWorld.Tile.getTileHeight(),
+								width : BigWorld.Tile.getTileWidth(),
+								height : BigWorld.Tile.getTileHeight(),
+								border : (1 / map.getScaleX()) + 'px solid #FF0000'
+							}));
+						}
+					}
 				}
 			};
 			
@@ -1117,40 +1165,75 @@ BigWorld.MapEditor = CLASS({
 							
 							let nowTempTiles = [];
 							
-							for (let col = tileCol - Math.floor((brushSize - 1) / 2); col <= tileCol + Math.floor(brushSize / 2); col += 1) {
-								for (let row = tileRow - Math.floor((brushSize - 1) / 2); row <= tileRow + Math.floor(brushSize / 2); row += 1) {
-									
-									let tempKindMap = {};
-									
-									EACH(BigWorld.TILE_STATES, (state) => {
-										
-										let stateInfo = nowTileData.states[state];
-										if (stateInfo !== undefined) {
-											
-											tempKindMap[state] = [];
-											
-											EACH(stateInfo.parts, (partInfo, partIndex) => {
-												tempKindMap[state][partIndex] = nowKind === undefined ? 0 : nowKind;
-											});
-										}
-									});
-									
-									// 임시 타일들 놓기
-									let tempTile = BigWorld.Tile({
-										alpha : 0.5,
-										
-										col : col,
-										row : row,
-										tileData : nowTileData,
-										kindMap : tempKindMap
-										
-									}).appendTo(map.getTileWrapper());
-									
-									tempTile.draw();
-									
-									tempTiles.push(tempTile);
-									nowTempTiles.push(tempTile);
+							let cols = [];
+							let rows = [];
+							
+							// 왼쪽 위
+							for (let i = 0; i < brushSize; i += 1) {
+								for (let j = brushSize - i - 1; j < brushSize; j += 1) {
+									cols.push(j - brushSize + 1);
+									rows.push(i - brushSize + 1);
 								}
+							}
+							
+							// 오른쪽 위
+							for (let i = 0; i < brushSize - 1; i += 1) {
+								for (let j = 0; j <= i; j += 1) {
+									cols.push(j + 1);
+									rows.push(i - brushSize + 2);
+								}
+							}
+							
+							// 오른쪽 아래
+							for (let i = 0; i < brushSize - 1; i += 1) {
+								for (let j = 0; j < brushSize - i - 1; j += 1) {
+									cols.push(j);
+									rows.push(i + 1);
+								}
+							}
+							
+							// 왼쪽 아래
+							for (let i = 0; i < brushSize - 1; i += 1) {
+								for (let j = 0; j < brushSize - i - 2; j += 1) {
+									cols.push(-j - 1);
+									rows.push(i + 1);
+								}
+							}
+							
+							for (let i = 0; i < cols.length; i += 1) {
+								let col = tileCol + cols[i];
+								let row = tileRow + rows[i];
+								
+								let tempKindMap = {};
+								
+								EACH(BigWorld.TILE_STATES, (state) => {
+									
+									let stateInfo = nowTileData.states[state];
+									if (stateInfo !== undefined) {
+										
+										tempKindMap[state] = [];
+										
+										EACH(stateInfo.parts, (partInfo, partIndex) => {
+											tempKindMap[state][partIndex] = nowKind === undefined ? 0 : nowKind;
+										});
+									}
+								});
+								
+								// 임시 타일들 놓기
+								let tempTile = BigWorld.Tile({
+									alpha : 0.5,
+									
+									col : col,
+									row : row,
+									tileData : nowTileData,
+									kindMap : tempKindMap
+									
+								}).appendTo(map.getTileWrapper());
+								
+								tempTile.draw();
+								
+								tempTiles.push(tempTile);
+								nowTempTiles.push(tempTile);
 							}
 							
 							// 타일 정보를 불러옵니다.
@@ -1171,32 +1254,32 @@ BigWorld.MapEditor = CLASS({
 									}
 								});
 								
-								for (let col = tileCol - Math.floor((brushSize - 1) / 2); col <= tileCol + Math.floor(brushSize / 2); col += 1) {
-									for (let row = tileRow - Math.floor((brushSize - 1) / 2); row <= tileRow + Math.floor(brushSize / 2); row += 1) {
+								for (let i = 0; i < cols.length; i += 1) {
+									let col = tileCol + cols[i];
+									let row = tileRow + rows[i];
+									
+									// 타일 놓기
+									BigWorld.MapTileModel.put({
+										mapId : nowMapId,
+										tileId : nowTileId,
+										kindMap : kindMap,
+										col : col,
+										row : row
+									}, () => {
 										
-										// 타일 놓기
-										BigWorld.MapTileModel.put({
-											mapId : nowMapId,
-											tileId : nowTileId,
-											kindMap : kindMap,
-											col : col,
-											row : row
-										}, () => {
+										EACH(nowTempTiles, (tempTile) => {
 											
-											EACH(nowTempTiles, (tempTile) => {
-												
-												REMOVE({
-													array : tempTiles,
-													value : tempTile
-												});
-												
-												// 임시 타일을 제거합니다.
-												tempTile.remove();
+											REMOVE({
+												array : tempTiles,
+												value : tempTile
 											});
 											
-											nowTempTiles = undefined;
+											// 임시 타일을 제거합니다.
+											tempTile.remove();
 										});
-									}
+										
+										nowTempTiles = undefined;
+									});
 								}
 							});
 						}

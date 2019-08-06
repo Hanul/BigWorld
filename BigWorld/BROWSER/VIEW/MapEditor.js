@@ -1239,24 +1239,24 @@ BigWorld.MapEditor = CLASS({
 							// 타일 정보를 불러옵니다.
 							BigWorld.TileModel.get(nowTileId, (tileData) => {
 								
-								let kindMap = {};
-								
-								EACH(BigWorld.TILE_STATES, (state) => {
-									
-									let stateInfo = tileData.states[state];
-									if (stateInfo !== undefined) {
-										
-										kindMap[state] = [];
-										
-										EACH(stateInfo.parts, (partInfo, partIndex) => {
-											kindMap[state][partIndex] = nowKind === undefined ? RANDOM(partInfo.frames.length) : nowKind;
-										});
-									}
-								});
-								
 								for (let i = 0; i < cols.length; i += 1) {
 									let col = tileCol + cols[i];
 									let row = tileRow + rows[i];
+									
+									let kindMap = {};
+									
+									EACH(BigWorld.TILE_STATES, (state) => {
+										
+										let stateInfo = tileData.states[state];
+										if (stateInfo !== undefined) {
+											
+											kindMap[state] = [];
+											
+											EACH(stateInfo.parts, (partInfo, partIndex) => {
+												kindMap[state][partIndex] = nowKind === undefined ? RANDOM(partInfo.frames.length) : nowKind;
+											});
+										}
+									});
 									
 									// 타일 놓기
 									BigWorld.MapTileModel.put({

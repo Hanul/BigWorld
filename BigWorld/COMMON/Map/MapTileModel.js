@@ -10,7 +10,11 @@ BigWorld.MapTileModel = OBJECT({
 		EACH(BigWorld.TILE_STATES, (tileState) => {
 			kindMapDetails[tileState] = {
 				notEmpty : true,
-				integer : true
+				array : true,
+				each : {
+					notEmpty : true,
+					integer : true
+				}
 			};
 		});
 

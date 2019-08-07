@@ -15,8 +15,8 @@ BOOT({
 			sectionWidth : 40,
 			sectionHeight : 40*/
 			tileSectionLevel : 1,
-			sectionWidth : 512,
-			sectionHeight : 512
+			sectionWidth : 256,
+			sectionHeight : 256
 		}
 	},
 	

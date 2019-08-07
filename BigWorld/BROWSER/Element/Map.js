@@ -6,7 +6,7 @@ BigWorld.Map = CLASS(() => {
 	const HALF_TILE_WIDTH = TILE_WIDTH / 2;
 	const HALF_TILE_HEIGHT = TILE_HEIGHT / 2;
 	
-	const BASE_MIN_SCALE = 50 / TILE_WIDTH;
+	const BASE_MIN_SCALE = 100 / TILE_WIDTH;
 	const BASE_MAX_SCALE = 512 / TILE_WIDTH;
 	
 	return {

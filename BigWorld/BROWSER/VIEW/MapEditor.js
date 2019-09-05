@@ -372,8 +372,8 @@ BigWorld.MapEditor = CLASS({
 										
 										let ranges = [];
 										
-										for (let row = -Math.floor((rowRange - 1) / 2); row <= Math.floor(rowRange / 2); row += 1) {
-											for (let col = -Math.floor((colRange - 1) / 2); col <= Math.floor(colRange / 2); col += 1) {
+										for (let row = -Math.floor(rowRange / 2); row <= Math.floor((rowRange - 1) / 2); row += 1) {
+											for (let col = -Math.floor(colRange / 2); col <= Math.floor((colRange - 1) / 2); col += 1) {
 												ranges.push({
 													col : col,
 													row : row

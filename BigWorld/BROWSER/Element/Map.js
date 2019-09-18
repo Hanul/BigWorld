@@ -1063,6 +1063,11 @@ BigWorld.Map = CLASS(() => {
 				cursorNode = node;
 				cursorNodeMoveType = moveType;
 				
+				cursorNode.setPosition({
+					x : -999999,
+					y : -999999
+				});
+				
 				node.appendTo(self);
 			};
 			

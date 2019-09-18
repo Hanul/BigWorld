@@ -203,10 +203,7 @@ BigWorld.MapEditor = CLASS({
 					
 					let cursorNode;
 					map.setCursorNode({
-						node : cursorNode = SkyEngine.Node({
-							x : -999999,
-							y : -999999
-						}),
+						node : cursorNode = SkyEngine.Node(),
 						moveType : 'tile'
 					});
 					
@@ -802,8 +799,6 @@ BigWorld.MapEditor = CLASS({
 					if (map !== undefined) {
 						
 						let cursorObject = BigWorld.Object({
-							x : -999999,
-							y : -999999,
 							objectData : objectData,
 							kind : nowKind === undefined ? 0 : nowKind,
 							state : nowState,

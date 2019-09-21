@@ -1045,6 +1045,20 @@ BigWorld.Map = CLASS(() => {
 				};
 			});
 			
+			let setTilePosition = self.setTilePosition = (params) => {
+				//REQUIRED: params
+				//REQUIRED: params.col
+				//REQUIRED: params.row
+				
+				let col = params.col;
+				let row = params.row;
+				
+				setPosition({
+					x : -BigWorld.Tile.getTileX(col, row) * self.getScaleX(),
+					y : -BigWorld.Tile.getTileY(col, row) * self.getScaleY()
+				});
+			};
+			
 			let cursorNode;
 			let cursorNodeMoveType;
 			
